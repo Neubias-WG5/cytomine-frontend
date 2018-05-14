@@ -31,6 +31,7 @@
 
 <script>
 import humanDate from '../../helpers/humanDate'
+import pointStyle from '../../helpers/pointStyle'
 
 export default {
     name:'Review',
@@ -67,10 +68,11 @@ export default {
           terms: this.featureSelectedData.term,
         }).then(data => {
           this.featureSelected.getStyle().getStroke().setColor([91, 183, 91]);
+          let fillColor = this.featureSelected.getStyle().getFill().getColor();
+          this.featureSelected.getStyle().setImage(pointStyle(fillColor, [91, 183, 91]))
           this.featureSelected.changed();
           this.$emit('featureSelectedData', data.data.reviewedannotation);
           this.$emit('updateLayers', true);
-          this.$emit('updateAnnotationsIndex', true);
         })
       },
       acceptAll() {
@@ -84,7 +86,6 @@ export default {
             task: task.id
           }).then(() => {
             this.$emit('updateLayers', true);
-            this.$emit('updateAnnotationsIndex', true);
           })
         })
       },
@@ -92,11 +93,12 @@ export default {
         let id = this.featureSelectedData.parentIdent;
         api.delete(`/api/annotation/${id}/review.json`).then(data => {
           this.featureSelected.getStyle().getStroke().setColor([189, 54, 47]);
+          let fillColor = this.featureSelected.getStyle().getFill().getColor();
+          this.featureSelected.getStyle().setImage(pointStyle(fillColor, [189, 54, 47]))
           this.featureSelected.changed();
           api.get(`/api/annotation/${id}.json`).then(data => {
             this.$emit('featureSelectedData', data.data);
             this.$emit('updateLayers', true);
-            this.$emit('updateAnnotationsIndex', true);
           })
         })
       },
@@ -107,7 +109,6 @@ export default {
           let task = data.data.task;
           api.delete(`/api/imageinstance/${this.currentMap.imageId}/annotation/review.json?users=${this.currentMap.user.id}&task=${task.id}`).then(() => {
             this.$emit('updateLayers', true);
-            this.$emit('updateAnnotationsIndex', true);
           });
         })
       },

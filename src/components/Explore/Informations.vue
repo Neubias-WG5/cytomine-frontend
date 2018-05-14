@@ -1,7 +1,7 @@
 <template>
   <div style="min-height: 300px">
       <div class="btn-group">
-        <a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`" class="btn btn-info">Expore</a>
+        <a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`" class="btn btn-info">Explore</a>
         <button class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <span class="caret"></span>
           <span class="sr-only">Toggle dropdown</span>
@@ -86,13 +86,16 @@ export default {
           return;
         }
         this.adjacentImage = data.data;
-        this.changeImage();
+        api.get(`/api/abstractimage/${this.adjacentImage.baseImage}/imageservers.json?&imageinstance=${this.adjacentImage.id}`).then(data => {
+          this.$emit('updateImsServer', data.data.imageServersURLs[0]);
+          this.changeImage(data.data.imageServersURLs[0]);
+        })
       })
     },
-    changeImage() {
+    changeImage(imsBaseUrl) {
       let layer = new OlTile({
           source: new Zoomify({
-              url: `${this.filterUrl}${this.imsBaseUrl}image/tile?zoomify=${this.adjacentImage.fullPath}/&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.adjacentImage.mime}`,
+              url: `${this.filterUrl}${imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.adjacentImage.mime}`,
               size: [this.adjacentImage.width, this.adjacentImage.height],
               extent: [0, 0, this.adjacentImage.width, this.adjacentImage.height],
           }),
@@ -101,7 +104,7 @@ export default {
       
       this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
       this.$emit('updateOverviewMap');
-  },
+    },
   },
 }
 </script>

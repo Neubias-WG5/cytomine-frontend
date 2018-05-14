@@ -2,6 +2,7 @@
   <div>
         <ul class="list-group mt-4">
             <li class="list-group-item" v-for="term in terms" :key="'term-'+term.id">
+                <span class="glyphicon glyphicon-circle-arrow-right" :style="`color: ${term.color};`"></span>
                 <input @change="handlePost(term.id)" v-model="featureTerms" :value="term.id" type="checkbox" :name="'term-'+term.id" :id="'term-'+term.id">
                 <label :for="'term-'+term.id">{{term.key}} ({{term.value}})</label>
                 <label :for="'show-term-'+term.id">Show</label>
@@ -32,6 +33,7 @@ export default {
       'featureSelectedData',
       'featureSelected',
       'vectorLayersOpacity',
+      'currentMap',
   ],
   data() {
       return {
@@ -99,7 +101,7 @@ export default {
                     this.changeFeatureColor()
                 })
           } else {
-                api.post(`/api/annotation/1655/term/1481.json`, {
+                api.post(`/api/annotation/${this.featureSelected.getId()}/term/${termId}.json`, {
                     term: termId, 
                     userannotation: this.featureSelected.getId()
                 }).then(data => {
@@ -110,7 +112,7 @@ export default {
       }
   },
   created() {
-      api.get(`/api/project/1493/stats/term.json`).then(data => {
+      api.get(`/api/project/${this.currentMap.data.project}/stats/term.json`).then(data => {
           this.terms = data.data.collection;
           this.visibleTerms = this.termsId;
           this.$emit('showTerms', this.termsId);

@@ -46,34 +46,35 @@ export default {
             let vectorIndex = layersArray.findIndex(layer => layer.getType() == 'VECTOR');
             let imageToAdd = this.imageGroup[this.sequenceSelected - 1];
 
-            let layerToAdd = new OlTile({
-                source: new Zoomify({
-                    url: `${this.filterUrl}${this.imsBaseUrl}image/tile?zoomify=${imageToAdd.model.fullPath}/&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${imageToAdd.model.mime}`,
-                    size: [parseInt(imageToAdd.model.width), parseInt(imageToAdd.model.height)],
+            api.get(`/api/abstractimage/${imageToAdd.model.baseImage}/imageservers.json?&imageinstance=${imageToAdd.image}`).then(data => {
+                let layerToAdd = new OlTile({
+                    source: new Zoomify({
+                        url: `${this.filterUrl}${data.data.imageServersURLs}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${imageToAdd.model.mime}`,
+                        size: [parseInt(imageToAdd.model.width), parseInt(imageToAdd.model.height)],
+                        extent: [0, 0, parseInt(imageToAdd.model.width), parseInt(imageToAdd.model.height)],
+                    }),
                     extent: [0, 0, parseInt(imageToAdd.model.width), parseInt(imageToAdd.model.height)],
-                }),
-                extent: [0, 0, parseInt(imageToAdd.model.width), parseInt(imageToAdd.model.height)],
+                })
+
+                layerToAdd.set('channel', imageToAdd.channel);
+
+                if(vectorIndex > 0) {
+                    layersArray.splice(vectorIndex, 0, layerToAdd);
+                } else {
+                    layersArray.push(layerToAdd);
+                }
+
+                this.overlayedLayer.push(imageToAdd);
+
+                this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: layersArray}))
             })
 
-            layerToAdd.set('channel', imageToAdd.channel);
-
-            if(vectorIndex > 0) {
-                layersArray.splice(vectorIndex, 0, layerToAdd);
-            } else {
-                layersArray.push(layerToAdd);
-            }
-
-            this.overlayedLayer.push(imageToAdd);
-
-            this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: layersArray}))
-            console.log(this.$openlayers.getMap(this.currentMap.id).getLayers().getArray())
         },
         removeOverlay(overlay) {
             let layersArray = this.$openlayers.getMap(this.currentMap.id).getLayers().getArray();
             let index = layersArray.findIndex(layer => layer.get('channel') == overlay.channel);
             layersArray.splice(index, 1);
             this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: layersArray}));
-            console.log(layersArray)
             index = this.overlayedLayer.findIndex(item => overlay == item);
             this.overlayedLayer.splice(index, 1);
         },

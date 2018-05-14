@@ -21,7 +21,7 @@
                 <button v-if="mustBeShown('project-explore-colormap')" @click="setShowComponent('colormap')" :class="['btn', 'btn-default', {active: showComponent == 'colormap' }]">
                     <span class="glyphicon glyphicon-adjust" aria-hidden="true"></span>
                 </button>
-                <button v-if="mustBeShown('project-explore-image-layers')" @click="setShowComponent('annotationLayers')" :class="['btn', 'btn-default', {active: showComponent == 'annotationLayers' }]">
+                <button @click="setShowComponent('annotationLayers')" :class="['btn', 'btn-default', {active: showComponent == 'annotationLayers' }]">
                     Annotation layers
                 </button>
                 <button v-if="mustBeShown('project-explore-annotation-panel')" @click="setShowComponent('annotationList')" :class="['btn', 'btn-default', {active: showComponent == 'annotationList' }]">
@@ -49,17 +49,17 @@
                 </div> -->
             </div>
         </div>
-        <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '') || featureSelected != undefined" class="panel component-panel" :style="`max-height:${2*elementHeight/3}px;`">
+        <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '') || featureSelected != undefined" class="panel component-panel" :style="`max-height:${2*elementHeight/3}px;overflow-y: scroll;${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
             <div class="panel-body">
                 <div v-show="showComponent == 'linkmap'">
                     <div class="alert alert-info">Choose a map to link</div>
                     <label :for="'link-'+currentMap.id">Link the map</label>
-                    <select class="btn btn-default" @change="sendLink" v-model="linkValue" name="link" :id="'link-'+currentMap.id">
-                        <option value="">Select a map</option>
-                        <template v-for="(map, index) in maps">
-                            <option v-if="index !== mapIndex" :key="map.id" :value="map.id">{{mapNames[index]}}</option>
+                    <div v-for="(map, index) in maps" :key="'linkdiv' + map.id">
+                        <template v-if="index !== mapIndex">
+                            <input v-model="linkValue" :value="map.id" @change="sendLink(map.id)" type="checkbox" :name="currentMap.id + map.id" :id="currentMap.id + map.id">
+                            <label :for="currentMap.id + map.id">{{ mapNames[index] }}</label>
                         </template>
-                    </select>
+                    </div>
                 </div>
                 <digital-zoom v-show="showComponent == 'digitalZoom'" :currentMap="currentMap"></digital-zoom>
                 <div v-show="showComponent == 'filter'">
@@ -73,14 +73,14 @@
                 </div>
                 <color-maps v-show="showComponent == 'colormap'" :currentMap="currentMap"></color-maps>
                 <div v-show="showComponent == 'annotationLayers'">
-                    <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity" @layersSelected="setLayersSelected" @userLayers="setUserLayers" :onlineUsers="onlineUsers" :isReviewing="isReviewing" :updateLayers="updateLayers" :termsToShow="termsToShow" :showWithNoTerm="showWithNoTerm" :allTerms="allTerms" :currentMap="currentMap"></annotation-layers>
-                    <ontology :featureSelectedData="featureSelectedData" :featureSelected="featureSelected" :vectorLayersOpacity="vectorLayersOpacity" @showTerms="showTerms" @showWithNoTerm="setShowWithNoTerm" @allTerms="setAllTerms"></ontology>
+                    <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity" @layersSelected="setLayersSelected" @userLayers="setUserLayers" :layerToAdd="addLayer" :onlineUsers="onlineUsers" :isReviewing="isReviewing" :updateLayers="updateLayers" :termsToShow="termsToShow" :showWithNoTerm="showWithNoTerm" :allTerms="allTerms" :currentMap="currentMap"></annotation-layers>
+                    <ontology :currentMap="currentMap" :featureSelectedData="featureSelectedData" :featureSelected="featureSelected" :vectorLayersOpacity="vectorLayersOpacity" @showTerms="showTerms" @showWithNoTerm="setShowWithNoTerm" @allTerms="setAllTerms"></ontology>
                 </div>
                 <review v-if="isReviewing" v-show="showComponent == 'review'" @updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers" @featureSelectedData="setFeatureSelectedData" @updateMap="updateMap" :layersSelected="layersSelected" :currentMap="currentMap" :featureSelectedData="featureSelectedData" :featureSelected="featureSelected" :userLayers="userLayers"></review>
                 <multidimension v-if="imageGroupIndex[0]" v-show="showComponent == 'multidimension'" @imageGroupHasChanged="setImageGroup" :imageGroupIndex="imageGroupIndex" :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @imageHasChanged="updateMap" :currentMap="currentMap"></multidimension>
                 <properties v-show="showComponent == 'properties'" :layersSelected="layersSelected" :currentMap="currentMap"></properties>
                 <annotation-details @featureSelectedData="setFeatureSelectedData" :users="userLayers" :terms="allTerms" :featureSelected="featureSelected" :currentMap="currentMap"></annotation-details>
-                <informations v-show="showComponent == 'informations'" @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" :currentMap="currentMap"></informations>
+                <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer" @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" :currentMap="currentMap"></informations>
                 <annotations v-show="showComponent == 'annotationList'" @updateAnnotationsIndex="setUpdateAnnotationsIndex" :updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing" :users="userLayers" :terms="allTerms" :currentMap="currentMap"></annotations>
             </div>
         </div>
@@ -128,9 +128,9 @@ export default {
   },
   data () {
     return {
-        linkValue: "",
+        linkValue: [],
         mapNames: ['1', '2', '3', '4'],
-        imsBaseUrl: 'http://localhost-ims/',
+        imsBaseUrl: '',
         filterSelected: "",
         extent: [],
         mousePosition: [0, 0],
@@ -147,6 +147,7 @@ export default {
         onlineUsers: [],
         showComponent: '',
         showPanel: true,
+        addLayer: '',
     }
   },
   props: [
@@ -167,7 +168,7 @@ export default {
     },
     filterUrl() {
         if(this.filterSelected !== "") {
-            return `${this.imsBaseUrl}${this.filterSelected.baseUrl}`;
+            return `${this.filterSelected.processingServer}${this.filterSelected.baseUrl}`;
         } else {
             return "";
         }
@@ -179,7 +180,8 @@ export default {
         return parseInt(this.currentMap.data.height)
     },
     isReviewing() {
-        let type = document.querySelector('.get-data').dataset.type;
+        // DEPENDS ON [BACKBONE]
+        let type = document.querySelector('.get-data' + this.currentMap.imageId).dataset.type;
         let from = type.indexOf('-');
         return type.substr(from + 1) == 'review' ? true : false; 
     },
@@ -212,13 +214,14 @@ export default {
     centeredFeature() {
         let index = this.currentRoute.lastIndexOf('-');
         return this.currentRoute.substr(index + 1);
-    }
+    },
   },
   watch: {
     mapView: {
         handler() {
             let {mapCenter, mapResolution, mapRotation} = this.mapView;
-            if(this.currentMap.linkedTo == this.lastEventMapId) {
+            let index = this.currentMap.linkedTo.findIndex(link => link == this.lastEventMapId);
+            if(index >= 0) {
                 this.$openlayers.getView(this.currentMap.id).setProperties({
                     center: mapCenter,
                     resolution: mapResolution,
@@ -236,7 +239,7 @@ export default {
         //sets filter on change 
         let layer = new OlTile({
             source: new Zoomify({
-                url: `${this.filterUrl}${this.imsBaseUrl}image/tile?zoomify=${this.currentMap.data.fullPath}/&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
                 size: [this.mapWidth, this.mapHeight],
                 extent: this.extent,
             }),
@@ -245,9 +248,6 @@ export default {
         this.$openlayers.getMap(this.currentMap.id).getLayers().getArray()[0] = layer;
         this.$openlayers.getMap(this.currentMap.id).render();
         this.updateOverviewMap();
-    },
-    getCurrentZoom() {
-        this.updateLayers = true;
     },
     lastEventMapId() {
         if(this.lastEventMapId != this.currentMap.id) {
@@ -260,7 +260,7 @@ export default {
         if(newValue != this.currentMap.data.project) {
             this.centerOnFeature(newValue);
         }
-    }
+    },
   },
   methods: {
     // Sends view infos
@@ -277,8 +277,12 @@ export default {
         this.$emit('dragged', payload);
     },
     // Sends which map is linked to this one to the parent
-    sendLink() {
-        let payload = [this.currentMap.id, this.linkValue];
+    sendLink(mapId) {
+        let payload = {
+            sender: this.currentMap.id,
+            newLinks: this.linkValue,
+            modifiedValue: mapId,
+        }
         this.$emit('mapIsLinked', payload);
     },
     postPosition() {
@@ -303,9 +307,17 @@ export default {
         })
     },
     centerOnFeature(id) {
+        if(id == 0 || id == '') {
+            return;
+        }
         api.get(`/api/annotation/${id}.json`).then(data => {
+            let annotation = data.data;
             let format = new WKT();
-            let feature = format.readFeature(data.data.location);
+            let feature = format.readFeature(annotation.location);
+            let annotLayer = this.$openlayers.getMap(this.currentMap.id).getLayers().getArray().findIndex(layer => layer.get('title') == annotation.user);
+            if(annotLayer < 0) {
+                this.addLayer = annotation.user;
+            }
             this.$openlayers.getView(this.currentMap.id).fit(feature.getGeometry());
         })
     },
@@ -334,7 +346,10 @@ export default {
         this.layersSelected = payload;
     },
     updateMap(payload) {
-        this.$emit('updateMap', {old: this.currentMap, new: payload});
+        api.get(`/api/abstractimage/${payload.baseImage}/imageservers.json?&imageinstance=${payload.id}`).then(data => {
+            this.imsBaseUrl = data.data.imageServersURLs[0];
+            this.$emit('updateMap', {old: this.currentMap, new: payload});
+        })
     },
     setVectorLayersOpacity(payload) {
         this.vectorLayersOpacity = payload;
@@ -358,9 +373,12 @@ export default {
             this.showComponent = component;
         }
     },
+    setImsServer(payload) {
+        this.imsBaseUrl = payload;
+    },
     mustBeShown(key) {
         return mustBeShown(key, this.currentMap.projectConfig);
-    }
+    },
   }, 
   mounted() {
     this.extent = [0, 0, this.mapWidth, this.mapHeight];
@@ -369,7 +387,7 @@ export default {
     this.$openlayers.init({
       element: this.currentMap.id,
       center: [this.mapWidth/2, this.mapHeight/2],
-      zoom: this.mapZoom,
+      zoom: 0,
       controls: [
           new ZoomControls({
             target: document.getElementById('controls-'+this.currentMap.id),
@@ -387,42 +405,44 @@ export default {
         extent: this.extent,
       },
     })
-
-    // Adds layer
-    let layer = new OlTile({
-        source: new Zoomify({
-            url: `${this.filterUrl}${this.imsBaseUrl}image/tile?zoomify=${this.currentMap.data.fullPath}/&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
-            size: [this.mapWidth, this.mapHeight],
+    api.get(`/api/abstractimage/${this.currentMap.data.baseImage}/imageservers.json?&imageinstance=${this.currentMap.imageId}`).then(data => {
+        this.imsBaseUrl = data.data.imageServersURLs[0];
+        // Adds layer
+        let layer = new OlTile({
+            source: new Zoomify({
+                url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                size: [this.mapWidth, this.mapHeight],
+                extent: this.extent,
+            }),
             extent: this.extent,
-        }),
-        extent: this.extent,
+        })
+        this.$openlayers.getMap(this.currentMap.id).addLayer(layer)
+        this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
+        this.$openlayers.getMap(this.currentMap.id).on('moveend', () => {
+            this.postPosition();
+        })
+        this.$openlayers.getMap(this.currentMap.id).getControls().getArray()[0].element.childNodes.forEach(child => {
+            child.classList.add('btn');
+            child.classList.add('btn-default');
+        })
+        this.$openlayers.getMap(this.currentMap.id).getControls().getArray()[1].element.childNodes.forEach(child => {
+            child.classList.add('btn');
+            child.classList.add('btn-default');
+        })
+        setInterval(this.postPosition, 5000);
+        setInterval(this.getOnlineUsers, 5000)
+        if(this.isReviewing) {
+            api.put(`/api/imageinstance/${this.currentMap.imageId}/review.json`, {
+                id: this.currentMap.imageId,
+            }).then(data => {
+                this.updateMap(data.data.imageinstance)
+            })
+        }
+        if(this.centeredFeature != '' && this.centeredFeature != this.currentMap.data.project) {
+            this.centerOnFeature(this.centeredFeature);
+        }
     })
 
-    this.$openlayers.getMap(this.currentMap.id).addLayer(layer)
-    this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
-    this.$openlayers.getMap(this.currentMap.id).on('moveend', () => {
-        this.postPosition();
-    })
-    this.$openlayers.getMap(this.currentMap.id).getControls().getArray()[0].element.childNodes.forEach(child => {
-        child.classList.add('btn');
-        child.classList.add('btn-default');
-    })
-    this.$openlayers.getMap(this.currentMap.id).getControls().getArray()[1].element.childNodes.forEach(child => {
-        child.classList.add('btn');
-        child.classList.add('btn-default');
-    })
-    setInterval(this.postPosition, 5000);
-    setInterval(this.getOnlineUsers, 5000)
-    if(this.isReviewing) {
-        api.put(`/api/imageinstance/${this.currentMap.imageId}/review.json`, {
-            id: this.currentMap.imageId,
-        }).then(data => {
-            this.updateMap(data.data.imageinstance)
-        })
-    }
-    if(this.centeredFeature != '' && this.centeredFeature != this.currentMap.data.project) {
-        this.centerOnFeature(this.centeredFeature);
-    }
   }
 }
 

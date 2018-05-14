@@ -9,7 +9,10 @@
             <dt>Perimeter</dt>
             <dd>{{data.perimeter}} {{data.perimeterUnit}}</dd>
             <dt>Term(s)</dt>
-            <dd v-for="term in data.term" :key="'term-'+term">{{displayTerm(term)}}</dd>
+            <dd v-for="term in data.term" :key="'term-'+term">
+                <span class="glyphicon glyphicon-circle-arrow-right" :style="`color: ${getTermColor(term)};`"></span>
+                {{displayTerm(term)}}
+            </dd>
             <dt>User</dt>
             <dd>{{displayName(data.user)}}</dd>
         </dl>
@@ -78,6 +81,10 @@ export default {
       displayTerm(termId) {
           let index = this.findIndex(this.terms, termId);
           return this.terms[index].key;
+      },
+      getTermColor(termId) {
+          let index = this.findIndex(this.terms, termId);
+          return this.terms[index].color;
       }
   },
 }

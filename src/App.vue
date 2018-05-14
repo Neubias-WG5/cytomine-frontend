@@ -8,7 +8,7 @@
         </select>
         <button class="btn" @click="addImageGroup()">Add image group</button>
       </template>
-      <template v-else>
+      <template>
         <select class="btn" v-model.number="imageToAdd" name="images" id="images">
           <option value="">Select an image to add</option>
           <option v-for="image in images" :key="image.id" :value="image.id">{{image.instanceFilename}}</option>
@@ -60,11 +60,17 @@ export default {
     }
   },
   computed: {
+    backboneTabIndex() {
+      // DEPENDS ON [BACKBONE]
+      return window.app.status.currentImages.findIndex(tab => window.app.status.currentImage.idImage == tab.image);
+    },
     projectId() {
-      return document.querySelector('.get-data').dataset.project;
+      // DEPENDS ON [BACKBONE]
+      return window.app.status.currentProject;
     },
     baseImage() {
-      return document.querySelector('.get-data').dataset.id;
+      // DEPENDS ON [BACKBONE]
+      return window.app.status.currentImages[this.backboneTabIndex].image;
     }
   },
   methods: {
@@ -84,28 +90,29 @@ export default {
       this.$openlayers.getMap(payload.mapId).updateSize();
     },
     linkMaps(payload) {
-      // Removes last linked map
-      let index = this.maps.findIndex((map) => {
-        return map.linkedTo === payload[0];
-      })
-      if(index !== -1) {
-        this.maps[index].linkedTo = "";
-      }
-
       // Finds map index
-      index = this.mapIndex(payload[0])
-      // Links maps
-      this.maps[index].linkedTo = payload[1];
+      let index = this.mapIndex(payload.sender)
 
-      index = this.mapIndex(payload[1])
-      this.maps[index].linkedTo = payload[0];
+      let isRemoving = this.maps[index].linkedTo.findIndex(link => link == payload.modifiedValue) >= 0;
+
+      // Links maps 
+      this.maps[index].linkedTo = payload.newLinks;
+
+      if(isRemoving) {
+        index = this.mapIndex(payload.modifiedValue);
+        let linkToDeleteIndex = this.maps[index].linkedTo.findIndex(link => link == payload.sender);
+        this.maps[index].linkedTo.splice(linkToDeleteIndex, 1);
+      } else {
+        index = this.mapIndex(payload.modifiedValue);
+        this.maps[index].linkedTo.push(payload.sender);
+      }
     },
     addMap(imageId = this.imageToAdd, imageGroup = "", id = uuid()) {
       if(this.maps.length < this.maxMapsToShow && imageId !== "") {
         this.maps.push({
           id,
           imageId,
-          linkedTo: "",
+          linkedTo: [],
           imageGroup,
           projectConfig: this.projectConfig,
           user: this.currentUser,
@@ -139,6 +146,7 @@ export default {
       api.post(`http://localhost-core:8080/server/ping.json`, {project: this.projectId});
     },
     checkRoute() {
+      // DEPENDS ON [BACKBONE]
       this.currentRoute = Backbone.history.getFragment();
     }
   },
@@ -158,7 +166,11 @@ export default {
           if(this.imageGroupIndex[0]) {
             api.get(`/api/imageinstance/${this.baseImage}/imagesequence.json`).then(resp => {
               this.baseSequence = resp.data.collection[0];
-              this.addMap(this.baseImage, this.baseSequence.imageGroup, id);
+              if(this.baseSequence) {
+                this.addMap(this.baseImage, this.baseSequence.imageGroup, id);
+              } else {
+                this.addMap(this.baseImage, "", id);
+              }
             })
           } else {
             this.addMap(this.baseImage, "", id);
@@ -176,6 +188,7 @@ export default {
       this.onlineUsers = data.data.collection;
     })
 
+    // DEPENDS ON [BACKBONE]
     setInterval(this.checkRoute, 1000)  
   },
 }

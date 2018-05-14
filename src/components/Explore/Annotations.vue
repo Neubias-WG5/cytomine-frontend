@@ -1,11 +1,30 @@
 <template>
   <div>
       <div class="btn-group">
-        <button :class="['btn', 'btn-default', {active: filter == 'all'}]" @click="filter = 'all'">All</button>
-        <button :class="['btn', 'btn-default', {active: filter == term.id}]" @click="filter = term.id" v-for="term in terms" :key="term.id + uuid()">{{term.key}}</button>
+        <button @click="getAnnotations(30, 0)" :class="['btn', 'btn-default', {active: filter == null}]">All</button>
+        <button @click="getAnnotations(30, 0, term.id)" :class="['btn', 'btn-default', {active: filter == term.id}]"  v-for="term in terms" :key="term.id + uuid()">{{term.key}}</button>
       </div>
+        <div>
+            <ul class="pagination">
+                <li :class="{disabled: currentPage == 0}">
+                    <a @click="previousAnnotations" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li @click="getAnnotations(30, n - 1)" v-for="n in totalPages" :key="n" :class="{active: n-1 == currentPage}">
+                    <a>
+                        {{ n }}
+                    </a>
+                </li>
+                <li :class="{disabled: currentPage == totalPages - 1}">
+                    <a @click="nextAnnotations" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
       <ul class="annotations-container">
-        <li class="img-box" v-for="annotation in annotationsToShow" :key="annotation.id + uuid()">
+        <li class="img-box" v-for="annotation in annotations" :key="annotation.id + uuid()">
             <popper>
                 <div class="popper" trigger="hover" :options="{placement: 'top'}">
                     <h4>Annotation details</h4>
@@ -29,7 +48,7 @@
                 </div>
             </popper>
         </li>
-        <div v-if="annotationsToShow[0] == undefined" class="alert alert-info mt-4">
+        <div v-if="annotations[0] == undefined" class="alert alert-info mt-4">
             No annotation
         </div>
       </ul>
@@ -50,7 +69,9 @@ export default {
       return {
           annotations: [],
           reviewedAnnotations: [],
-          filter: 'all',
+          filter: null,
+          totalPages: null,
+          currentPage: 0,
       }
   },
   props: [
@@ -60,43 +81,40 @@ export default {
       'isReviewing',
       'updateAnnotationsIndex'
   ],
-  computed: {
-      annotationsToShow() {
-          let toSort = this.isReviewing ? this.reviewedAnnotations : this.annotations;
-          switch (this.filter) {
-            case 'all':
-                return toSort;
-            break;
-            default:
-                return toSort.filter(annotation => {
-                    return annotation.term.findIndex(term => term == this.filter) < 0 ? false : true;
-                });
-            break;
-          }
-      }
-  },
   watch: {
     updateAnnotationsIndex(newValue) {
         if(newValue == true) {
-            this.setAnnotations();
+            this.getAnnotations(30, this.currentPage*30);
             this.$emit('updateAnnotationsIndex', false);
         }
     }
   },
   methods: {
-      setAnnotations() {
-        api.get(`/api/annotation.json?&image=${this.currentMap.imageId}&reviewed=false`).then(data => {
+      getAnnotations(max, page, term = null) {
+        this.currentPage = page;
+        let termQuery = term != null ? `&term=${term}` : '';
+        this.filter = term;
+        api.get(`/api/annotation.json?&image=${this.currentMap.imageId}&reviewed=false&max=${max}&offset=${page*max}${termQuery}`).then(data => {
             this.annotations = data.data.collection;
+            this.totalPages = data.data.totalPages;
         })
         if(this.isReviewing) {
-            api.get(`/api/annotation.json?&image=${this.currentMap.imageId}&showTerm=true&reviewed=true&notReviewedOnly=true&showMeta=true`).then(data => {
+            api.get(`/api/annotation.json?&image=${this.currentMap.imageId}&showTerm=true&reviewed=true&notReviewedOnly=true&showMeta=true&max=${max}&offset=${page*max}${termQuery}`).then(data => {
                 this.reviewedAnnotations = data.data.collection;
             })
         }
       },
-      uuid() {
-          return uuid();
+      previousAnnotations() {
+          if(this.currentPage !== 0) {
+            this.getAnnotations(30, this.currentPage - 1);
+          }
       },
+      nextAnnotations() {
+          if(this.currentPage !== this.totalPages - 1) {
+            this.getAnnotations(30, this.currentPage + 1);
+          }
+      },
+      uuid,
       userById(userId) {
             let index = this.users.findIndex(user => user.id === userId);
             return index < 0 ? null : `${this.users[index].lastname} ${this.users[index].firstname} (${this.users[index].username})`
@@ -107,10 +125,10 @@ export default {
       },
       humanDate(date) {
           return humanDate(date);
-      }
+      },
   },
   created() {
-      this.setAnnotations()
+      this.getAnnotations(30, 0);
   }
 }
 </script>

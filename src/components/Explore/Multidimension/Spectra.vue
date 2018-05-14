@@ -1,7 +1,9 @@
 <template>
     <div v-if="spectra != {}">
-        <h4>Spectra</h4>
-        <div :id="'spectra-'+currentMap.id"></div>
+        <div>
+            <h4>Spectra</h4>
+            <div :id="'spectra-'+currentMap.id"></div>
+        </div>
     </div>
 </template>
 
@@ -27,7 +29,7 @@ export default {
             let xAxis = [];
             this.imageGroup.map((image, index) => xAxis.push(index + 1))
             return xAxis;
-        }
+        },
     },
     methods: {
         updateSpectra(newData = this.yAxis) {
@@ -39,9 +41,10 @@ export default {
                 title: 'Spectral distribution',
                 xaxis: {
                     range: [0, this.imageGroup.length],
-                }
+                },
+                width: document.getElementById(this.currentMap.id).clientWidth*0.9-80,
             }
-            Plotly.newPlot('spectra-'+this.currentMap.id, [trace], layout)
+            Plotly.react('spectra-'+this.currentMap.id, [trace], layout)
         },
         getPixelData(event) {
             api.get(`/api/imagegroupHDF5/${this.hdf5.id}/${Math.round(event.pixel[0])}/${Math.round(event.pixel[1])}/pixel.json`).then(data => {

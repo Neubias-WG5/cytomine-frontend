@@ -72,7 +72,7 @@ export default {
 
             let layer = new OlTile({
                 source: new Zoomify({
-                    url: `${this.filterUrl}${this.imsBaseUrl}image/tile?zoomify=${this.currentMap.data.fullPath}/&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                    url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
                     size: [this.currentMap.data.width, this.currentMap.data.height],
                     extent: [0, 0, this.currentMap.data.width, this.currentMap.data.height],
                 }),
