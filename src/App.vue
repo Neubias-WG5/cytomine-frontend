@@ -17,7 +17,7 @@
       </template>
     </div>
     <p v-else>You can only have {{maxMapsToShow}} maps displayed</p>
-    <overview-map :lastEventMapId="lastEventMapId" :maps="maps"></overview-map>  
+    <overview-map :lastEventMapId="lastEventMapId" :maps="maps"></overview-map>
     <div class="maps-container">
       <explore v-for="map in maps" :currentRoute="currentRoute" :key="map.id" @updateMap="updateMap" @dragged="setMap" @mapIsLinked="linkMaps" @deleteMap="deleteMap" @updateOverviewMap="updateOverviewMap" :mapView="mapView" :maps='maps' :currentMap="map" :lastEventMapId="lastEventMapId" :filters="filters" :imageGroupIndex="imageGroupIndex"></explore>
     </div>
@@ -95,7 +95,7 @@ export default {
 
       let isRemoving = this.maps[index].linkedTo.findIndex(link => link == payload.modifiedValue) >= 0;
 
-      // Links maps 
+      // Links maps
       this.maps[index].linkedTo = payload.newLinks;
 
       if(isRemoving) {
@@ -143,7 +143,7 @@ export default {
       this.maps[index].imageId = payload.new.id;
     },
     ping() {
-      api.post(`http://localhost-core:8080/server/ping.json`, {project: this.projectId});
+      api.post(`server/ping.json`, {project: this.projectId});
     },
     checkRoute() {
       // DEPENDS ON [BACKBONE]
@@ -177,19 +177,19 @@ export default {
           }
         })
       })
-    }) 
+    })
 
 
     api.get(`api/project/${this.projectId}/imagefilterproject.json`).then(data => {
       this.filters = data.data.collection;
     })
 
-    api.get(`/api/project/82029/online/user.json`).then(data => {
+    api.get(`/api/project/${this.projectId}/online/user.json`).then(data => {
       this.onlineUsers = data.data.collection;
     })
 
     // DEPENDS ON [BACKBONE]
-    setInterval(this.checkRoute, 1000)  
+    setInterval(this.checkRoute, 1000)
   },
 }
 </script>
