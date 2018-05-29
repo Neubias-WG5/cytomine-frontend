@@ -237,7 +237,7 @@
             },
             isReviewing() {
                 // DEPENDS ON [BACKBONE]
-                let type = document.querySelector('.get-data' + this.currentMap.imageId).dataset.type;
+                let type = ''; //document.querySelector('.get-data' + this.currentMap.imageId).dataset.type;
                 let from = type.indexOf('-');
                 return type.substr(from + 1) == 'review';
             },
