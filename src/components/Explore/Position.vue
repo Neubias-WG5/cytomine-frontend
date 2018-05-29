@@ -1,11 +1,7 @@
 <template>
   <div>
-      <div>
-        magnitude: unknown    
-      </div>
-      <div>
-          x: {{currentCoordinate[0]}}, y: {{currentCoordinate[1]}}
-      </div>
+      <div style="float: left;">x: {{currentCoordinate[0]}}</div>
+      <div style="float: right;">y: {{currentCoordinate[1]}}</div>
   </div>
 </template>
 
@@ -20,7 +16,7 @@ export default {
       currentCoordinate() {
           if(this.$openlayers.getMap(this.currentMapId) !== undefined) {
               let coord = this.$openlayers.getMap(this.currentMapId).getCoordinateFromPixel(this.mousePosition);
-              return coord.map(value => Math.round(value * 100) / 1000);
+              return coord.map(value => Math.round(value * 10) / 10);
           } else {
               return this.mousePosition;
           }

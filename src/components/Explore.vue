@@ -55,11 +55,10 @@
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                     Close
                 </button>
-                <!-- <div class="panel postion-panel">
-                    <div class="panel-body">
-                        <position :mousePosition="mousePosition" :currentMapId="currentMap.id"></position>
-                    </div>
-                </div> -->
+            </div>
+            <div v-show="this.lastEventMapId == this.currentMap.id" class="scale-line-panel">
+                <scale-line :currentMap="currentMap" :mousePosition="mousePosition"
+                            :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
             </div>
         </div>
         <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '') || featureSelected != undefined"
@@ -140,6 +139,7 @@
     import Multidimension from './Explore/Multidimension';
     import DigitalZoom from './Explore/DigitalZoom'
     import Review from './Explore/Review'
+    import ScaleLine from './Explore/ScaleLine'
     import ColorMaps from './Explore/Colormaps'
 
     import OlTile from 'ol/layer/tile';
@@ -164,6 +164,7 @@
             Multidimension,
             DigitalZoom,
             Review,
+            ScaleLine,
             ColorMaps,
         },
         data() {
@@ -188,6 +189,8 @@
                 showComponent: '',
                 showPanel: true,
                 addLayer: '',
+                zoom: 0,
+                maxZoom: 0,
             }
         },
         props: [
@@ -228,7 +231,7 @@
                     mapHeight /= 2;
                     idealZoom--;
                 }
-                return idealZoom + 1
+                return idealZoom
             },
             isReviewing() {
                 // DEPENDS ON [BACKBONE]
@@ -468,6 +471,10 @@
                 });
                 this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
                 this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
+                this.$openlayers.getMap(this.currentMap.id).on('moveend', () => {
+                    this.zoom = this.$openlayers.getView(this.currentMap.id).getZoom();
+                    this.maxZoom = this.$openlayers.getView(this.currentMap.id).getMaxZoom();
+                });
                 this.$openlayers.getMap(this.currentMap.id).on('moveend', () => {
                     this.postPosition();
                 });
