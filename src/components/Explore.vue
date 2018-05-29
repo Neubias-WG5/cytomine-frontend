@@ -13,11 +13,11 @@
                         :class="['btn', 'btn-default', {active: showComponent == 'informations' }]">
                     <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                 </button>
-                <button v-if="mustBeShown('project-explore-link')" @click="setShowComponent('linkmap')"
+                <button v-if="mustBeShown('project-explore-link') && this.maps.length > 1" @click="setShowComponent('linkmap')"
                         :class="['btn', 'btn-default', {active: showComponent == 'linkmap' }]">
                     <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
                 </button>
-                <button v-if="mustBeShown('project-explore-image-layers')" @click="setShowComponent('filter')"
+                <button v-if="mustBeShown('project-explore-image-layers') && this.filters.length > 1" @click="setShowComponent('filter')"
                         :class="['btn', 'btn-default', {active: showComponent == 'filter' }]">
                     <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
                 </button>
@@ -52,9 +52,8 @@
                         :class="['btn', 'btn-default', {active: showComponent == 'properties' }]">
                     <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-danger" @click="deleteMap">
+                <button v-if="this.maps.length > 1" class="btn btn-danger" @click="deleteMap">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    Close
                 </button>
             </div>
             <div v-show="this.lastEventMapId == this.currentMap.id" class="scale-line-panel">
@@ -66,19 +65,21 @@
              class="panel component-panel"
              :style="`max-height:${2*elementHeight/3}px;overflow-y: scroll;${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
             <div class="panel-body">
-                <div v-show="showComponent == 'linkmap'">
-                    <div class="alert alert-info">Choose a map to link</div>
-                    <label :for="'link-'+currentMap.id">Link the map</label>
+                <div v-show="showComponent == 'linkmap' && mustBeShown('project-explore-link') && this.maps.length > 1">
+                    <div class="alert alert-info">Choose a view to link with this one.</div>
+                    <label :for="'link-'+currentMap.id">Link this view with </label>
                     <div v-for="(map, index) in maps" :key="'linkdiv' + map.id">
                         <template v-if="index !== mapIndex">
                             <input v-model="linkValue" :value="map.id" @change="sendLink(map.id)" type="checkbox"
                                    :name="currentMap.id + map.id" :id="currentMap.id + map.id">
-                            <label :for="currentMap.id + map.id">{{ mapNames[index] }}</label>
+                            <label :for="currentMap.id + map.id">{{ mapNames[index] }}  ({{instanceFilename(map.data)}})</label>
                         </template>
                     </div>
                 </div>
-                <digital-zoom v-show="showComponent == 'digitalZoom'" :currentMap="currentMap"></digital-zoom>
-                <div v-show="showComponent == 'filter'">
+                <digital-zoom v-show="showComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
+                              :currentMap="currentMap">
+                </digital-zoom>
+                <div v-show="showComponent == 'filter' && mustBeShown('project-explore-image-layers') && this.filters.length > 1">
                     <div class="alert alert-info">Choose a filter to apply</div>
                     <label :for="'original-filter-'+currentMap.id">Original</label>
                     <input v-model="filterSelected" type="radio" :name="'filter-original-'+currentMap.id"
@@ -89,7 +90,8 @@
                                :id="'filter-'+filter.id+'-'+currentMap.id" :value="filter">
                     </div>
                 </div>
-                <color-maps v-show="showComponent == 'colormap'" :currentMap="currentMap"></color-maps>
+                <color-maps v-show="showComponent == 'colormap' && mustBeShown('project-explore-colormap')"
+                            :currentMap="currentMap"></color-maps>
                 <div v-show="showComponent == 'annotationLayers'">
                     <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity"
                                        @layersSelected="setLayersSelected" @userLayers="setUserLayers"
@@ -171,7 +173,7 @@
         data() {
             return {
                 linkValue: [],
-                mapNames: ['1', '2', '3', '4'],
+                mapNames: ['View 1', 'View 2', 'View 3', 'View 4'],
                 imsBaseUrl: '',
                 filterSelected: "",
                 extent: [],
@@ -443,6 +445,11 @@
             },
             mustBeShown(key) {
                 return mustBeShown(key, this.currentMap.projectConfig);
+            },
+            instanceFilename(image) {
+                if (this.project.blindMode)
+                    return `[BLIND] ${image.id}`;
+                return image.instanceFilename
             },
         },
         mounted() {

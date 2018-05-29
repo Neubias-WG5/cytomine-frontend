@@ -13,13 +13,13 @@
             <template>
                 <select class="btn" v-model.number="imageToAdd" name="images" id="images">
                     <option value="">Select an image to add</option>
-                    <option v-for="image in images" :key="image.id" :value="image.id">{{image.instanceFilename}}
+                    <option v-for="image in images" :key="image.id" :value="image.id">{{getInstanceFilename(image)}}
                     </option>
                 </select>
-                <button class="btn" @click="addMap(imageToAdd)">Add a map</button>
+                <button class="btn" @click="addMap(imageToAdd)">Add a view</button>
             </template>
         </div>
-        <p v-else>You can only have {{maxMapsToShow}} maps displayed</p>
+        <p v-else>You can only have {{maxMapsToShow}} views displayed in an explorer tab.</p>
         <overview-map :lastEventMapId="lastEventMapId" :maps="maps"></overview-map>
         <div class="maps-container" :style="`height: calc(100vh - ${paddingTop}px);`">
             <explore v-for="map in maps" :currentRoute="currentRoute" :key="map.id" @updateMap="updateMap"
@@ -157,7 +157,12 @@
             checkRoute() {
                 // DEPENDS ON [BACKBONE]
                 this.currentRoute = Backbone.history.getFragment();
-            }
+            },
+            getInstanceFilename(image) {
+                if (this.project.blindMode)
+                    return `[BLIND] ${image.id}`;
+                return image.instanceFilename
+            },
         },
         created() {
             api.get(`api/project/${this.projectId}.json`).then(data => {
