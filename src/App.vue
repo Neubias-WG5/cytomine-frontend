@@ -26,7 +26,7 @@
                      @dragged="setMap" @mapIsLinked="linkMaps" @deleteMap="deleteMap"
                      @updateOverviewMap="updateOverviewMap" :mapView="mapView" :maps='maps' :currentMap="map"
                      :lastEventMapId="lastEventMapId" :filters="filters" :imageGroupIndex="imageGroupIndex"
-                     :padding-top="paddingTop"></explore>
+                     :padding-top="paddingTop" :project="project"></explore>
         </div>
     </div>
 </template>
@@ -54,6 +54,7 @@
                 maxMapsToShow: 4,
                 maps: [],
                 lastEventMapId: null,
+                project: {},
                 images: [],
                 imageToAdd: "",
                 imageGroupToAdd: "",
@@ -159,6 +160,10 @@
             }
         },
         created() {
+            api.get(`api/project/${this.projectId}.json`).then(data => {
+                this.project = data.data;
+            });
+
             api.get(`api/project/${this.projectId}/imagegroup.json`).then(data => {
                 this.imageGroupIndex = data.data.collection;
             });

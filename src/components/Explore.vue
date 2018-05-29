@@ -118,7 +118,7 @@
                                     :featureSelected="featureSelected" :currentMap="currentMap"></annotation-details>
                 <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
                               @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
-                              :imsBaseUrl="imsBaseUrl" :currentMap="currentMap"></informations>
+                              :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
                 <annotations v-show="showComponent == 'annotationList'"
                              @updateAnnotationsIndex="setUpdateAnnotationsIndex"
                              :updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing"
@@ -203,6 +203,7 @@
             'imageGroupIndex',
             'currentRoute',
             'paddingTop',
+            'project',
         ],
         computed: {
             linkedTo() {
