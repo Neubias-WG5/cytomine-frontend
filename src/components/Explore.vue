@@ -8,7 +8,7 @@
                       @featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"
                       :vectorLayersOpacity="vectorLayersOpacity"></interactions>
         <div>
-            <div v-show="this.lastEventMapId == this.currentMap.id" class="bottom-panel">
+            <div v-show="this.lastEventMapId == this.currentMap.id" class="bottom-panel btn-group" role="group">
                 <button v-if="mustBeShown('project-explore-info')" @click="setShowComponent('informations')"
                         :class="['btn', 'btn-default', {active: showComponent == 'informations' }]">
                     <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
@@ -63,7 +63,7 @@
         </div>
         <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '') || featureSelected != undefined"
              class="panel component-panel"
-             :style="`max-height:${2*elementHeight/3}px;overflow-y: scroll;${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
+             :style="`max-height:${2*elementHeight/3}px;${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
             <div class="panel-body">
                 <div v-show="showComponent == 'linkmap' && mustBeShown('project-explore-link') && this.maps.length > 1">
                     <div class="alert alert-info">Choose a view to link with this one.</div>
@@ -553,11 +553,14 @@
         position: absolute;
         bottom: 1em;
         left: 1em;
+        z-index: 2000;
     }
 
     .component-panel {
         position: absolute;
         bottom: 4em;
         left: 1em;
+        border: 1px solid rgb(240,240,240);
+        overflow-y: auto;
     }
 </style>

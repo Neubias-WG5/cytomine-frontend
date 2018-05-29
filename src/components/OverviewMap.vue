@@ -84,6 +84,7 @@
         z-index: 9999;
         border: 3px solid black;
         background: grey;
+        margin-top: 15px;
     }
 
     .ol-overviewmap-map {
