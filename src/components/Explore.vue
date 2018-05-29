@@ -1,6 +1,7 @@
 <template>
-    <div :style="`height:${elementHeight}px;width:${elementWidth}px;`" class="map">
-        <div style="height:100vh;" @mousemove="sendView" @mousewheel="sendView" :id="currentMap.id" ref="exploreMap">
+    <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
+        <div :style="`height:calc(100vh - ${paddingTop}px);`" @mousemove="sendView" @mousewheel="sendView"
+             :id="currentMap.id" ref="exploreMap">
         </div>
         <div class="controls" :id="'controls-'+currentMap.id"></div>
         <interactions v-show="this.lastEventMapId == this.currentMap.id" @updateLayers="setUpdateLayers"
@@ -201,6 +202,7 @@
             'filters',
             'imageGroupIndex',
             'currentRoute',
+            'paddingTop',
         ],
         computed: {
             linkedTo() {
@@ -248,6 +250,9 @@
             innerWidth() {
                 return window.innerWidth;
             },
+            fullHeight() {
+                return this.innerHeight - this.paddingTop
+            },
             elementHeight() {
                 let fullHeight = this.innerHeight - (50 + 42 + 34);
                 let heights = [
@@ -258,6 +263,9 @@
                 ];
                 return heights[this.maps.length - 1][this.mapIndex]
             },
+            elementHeightPercentage() {
+                return this.elementHeight / this.fullHeight * 100;
+            },
             elementWidth() {
                 let fullWidth = this.innerWidth;
                 let widths = [
@@ -267,6 +275,9 @@
                     [fullWidth / 2, fullWidth / 2, fullWidth / 2, fullWidth / 2],
                 ];
                 return widths[this.maps.length - 1][this.mapIndex]
+            },
+            elementWidthPercentage() {
+                return this.elementWidth / this.innerWidth * 100;
             },
             centeredFeature() {
                 let index = this.currentRoute.lastIndexOf('-');
@@ -534,10 +545,6 @@
         position: absolute;
         bottom: 1em;
         left: 1em;
-    }
-
-    .postion-panel {
-        margin-bottom: 0;
     }
 
     .component-panel {
