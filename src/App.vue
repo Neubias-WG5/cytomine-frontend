@@ -26,7 +26,7 @@
                      @dragged="setMap" @mapIsLinked="linkMaps" @deleteMap="deleteMap"
                      @updateOverviewMap="updateOverviewMap" :mapView="mapView" :maps='maps' :currentMap="map"
                      :lastEventMapId="lastEventMapId" :filters="filters" :imageGroupIndex="imageGroupIndex"
-                     :padding-top="paddingTop" :project="project"></explore>
+                     :padding-top="paddingTop" :project="project" :currentUser="currentUser"></explore>
         </div>
     </div>
 </template>
@@ -167,6 +167,12 @@
         created() {
             api.get(`api/project/${this.projectId}.json`).then(data => {
                 this.project = data.data;
+                api.get(`api/project/${this.projectId}/user.json`).then(data => {
+                    this.project.users = data.data.collection;
+                });
+                api.get(`api/project/${this.projectId}/admin.json`).then(data => {
+                    this.project.admins = data.data.collection;
+                });
             });
 
             api.get(`api/project/${this.projectId}/imagegroup.json`).then(data => {

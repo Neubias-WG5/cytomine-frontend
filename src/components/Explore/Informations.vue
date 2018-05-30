@@ -145,7 +145,7 @@
     }
 </script>
 
-<style>
+<style scoped>
     dd {
         margin-bottom: 1em;
     }

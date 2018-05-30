@@ -159,10 +159,10 @@ export default {
         },
         userDisplayName(user) {
             if(user.algo) {
-                return `${user.softwareName} (${user.size == undefined ? '0' : user.size}) (${user.username})`; 
+                return `${user.softwareName} (${user.size == undefined ? '0' : user.size}) (${user.username})`;
             } else if(user.lastname == undefined && user.firstname == undefined) {
                 return `${user.username} (${user.size == undefined ? '0' : user.size})`;
-            } 
+            }
             else {
                 return `${user.lastname} ${user.firstname} (${user.size == undefined ? '0' : user.size}) (${user.username})`;
             }
@@ -208,13 +208,13 @@ export default {
             let format = new WKT();
             let test = collection.map(element => {
                 let termsIntersection = intersection(this.termsToShow, element.term);
-                // Checks if element has no term && show annotations without terms is enabled 
+                // Checks if element has no term && show annotations without terms is enabled
                 // If false checks terms intersection
                 let isToShow = element.term.length == 0 && this.showWithNoTerm ? true : termsIntersection.length > 0;
-                if(isToShow) {  
+                if(isToShow) {
                     // Sets the color specified by api if annotation has only one term
                     let fillColor = termsIntersection.length == 1 ? hexToRgb(this.allTerms[this.termIndex(this.allTerms, termsIntersection[0])].color) : [204, 204, 204];
-                    
+
                     let feature = format.readFeature(element.location);
                     feature.setId(element.id);
                     feature.set('user', userId);
@@ -241,7 +241,7 @@ export default {
         },
         createVectorLayer(title, loader) {
             let layer = new LayerVector({
-                title,  
+                title,
                 source: new SrcVector({
                     strategy: loadingstrategy.bbox,
                     loader,
@@ -266,7 +266,7 @@ export default {
             // Removes layer from the map
             index = this.layerIndex(this.layersArray, toRemoveId);
             if(index < 0) return;
-            
+
             this.layersArray.splice(index, 1);
             this.$openlayers.getMap(this.currentMap.id).render();
         },
@@ -300,12 +300,12 @@ export default {
     mounted() {
         api.get(`/api/project/${this.currentMap.data.project}/userlayer.json?image=${this.currentMap.imageId}`).then(data => {
             this.userLayers = data.data.collection;
-            api.get(`/api/imageinstance/${this.currentMap.imageId}/annotationindex.json`).then(data => { 
-                data.data.collection.map(item => { 
-                    let index = this.userLayers.findIndex(user => item.user == user.id); 
-                    this.userLayers[index].size = item.countAnnotation; 
-                }) 
-                this.$emit('userLayers', this.userLayers); 
+            api.get(`/api/imageinstance/${this.currentMap.imageId}/annotationindex.json`).then(data => {
+                data.data.collection.map(item => {
+                    let index = this.userLayers.findIndex(user => item.user == user.id);
+                    this.userLayers[index].size = item.countAnnotation;
+                })
+                this.$emit('userLayers', this.userLayers);
                 api.get(`/api/project/${this.currentMap.data.project}/defaultlayer.json`).then(data => {
                     if(data.data.collection[0]) {
                         data.data.collection.map(layer => {
@@ -321,14 +321,14 @@ export default {
                         return layer;
                     })
                 })
-            }) 
+            })
             this.addLayer('review', 'reviewedLayer', false);
         })
     }
 }
 </script>
 
-<style>
+<style scoped>
     .display-inline-block {
         display: inline-block;
     }

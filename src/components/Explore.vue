@@ -117,7 +117,8 @@
                 <properties v-show="showComponent == 'properties'" :layersSelected="layersSelected"
                             :currentMap="currentMap"></properties>
                 <annotation-details @featureSelectedData="setFeatureSelectedData" :users="userLayers" :terms="allTerms"
-                                    :featureSelected="featureSelected" :currentMap="currentMap"></annotation-details>
+                                    :featureSelected="featureSelected" :currentMap="currentMap"
+                                    :currentUser="currentUser" :project="project"></annotation-details>
                 <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
                               @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
                               :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
@@ -206,6 +207,7 @@
             'currentRoute',
             'paddingTop',
             'project',
+            'currentUser',
         ],
         computed: {
             linkedTo() {
@@ -524,18 +526,20 @@
 
 </script>
 
-<style>
-    .map {
-        position: relative;
-        overflow: hidden;
-    }
-
+<style scoped>
     .controls {
         position: absolute;
         top: 1em;
         left: 1em;
         display: flex;
         flex-direction: column;
+    }
+</style>
+
+<style>
+    .map {
+        position: relative;
+        overflow: hidden;
     }
 
     .ol-zoom {

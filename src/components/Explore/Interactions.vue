@@ -606,7 +606,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
     .toolbar-annotations {
         display: flex;
         flex-wrap: wrap;
