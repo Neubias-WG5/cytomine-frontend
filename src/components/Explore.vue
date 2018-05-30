@@ -564,7 +564,7 @@
         position: absolute;
         bottom: 4em;
         left: 1em;
-        right: 1em;
+        margin-right: 1em;
         border: 1px solid rgb(240,240,240);
         overflow-y: auto;
     }
