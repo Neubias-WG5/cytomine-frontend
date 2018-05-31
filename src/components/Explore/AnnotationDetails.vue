@@ -49,18 +49,20 @@
         <section v-if="mustBeShown('project-explore-annotation-similarities')">
             <h4>Similarities</h4>
             <template v-if="isRetrievalActive">
-                <dl class="dl-horizontal">
-                    <ul v-if="suggestedTerms.length > 0">
-                        <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term" v-if="term > 0">
-                            <span class="glyphicon glyphicon-stop"
-                                  :style="`color: ${getTermColor(term)};`"></span>
-                                    {{displayTerm(term)}} ({{term.percentage}} %)
-                        </li>
-                    </ul>
-                    <div class="text-center">
-                        <button class="btn btn-default">See similar annotations</button>
-                    </div>
-                </dl>
+                <ol v-if="suggestedTerms.length > 0">
+                    <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id">
+                        <span class="glyphicon glyphicon-stop"
+                              :style="`color: ${getTermColor(term.id)};`"></span>
+                        {{displayTerm(term.id)}} ({{term.percentage}} %)
+                        <!--<div class="btn-group">-->
+                            <!--<button class="btn btn-default btn-xs">Add</button>-->
+                            <!--<button class="btn btn-default btn-xs">Replace</button>-->
+                        <!--</div>-->
+                    </li>
+                </ol>
+                <div class="text-center">
+                    <button class="btn btn-default">See similar annotations</button>
+                </div>
             </template>
             <template v-else>
                 Retrieval is disabled.
@@ -84,6 +86,7 @@
 <script>
     import humanDate from '../../helpers/humanDate'
     import mustBeShown from '../../helpers/mustBeShown'
+    import Axios from 'axios';
 
     export default {
         name: 'AnnotationDetails',
@@ -92,6 +95,7 @@
                 annotationIsClicked: false,
                 data: {},
                 suggestedTerms: [],
+                source: null,
             }
         },
         props: [
@@ -107,23 +111,43 @@
                 return this.findIndex(this.project.admins, this.currentUser.id) != -1
                     || (this.currentUser.id == this.data.user && !this.project.isReadOnly);
             },
-            isRetrievalActive() {
-                return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer;
-            }
         },
         watch: {
             featureSelected(newFeature, oldFeature) {
+                const CancelToken = Axios.CancelToken;
+
                 if (oldFeature === undefined || oldFeature.hasOwnProperty('id_')) {
                     this.annotationIsClicked = false;
+                    this.suggestedTerms = [];
+                    if (this.source) this.source.cancel();
                 }
                 if (newFeature !== undefined) {
                     api.get(`/api/annotation/${newFeature.getId()}.json`).then(data => {
                         this.data = data.data;
                         this.$emit('featureSelectedData', this.data);
                         this.annotationIsClicked = true;
+
+                        if (this.isRetrievalActive()) {
+                            this.source = CancelToken.source();
+                            // Very slow request, use a cancel token to kill it if annotation is changed before reception.
+                            api.get(`/api/annotation/${this.data.id}/retrieval.json`, {cancelToken: this.source.token}).then(data => {
+                                let sum = 0;
+                                data.data.term.forEach(term => {
+                                    sum += term.rate;
+                                });
+                                data.data.term.forEach(term => {
+                                    if (term.rate > 0) {
+                                        term.percentage = (term.rate / sum) * 100;
+                                        this.suggestedTerms.push(term);
+                                    }
+                                })
+                            })
+                        }
                     })
                 } else {
                     this.annotationIsClicked = false;
+                    this.suggestedTerms = [];
+                    if (this.source) this.source.cancel();
                 }
             }
         },
@@ -149,6 +173,9 @@
             mustBeShown(key) {
                 return mustBeShown(key, this.currentMap.projectConfig);
             },
+            isRetrievalActive() {
+                return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer;
+            },
             // showCommentModal(annotationId) {
             //     return window.app.controllers.annotation.share(annotationId)
             // }
@@ -168,5 +195,9 @@
     .thumbnail {
         margin-left: auto;
         margin-right: auto;
+    }
+
+    ol {
+        list-style-type: decimal;
     }
 </style>

@@ -148,7 +148,6 @@
             },
             cropURL(url) {
                 return `${url.substring(0, url.indexOf('?'))}?maxSize=90&alphaMask=true`
-
             }
         },
         created() {
