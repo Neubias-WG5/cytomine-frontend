@@ -157,7 +157,11 @@
             },
             displayName(userId) {
                 let index = this.findIndex(this.users, userId);
-                return `${this.users[index].lastname} ${this.users[index].firstname} (${this.users[index].username})`;
+                let user = this.users[index];
+                if (user.algo) {
+                    return `${user.softwareName} (${user.username})`;
+                }
+                return `${user.lastname} ${user.firstname} (${user.username})`;
             },
             displayTerm(termId) {
                 let index = this.findIndex(this.terms, termId);
