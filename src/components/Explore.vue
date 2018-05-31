@@ -97,7 +97,7 @@
                                        @layersSelected="setLayersSelected" @userLayers="setUserLayers"
                                        :layerToAdd="addLayer" :onlineUsers="onlineUsers" :isReviewing="isReviewing"
                                        :updateLayers="updateLayers" :termsToShow="termsToShow"
-                                       :showWithNoTerm="showWithNoTerm" :allTerms="allTerms"
+                                       :showWithNoTerm="showWithNoTerm" :allTerms="allTerms" :project="project"
                                        :currentMap="currentMap"></annotation-layers>
                     <ontology :currentMap="currentMap" :featureSelectedData="featureSelectedData"
                               :featureSelected="featureSelected" :vectorLayersOpacity="vectorLayersOpacity"
