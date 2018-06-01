@@ -13,11 +13,13 @@
                         :class="['btn', 'btn-default', {active: showComponent == 'informations' }]">
                     <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                 </button>
-                <button v-if="mustBeShown('project-explore-link') && this.maps.length > 1" @click="setShowComponent('linkmap')"
+                <button v-if="mustBeShown('project-explore-link') && this.maps.length > 1"
+                        @click="setShowComponent('linkmap')"
                         :class="['btn', 'btn-default', {active: showComponent == 'linkmap' }]">
                     <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
                 </button>
-                <button v-if="mustBeShown('project-explore-image-layers') && this.filters.length > 1" @click="setShowComponent('filter')"
+                <button v-if="mustBeShown('project-explore-image-layers') && this.filters.length > 1"
+                        @click="setShowComponent('filter')"
                         :class="['btn', 'btn-default', {active: showComponent == 'filter' }]">
                     <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
                 </button>
@@ -61,10 +63,14 @@
                             :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
             </div>
         </div>
-        <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '') || featureSelected != undefined"
-             class="panel component-panel"
-             :style="`max-height:${2*elementHeight/3}px;${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
+        <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '')"
+             class="panel component-panel component-panel-bottom"
+             :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
             <div class="panel-body">
+                <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
+                              @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
+                              :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
+
                 <div v-show="showComponent == 'linkmap' && mustBeShown('project-explore-link') && this.maps.length > 1">
                     <div class="alert alert-info">Choose a view to link with this one.</div>
                     <label :for="'link-'+currentMap.id">Link this view with </label>
@@ -72,14 +78,17 @@
                         <template v-if="index !== mapIndex">
                             <input v-model="linkValue" :value="map.id" @change="sendLink(map.id)" type="checkbox"
                                    :name="currentMap.id + map.id" :id="currentMap.id + map.id">
-                            <label :for="currentMap.id + map.id">{{ mapNames[index] }}  ({{instanceFilename(map.data)}})</label>
+                            <label :for="currentMap.id + map.id">{{ mapNames[index] }}
+                                ({{instanceFilename(map.data)}})</label>
                         </template>
                     </div>
                 </div>
+
                 <digital-zoom v-show="showComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
-                              :currentMap="currentMap">
-                </digital-zoom>
-                <div v-show="showComponent == 'filter' && mustBeShown('project-explore-image-layers') && this.filters.length > 1">
+                              :currentMap="currentMap"></digital-zoom>
+
+                <div
+                    v-show="showComponent == 'filter' && mustBeShown('project-explore-image-layers') && this.filters.length > 1">
                     <div class="alert alert-info">Choose a filter to apply</div>
                     <label :for="'original-filter-'+currentMap.id">Original</label>
                     <input v-model="filterSelected" type="radio" :name="'filter-original-'+currentMap.id"
@@ -90,8 +99,10 @@
                                :id="'filter-'+filter.id+'-'+currentMap.id" :value="filter">
                     </div>
                 </div>
+
                 <color-maps v-show="showComponent == 'colormap' && mustBeShown('project-explore-colormap')"
                             :currentMap="currentMap"></color-maps>
+
                 <div v-show="showComponent == 'annotationLayers'">
                     <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity"
                                        @layersSelected="setLayersSelected" @userLayers="setUserLayers"
@@ -104,30 +115,34 @@
                               @showTerms="showTerms" @showWithNoTerm="setShowWithNoTerm"
                               @allTerms="setAllTerms"></ontology>
                 </div>
+
+                <annotations v-show="showComponent == 'annotationList'"
+                             @updateAnnotationsIndex="setUpdateAnnotationsIndex"
+                             :updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing"
+                             :users="userLayers" :terms="allTerms" :currentMap="currentMap"></annotations>
+
                 <review v-if="isReviewing" v-show="showComponent == 'review'"
                         @updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers"
                         @featureSelectedData="setFeatureSelectedData" @updateMap="updateMap"
                         :layersSelected="layersSelected" :currentMap="currentMap"
                         :featureSelectedData="featureSelectedData" :featureSelected="featureSelected"
                         :userLayers="userLayers"></review>
+
                 <multidimension v-if="imageGroupIndex[0]" v-show="showComponent == 'multidimension'"
                                 @imageGroupHasChanged="setImageGroup" :imageGroupIndex="imageGroupIndex"
                                 :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @imageHasChanged="updateMap"
                                 :currentMap="currentMap"></multidimension>
+
                 <properties v-show="showComponent == 'properties'" :layersSelected="layersSelected"
                             :currentMap="currentMap"></properties>
-                <annotation-details @featureSelectedData="setFeatureSelectedData" :users="userLayers" :terms="allTerms"
-                                    :featureSelected="featureSelected" :currentMap="currentMap"
-                                    :currentUser="currentUser" :project="project"></annotation-details>
-                <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
-                              @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
-                              :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
-                <annotations v-show="showComponent == 'annotationList'"
-                             @updateAnnotationsIndex="setUpdateAnnotationsIndex"
-                             :updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing"
-                             :users="userLayers" :terms="allTerms" :currentMap="currentMap"></annotations>
             </div>
         </div>
+
+        <annotation-details v-show="featureSelected != undefined" @featureSelectedData="setFeatureSelectedData"
+                            :users="userLayers" :terms="allTerms"
+                            :featureSelected="featureSelected" :currentMap="currentMap" :currentUser="currentUser"
+                            :project="project" :element-height="elementHeight" :element-width="elementWidth">
+        </annotation-details>
     </div>
 </template>
 
@@ -195,6 +210,8 @@
                 addLayer: '',
                 zoom: 0,
                 maxZoom: 0,
+                innerWidth: 0,
+                innerHeight: 0,
             }
         },
         props: [
@@ -248,12 +265,6 @@
             },
             getCurrentZoom() {
                 return this.mapView.mapResolution;
-            },
-            innerHeight() {
-                return window.innerHeight;
-            },
-            innerWidth() {
-                return window.innerWidth;
             },
             fullHeight() {
                 return this.innerHeight - this.paddingTop
@@ -332,6 +343,12 @@
             },
         },
         methods: {
+            getWindowHeight(e) {
+                this.innerHeight = window.innerHeight
+            },
+            getWindowWidth(e) {
+                this.innerWidth = window.innerWidth
+            },
             // Sends view infos
             sendView(e) {
                 let payload = {
@@ -454,7 +471,16 @@
                 return image.instanceFilename
             },
         },
+        created() {
+            this.getWindowWidth();
+            this.getWindowHeight();
+        },
         mounted() {
+            this.$nextTick(function() {
+                window.addEventListener('resize', this.getWindowHeight);
+                window.addEventListener('resize', this.getWindowWidth);
+            });
+
             this.extent = [0, 0, this.mapWidth, this.mapHeight];
 
             // Init map
@@ -521,6 +547,10 @@
                 }
             })
 
+        },
+        beforeDestroy() {
+            window.removeEventListener('resize', this.getWindowHeight);
+            window.removeEventListener('resize', this.getWindowWidth);
         }
     }
 
@@ -561,11 +591,14 @@
     }
 
     .component-panel {
+        border: 1px solid rgb(240, 240, 240);
+        overflow-y: auto;
+    }
+
+    .component-panel .component-panel-bottom {
         position: absolute;
         bottom: 4em;
         left: 1em;
         margin-right: 1em;
-        border: 1px solid rgb(240,240,240);
-        overflow-y: auto;
     }
 </style>
