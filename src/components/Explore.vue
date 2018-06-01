@@ -595,7 +595,7 @@
         overflow-y: auto;
     }
 
-    .component-panel .component-panel-bottom {
+    .component-panel, .component-panel-bottom {
         position: absolute;
         bottom: 4em;
         left: 1em;
