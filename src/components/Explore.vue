@@ -593,10 +593,10 @@
     .component-panel {
         border: 1px solid rgb(240, 240, 240);
         overflow-y: auto;
+        position: absolute;
     }
 
-    .component-panel, .component-panel-bottom {
-        position: absolute;
+    .component-panel-bottom {
         bottom: 4em;
         left: 1em;
         margin-right: 1em;

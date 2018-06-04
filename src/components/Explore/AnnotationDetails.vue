@@ -1,5 +1,5 @@
 <template>
-    <vue-drag-resize :parentLimitation="true" :isResizable="false" :w="300" :h="300" :x="2 * this.elementWidth / 3" :y="15"
+    <vue-drag-resize :parentLimitation="true" :isResizable="false" :w="300" :h="300" :x="2 * this.elementWidth / 3" :y="150"
                      :isActive="this.focus" :parentW="this.elementWidth" :parentH="this.elementHeight"
                      @dragstop="setFocus(false)" @clicked="setFocus(true)">
         <div class="panel component-panel" :style="`height:300px;`">
