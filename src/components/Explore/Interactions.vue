@@ -88,25 +88,26 @@
             </div>
             <template v-if="featureSelected.getArray()[0]">
                 <div class="btn-group" role="group">
-                    <template v-if="mustBeShown('project-tools-fill')">
+                    <template v-if="mustBeShown('project-tools-fill') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'
+                    && featureSelected.getArray()[0].getGeometry().getType() != 'LineString' ">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Fill'}]"
                                 @click="addInteraction('Fill')">
                             Fill
                         </button>
                     </template>
-                    <template v-if="mustBeShown('project-tools-edit')">
+                    <template v-if="mustBeShown('project-tools-edit') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Edit'}]"
                                 @click="addInteraction('Edit')">
                             Edit
                         </button>
                     </template>
-                    <template v-if="mustBeShown('project-tools-rotate')">
+                    <template v-if="mustBeShown('project-tools-rotate') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rotate'}]"
                                 @click="addInteraction('Rotate')">
                             Rotate
                         </button>
                     </template>
-                    <!-- <template v-if="mustBeShown('project-tools-resize')"> TODO RESIZE
+                    <!-- <template v-if="mustBeShown('project-tools-resize') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'"> TODO RESIZE
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Resize'}]" @click="addInteraction('Resize')">
                             Resize
                         </button>
