@@ -369,9 +369,15 @@
                             let newCoordinates = this.getWktLocation(this.featureSelected.getArray()[0]);
                             api.get(`/api/annotation/${this.featureSelectedId}.json`).then(data => {
                                 data.data.location = newCoordinates;
-                                api.put(`/api/annotation/${this.featureSelectedId}.json`, data.data);
+                                api.put(`/api/annotation/${this.featureSelectedId}.json`, data.data)
+                                    .then(data => {
+                                        this.notification("Annotation updated", data.data.message, "success");
+                                    })
+                                    .catch(error => {
+                                        this.notification("Cannot update annotation", error.response.data.errors, "error");
+                                    })
                             })
-                        })
+                        });
                         this.draw.activeTool = 'Edit';
                         return;
                         break;
@@ -390,10 +396,14 @@
 
                         this.layersArray[layerIndex].getSource().removeFeature(this.layersArray[layerIndex].getSource().getFeatures()[featureIndex]);
 
-                        api.delete(`/api/annotation/${this.featureSelectedId}.json`).then(() => {
-                            this.featureSelected.getArray().splice(0, 1);
-                            this.$emit('updateAnnotationsIndex', true);
-                            this.addInteraction('Select');
+                        api.delete(`/api/annotation/${this.featureSelectedId}.json`)
+                            .then(data => {
+                                this.notification("Annotation deleted", data.data.message, "success");
+                                this.featureSelected.getArray().splice(0, 1);
+                                this.$emit('updateAnnotationsIndex', true);
+                                this.addInteraction('Select');
+                            }).catch(error => {
+                                this.notification("Cannot delete annotation", error.response.data.errors, "error");
                         });
                         return;
                         break;
@@ -413,6 +423,9 @@
                             let featureIndex = this.layersArray[layerIndex].getSource().getFeatures().findIndex(feature => feature.getId() == this.featureSelectedId)
 
                             this.layersArray[layerIndex].getSource().getFeatures()[featureIndex].getGeometry().setCoordinates([newCoordinates]);
+                            this.notification("Annotation updated", data.data.message, "success");
+                        }).catch(error => {
+                            this.notification("Cannot update annotation", error.response.data.errors, "error");
                         });
                         this.addInteraction('Select');
                         return;
@@ -425,7 +438,13 @@
                             let newCoordinates = this.getWktLocation(this.featureSelected.getArray()[0]);
                             api.get(`/api/annotation/${this.featureSelectedId}.json`).then(data => {
                                 data.data.location = newCoordinates;
-                                api.put(`api/annotation/${this.featureSelectedId}.json`, data.data);
+                                api.put(`api/annotation/${this.featureSelectedId}.json`, data.data)
+                                    .then(data => {
+                                        this.notification("Annotation updated", data.data.message, "success");
+                                    })
+                                    .catch(error => {
+                                        this.notification("Cannot update annotation", error.response.data.errors, "error");
+                                    })
                             })
                         });
                         currentMap.addInteraction(this.draw.interaction);
@@ -538,9 +557,12 @@
                             remove,
                             review: this.isReviewing,
                         }).then(data => {
+                            this.notification("Annotation corrected", data.data.message, "success");
                             this.$emit('updateLayers', true);
                             this.$emit('updateAnnotationsIndex', true);
                             this.selectFeature(data.data.annotation);
+                        }).catch(error => {
+                            this.notification("Cannot correct annotation", error.response.data.errors, "error");
                         })
                     })
                 } else if (interactionType == 'Ruler') {
@@ -585,9 +607,12 @@
                             term: [],
                             user: this.currentMap.user.id,
                         }).then((data) => {
+                            this.notification("Annotation added", data.data.message, "success");
                             this.$emit('updateAnnotationsIndex', true);
                             this.$emit('updateLayers', true);
                             this.selectFeature(data.data.annotation);
+                        }).catch(error => {
+                            this.notification("Cannot add annotation", error.response.data.errors, "error");
                         })
                     })
                 }
@@ -613,7 +638,12 @@
                         this.featureSelected.push(feature);
                     }
                 }, 100)
-            }
+            },
+            notification(title, message, type, timer) {
+                // Depends on [BACKBONE]
+                console.log("message" + message);
+                window.app.view.message(title, message, type, timer);
+            },
         },
         mounted() {
             let interval = setInterval(() => {
