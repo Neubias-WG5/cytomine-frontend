@@ -76,6 +76,7 @@
             'onlineUsers',
             'layerToAdd',
             'project',
+            'updateAnnotationsIndex'
         ],
         data() {
             return {
@@ -140,7 +141,7 @@
                 });
             },
             vectorLayersOpacity(newValue) {
-                this.$emit('vectorLayersOpacity', newValue)
+                this.$emit('vectorLayersOpacity', newValue);
                 this.layersArray.map(layer => {
                     if (layer.getType() === "VECTOR") {
                         layer.setOpacity(newValue);
@@ -154,9 +155,9 @@
                         this.addLayer(this.reviewedLayer.get('title'), 'reviewedLayer', false)
                     }
                     this.layersSelected.map(layer => {
-                        this.removeLayer(layer.id, false)
+                        this.removeLayer(layer.id, false);
                         this.addLayer(layer, 'userLayer', false)
-                    })
+                    });
                     this.$emit('updateLayers', false);
                 }
             },
@@ -165,6 +166,12 @@
             },
             layerToAdd(newValue) {
                 this.addLayer({id: newValue}, 'userLayer');
+            },
+            updateAnnotationsIndex(newValue) {
+                if (newValue == true) {
+                    this.refreshAnnotationsIndex();
+                    this.$emit('updateAnnotationsIndex', false);
+                }
             }
         },
         methods: {
@@ -179,8 +186,7 @@
                     return `${user.softwareName} (${user.username}) (${user.size == undefined ? '0' : user.size})`;
                 } else if (user.lastname == undefined && user.firstname == undefined) {
                     return `(${user.username}) (${user.size == undefined ? '0' : user.size})`;
-                }
-                else {
+                } else {
                     return `${user.lastname} ${user.firstname} (${user.username}) (${user.size == undefined ? '0' : user.size})`;
                 }
             },
@@ -251,10 +257,10 @@
                                 width: 3,
                             }),
                             image: pointStyle(fillColor, strokeColor),
-                        }))
+                        }));
                         return feature;
                     }
-                })
+                });
                 return compact(test);
             },
             createVectorLayer(title, loader) {
@@ -265,7 +271,7 @@
                         loader,
                     }),
                     extent: this.extent,
-                })
+                });
                 layer.setOpacity(this.vectorLayersOpacity);
                 this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
                 return layer;
@@ -324,6 +330,21 @@
                 let index = this.onlineUsers.findIndex(user => user.id == userId);
                 return index > 0 ? false : true;
             },
+            refreshAnnotationsIndex() {
+                api.get(`/api/imageinstance/${this.currentMap.imageId}/annotationindex.json`).then(data => {
+                    data.data.collection.map(item => {
+                        let index = this.userLayers.findIndex(user => item.user == user.id);
+                        this.userLayers[index].size = item.countAnnotation;
+                    });
+
+                    this.layersSelected.map((layer, index) => {
+                        let userLayer = this.userLayers.find(item => layer.id == item.id);
+                        layer.size = this.userLayers[index].size;
+                        this.$set(this.layersSelected, index, layer);
+                        return layer;
+                    })
+                })
+            },
         },
         mounted() {
             api.get(`/api/project/${this.currentMap.data.project}/userlayer.json?image=${this.currentMap.imageId}`).then(data => {
@@ -332,7 +353,7 @@
                     data.data.collection.map(item => {
                         let index = this.userLayers.findIndex(user => item.user == user.id);
                         this.userLayers[index].size = item.countAnnotation;
-                    })
+                    });
                     this.$emit('userLayers', this.userLayers);
                     api.get(`/api/project/${this.currentMap.data.project}/defaultlayer.json`).then(data => {
                         if (data.data.collection[0]) {
@@ -343,13 +364,14 @@
                         } else {
                             this.addLayer(this.currentMap.user, 'userLayer');
                         }
-                        this.layersSelected.map(layer => {
-                            let index = this.userLayers.findIndex(item => layer.id == item.id);
+                        this.layersSelected.map((layer, index) => {
+                            let userLayer = this.userLayers.find(item => layer.id == item.id);
                             layer.size = this.userLayers[index].size;
+                            this.$set(this.layersSelected, index, layer);
                             return layer;
                         })
                     })
-                })
+                });
                 this.addLayer('review', 'reviewedLayer', false);
             })
         }

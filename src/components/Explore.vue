@@ -6,7 +6,8 @@
         <div class="controls" :id="'controls-'+currentMap.id"></div>
         <interactions v-show="this.lastEventMapId == this.currentMap.id" @updateLayers="setUpdateLayers"
                       @featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"
-                      :vectorLayersOpacity="vectorLayersOpacity"></interactions>
+                      @updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity">
+        </interactions>
         <div>
             <div v-show="this.lastEventMapId == this.currentMap.id" class="bottom-panel btn-group" role="group">
                 <button v-if="mustBeShown('project-explore-info')" @click="setShowComponent('informations')"
@@ -106,8 +107,10 @@
                 <div v-show="showComponent == 'annotationLayers'">
                     <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity"
                                        @layersSelected="setLayersSelected" @userLayers="setUserLayers"
+                                       @updateAnnotationsIndex="setUpdateAnnotationsIndex"
                                        :layerToAdd="addLayer" :onlineUsers="onlineUsers" :isReviewing="isReviewing"
-                                       :updateLayers="updateLayers" :termsToShow="termsToShow"
+                                       :updateLayers="updateLayers" :updateAnnotationsIndex="updateAnnotationsIndex"
+                                       :termsToShow="termsToShow"
                                        :showWithNoTerm="showWithNoTerm" :allTerms="allTerms" :project="project"
                                        :currentMap="currentMap"></annotation-layers>
                     <ontology :currentMap="currentMap" :featureSelectedData="featureSelectedData"
