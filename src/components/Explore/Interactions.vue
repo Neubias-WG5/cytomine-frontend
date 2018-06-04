@@ -238,6 +238,12 @@
             },
             getWktLocation(feature) {
                 let format = new WKT();
+
+                // Transform circle to circular polygon
+                let geometry = feature.getGeometry();
+                if (geometry.getType() == 'Circle') {
+                    feature.setGeometry(Polygon.fromCircle(geometry));
+                }
                 return format.writeFeature(feature);
             },
             /**
@@ -328,6 +334,11 @@
 
                                 newCoordinates.push([xPos, yPos]);
                             }
+
+                            // Last coordinate must be identical to first one.
+                            newCoordinates.pop();
+                            newCoordinates.push(newCoordinates[0]);
+
                             geometry.setCoordinates([newCoordinates]);
                             return geometry;
                         };
