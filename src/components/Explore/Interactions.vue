@@ -386,6 +386,19 @@
                         this.draw.interaction = new Translate({
                             features: this.featureSelected,
                         });
+                        this.draw.interaction.on('translateend', evt => {
+                            let newCoordinates = this.getWktLocation(this.featureSelected.getArray()[0]);
+                            api.get(`/api/annotation/${this.featureSelectedId}.json`).then(data => {
+                                data.data.location = newCoordinates;
+                                api.put(`api/annotation/${this.featureSelectedId}.json`, data.data)
+                                    .then(data => {
+                                        this.notification("Annotation updated", data.data.message, "success");
+                                    })
+                                    .catch(error => {
+                                        this.notification("Cannot update annotation", error.response.data.errors, "error");
+                                    })
+                            })
+                        });
                         currentMap.addInteraction(this.draw.interaction);
                         this.draw.activeTool = 'Drag';
                         return;
