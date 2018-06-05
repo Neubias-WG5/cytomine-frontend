@@ -19,6 +19,7 @@
                 <template v-if="mustBeShown('project-tools-line')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Line'}]"
                             @click="addInteraction('Line')">
+                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                         Line
                     </button>
                 </template>
@@ -32,6 +33,7 @@
                 <template v-if="mustBeShown('project-tools-rectangle')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rectangle'}]"
                             @click="addInteraction('Rectangle')">
+                        <span class="glyphicon glyphicon-stop"></span>
                         Rectangle
                     </button>
                 </template>
@@ -50,6 +52,7 @@
                 <template v-if="mustBeShown('project-tools-polygon')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Polygon'}]"
                             @click="addInteraction('Polygon')">
+                        <span class="glyphicon glyphicon-play"></span>
                         Polygon
                     </button>
                 </template>
@@ -98,17 +101,20 @@
                     <template v-if="mustBeShown('project-tools-edit') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Edit'}]"
                                 @click="addInteraction('Edit')">
+                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                             Edit
                         </button>
                     </template>
                     <template v-if="mustBeShown('project-tools-rotate') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rotate'}]"
                                 @click="addInteraction('Rotate')">
+                            <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
                             Rotate
                         </button>
                     </template>
                     <!-- <template v-if="mustBeShown('project-tools-resize') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'"> TODO RESIZE
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Resize'}]" @click="addInteraction('Resize')">
+                            <span class="glyphicon glyphicon-resize-full"></span>
                             Resize
                         </button>
                     </template> -->
