@@ -1,19 +1,11 @@
 <template>
     <div>
         <div v-if="maps.length < maxMapsToShow">
-            <template v-if="imageGroupIndex[0]">
-                <select class="btn" v-model.number="imageGroupToAdd" name="image-groups" id="image-groups">
-                    <option value="">Select an imagegroup</option>
-                    <option v-for="imageGroup in imageGroupIndex" :key="imageGroup.id" :value="imageGroup.id">
-                        {{imageGroup.name}}
-                    </option>
-                </select>
-                <button class="btn" @click="addImageGroup()">Add image group</button>
-            </template>
             <template>
                 <select class="btn" v-model.number="imageToAdd" name="images" id="images">
                     <option value="">Select an image to add</option>
-                    <option v-for="image in images" :key="image.id" :value="image.id">{{getInstanceFilename(image)}}
+                    <option v-for="image in images" :key="image.id" :value="image.id">
+                        {{getInstanceFilename(image)}}
                     </option>
                 </select>
                 <button class="btn" @click="addMap(imageToAdd)">Add a view</button>
@@ -25,7 +17,7 @@
             <explore v-for="map in maps" :currentRoute="currentRoute" :key="map.id" @updateMap="updateMap"
                      @dragged="setMap" @mapIsLinked="linkMaps" @deleteMap="deleteMap"
                      @updateOverviewMap="updateOverviewMap" :mapView="mapView" :maps='maps' :currentMap="map"
-                     :lastEventMapId="lastEventMapId" :filters="filters" :imageGroupIndex="imageGroupIndex"
+                     :lastEventMapId="lastEventMapId" :filters="filters" :imageGroups="imageGroups"
                      :padding-top="paddingTop" :project="project" :currentUser="currentUser"></explore>
         </div>
     </div>
@@ -45,7 +37,6 @@
         },
         data() {
             return {
-                projectConfig: {},
                 mapView: {
                     mapCenter: [0, 0],
                     mapZoom: 2,
@@ -54,16 +45,16 @@
                 maxMapsToShow: 4,
                 maps: [],
                 lastEventMapId: null,
-                project: {},
-                images: [],
                 imageToAdd: "",
-                imageGroupToAdd: "",
+
+                project: {},
+                projectConfig: {},
+                images: [],
                 filters: [],
-                imageGroupIndex: [],
-                imageSequences: [],
-                baseSequence: {},
+                imageGroups: [],
                 onlineUsers: [],
                 currentUser: {},
+
                 currentRoute: '',
                 paddingTop: 50 + 42 + 34,
             }
@@ -116,24 +107,16 @@
                     this.maps[index].linkedTo.push(payload.sender);
                 }
             },
-            addMap(imageId = this.imageToAdd, imageGroup = "", id = uuid()) {
+            addMap(imageId = this.imageToAdd, id = uuid()) {
                 if (this.maps.length < this.maxMapsToShow && imageId !== "") {
                     this.maps.push({
                         id,
                         imageId,
                         linkedTo: [],
-                        imageGroup,
+                        imageGroup: "",
                         projectConfig: this.projectConfig,
                         user: this.currentUser,
                         data: this.images[this.imageIndex(imageId)]
-                    })
-                }
-            },
-            addImageGroup() {
-                if (this.imageGroupToAdd !== "") {
-                    api.get(`/api/imagegroup/${this.imageGroupToAdd}/imagesequence.json`).then(data => {
-                        this.imageSequences = data.data.collection;
-                        this.addMap(this.imageSequences[0].image, this.imageGroupToAdd);
                     })
                 }
             },
@@ -175,10 +158,6 @@
                 });
             });
 
-            api.get(`api/project/${this.projectId}/imagegroup.json`).then(data => {
-                this.imageGroupIndex = data.data.collection;
-            });
-
             api.get(`/custom-ui/config.json?project=${this.projectId}`).then(data => {
                 this.projectConfig = data.data;
                 api.get(`api/project/${this.projectId}/imageinstance.json`).then(data => {
@@ -187,25 +166,17 @@
                     this.images = data.data.collection;
                     api.get(`api/user/current.json`).then(data => {
                         this.currentUser = data.data;
-                        if (this.imageGroupIndex[0]) {
-                            api.get(`/api/imageinstance/${this.baseImage}/imagesequence.json`).then(resp => {
-                                this.baseSequence = resp.data.collection[0];
-                                if (this.baseSequence) {
-                                    this.addMap(this.baseImage, this.baseSequence.imageGroup, id);
-                                } else {
-                                    this.addMap(this.baseImage, "", id);
-                                }
-                            })
-                        } else {
-                            this.addMap(this.baseImage, "", id);
-                        }
+                        this.addMap(this.baseImage, id);
                     })
                 })
             });
 
-
             api.get(`api/project/${this.projectId}/imagefilterproject.json`).then(data => {
                 this.filters = data.data.collection;
+            });
+
+            api.get(`api/project/${this.projectId}/imagegroup.json`).then(data => {
+                this.imageGroups = data.data.collection;
             });
 
             api.get(`/api/project/${this.projectId}/online/user.json`).then(data => {

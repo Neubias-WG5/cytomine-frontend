@@ -23,7 +23,8 @@
     "vue": "^2.5.11",
     "vue-drag-resize": "^1.2.3",
     "vue-draggable-resizable": "^1.7.1",
-    "vue-popperjs": "^1.2.5"
+    "vue-popperjs": "^1.2.5",
+    "vue-slider-component": "^2.7.1"
   },
   "browserslist": [
     "> 1%",

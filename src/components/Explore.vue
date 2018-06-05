@@ -42,7 +42,7 @@
                     <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
                     Annotation list
                 </button>
-                <button v-if="imageGroupIndex[0]" @click="setShowComponent('multidimension')"
+                <button v-if="imageGroups[0]" @click="setShowComponent('multidimension')"
                         :class="['btn', 'btn-default', {active: showComponent == 'multidimension' }]">
                     Multidimension
                 </button>
@@ -66,10 +66,10 @@
         </div>
         <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '')"
              class="panel component-panel component-panel-bottom"
-             :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:90%;' :  ''}`">
+             :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:50%;' :  ''}`">
             <div class="panel-body">
                 <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
-                              @updateMap="updateMap" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
+                              @changeImage="changeImage" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
                               :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
 
                 <div v-show="showComponent == 'linkmap' && mustBeShown('project-explore-link') && this.maps.length > 1">
@@ -126,14 +126,14 @@
 
                 <review v-if="isReviewing" v-show="showComponent == 'review'"
                         @updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers"
-                        @featureSelectedData="setFeatureSelectedData" @updateMap="updateMap"
+                        @featureSelectedData="setFeatureSelectedData" @changeImage="changeImage"
                         :layersSelected="layersSelected" :currentMap="currentMap"
                         :featureSelectedData="featureSelectedData" :featureSelected="featureSelected"
                         :userLayers="userLayers"></review>
 
-                <multidimension v-if="imageGroupIndex[0]" v-show="showComponent == 'multidimension'"
-                                @imageGroupHasChanged="setImageGroup" :imageGroupIndex="imageGroupIndex"
-                                :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @imageHasChanged="updateMap"
+                <multidimension v-if="imageGroups[0]" v-show="showComponent == 'multidimension'"
+                                @imageGroupHasChanged="setImageGroup" :imageGroups="imageGroups"
+                                :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @changeImage="changeImage"
                                 :currentMap="currentMap"></multidimension>
 
                 <properties v-show="showComponent == 'properties'" :layersSelected="layersSelected"
@@ -166,6 +166,7 @@
 
     import OlTile from 'ol/layer/tile';
     import Zoomify from 'ol/source/zoomify';
+    import Group from 'ol/layer/group';
     import ZoomControls from 'ol/control/zoom';
     import RotateControls from 'ol/control/rotate';
     import WKT from 'ol/format/wkt';
@@ -223,7 +224,7 @@
             'currentMap',
             'lastEventMapId',
             'filters',
-            'imageGroupIndex',
+            'imageGroups',
             'currentRoute',
             'paddingTop',
             'project',
@@ -434,11 +435,22 @@
             setLayersSelected(payload) {
                 this.layersSelected = payload;
             },
-            updateMap(payload) {
+            changeImage(payload) {
                 api.get(`/api/abstractimage/${payload.baseImage}/imageservers.json?&imageinstance=${payload.id}`).then(data => {
                     this.imsBaseUrl = data.data.imageServersURLs[0];
                     this.$emit('updateMap', {old: this.currentMap, new: payload});
-                })
+
+                    this.extent = [0, 0, this.mapWidth, this.mapHeight];
+                    let layer = new OlTile({
+                        source: new Zoomify({
+                            url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                            size: [this.mapWidth, this.mapHeight],
+                            extent: this.extent,
+                        }),
+                        extent: this.extent,
+                    });
+                    this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
+                });
             },
             setVectorLayersOpacity(payload) {
                 this.vectorLayersOpacity = payload;
@@ -508,7 +520,7 @@
                     extent: this.extent,
                 },
             });
-            api.get(`/api/abstractimage/${this.currentMap.data.baseImage}/imageservers.json?&imageinstance=${this.currentMap.imageId}`).then(data => {
+            api.get(`/api/abstractimage/${this.currentMap.data.baseImage}/imageservers.json`).then(data => {
                 this.imsBaseUrl = data.data.imageServersURLs[0];
                 // Adds layer
                 let layer = new OlTile({
@@ -542,7 +554,7 @@
                     api.put(`/api/imageinstance/${this.currentMap.imageId}/review.json`, {
                         id: this.currentMap.imageId,
                     }).then(data => {
-                        this.updateMap(data.data.imageinstance)
+                        this.changeImage(data.data.imageinstance)
                     })
                 }
                 if (this.centeredFeature != '' && this.centeredFeature != this.currentMap.data.project) {
