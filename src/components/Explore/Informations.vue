@@ -1,30 +1,45 @@
 <template>
     <div style="min-height: 300px">
         <div class="text-center">
-            <div class="btn-group">
-                <a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`" class="btn btn-info">Explore</a>
-                <button class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
-                        aria-expanded="false">
-                    <span class="caret"></span>
-                    <span class="sr-only">Toggle dropdown</span>
+            <div class="btn-group mt-4">
+                <div class="alert alert-warning" v-if="adjacentImageError != ''"><strong>Warning!</strong>
+                    {{adjacentImageError}}
+                </div>
+                <button class="btn btn-default" @click="setAdjacentImage('previous')">
+                    <span class="glyphicon glyphicon-chevron-left"></span>
+                    Previous image
                 </button>
-                <ul class="dropdown-menu text-left">
-                    <li><a @click="reviewMode"
-                           :href="`#tabs-review-${this.currentMap.data.project}-${this.currentMap.imageId}-`">Review</a>
-                    </li>
-                    <li><a :href="`#tabs-reviewdash-${currentMap.data.project}-${currentMap.imageId}-null-null`">Review
-                        (Cyto)</a></li>
-                    <li><a @click="validateImage" href="#">Validate image</a></li>
-                    <li><a href="#">Copy image and annotations</a></li>
-                    <li><a href="#">Import user annotations</a></li>
-                    <li><a href="#">Description</a></li>
-                    <li><a :href="`/api/imageinstance/${currentMap.imageId}/download`">Download</a></li>
-                    <li><a href="#">Rename</a></li>
-                    <li><a href="#">Delete</a></li>
-                    <li><a href="#">More info</a></li>
-                </ul>
+                <button class="btn btn-default" @click="setAdjacentImage('next')">
+                    Next image
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </button>
             </div>
         </div>
+        <!--<div class="text-center">-->
+            <!--<div class="btn-group">-->
+                <!--<a :href="`#tabs-image-${currentMap.data.project}-${currentMap.imageId}-0`" class="btn btn-info">Explore</a>-->
+                <!--<button class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"-->
+                        <!--aria-expanded="false">-->
+                    <!--<span class="caret"></span>-->
+                    <!--<span class="sr-only">Toggle dropdown</span>-->
+                <!--</button>-->
+                <!--<ul class="dropdown-menu text-left">-->
+                    <!--<li><a @click="reviewMode"-->
+                           <!--:href="`#tabs-review-${this.currentMap.data.project}-${this.currentMap.imageId}-`">Review</a>-->
+                    <!--</li>-->
+                    <!--<li><a :href="`#tabs-reviewdash-${currentMap.data.project}-${currentMap.imageId}-null-null`">Review-->
+                        <!--(Cyto)</a></li>-->
+                    <!--<li><a @click="validateImage" href="#">Validate image</a></li>-->
+                    <!--<li><a href="#">Copy image and annotations</a></li>-->
+                    <!--<li><a href="#">Import user annotations</a></li>-->
+                    <!--<li><a href="#">Description</a></li>-->
+                    <!--<li><a :href="`/api/imageinstance/${currentMap.imageId}/download`">Download</a></li>-->
+                    <!--<li><a href="#">Rename</a></li>-->
+                    <!--<li><a href="#">Delete</a></li>-->
+                    <!--<li><a href="#">More info</a></li>-->
+                <!--</ul>-->
+            <!--</div>-->
+        <!--</div>-->
         <dl class="mt-4 dl-horizontal">
             <dt>Name</dt>
             <dd>{{instanceFilename}}</dd>
@@ -45,21 +60,6 @@
             <dd v-else-if="currentMap.data.inReview"><span class="label label-warning">In review</span></dd>
             <dd v-else><span class="label label-info">Not reviewed</span></dd>
         </dl>
-        <div class="text-center">
-            <div class="btn-group mt-4">
-                <div class="alert alert-warning" v-if="adjacentImageError != ''"><strong>Warning!</strong>
-                    {{adjacentImageError}}
-                </div>
-                <button class="btn btn-default" @click="setAdjacentImage('previous')">
-                    <span class="glyphicon glyphicon-chevron-left"></span>
-                    Previous image
-                </button>
-                <button class="btn btn-default" @click="setAdjacentImage('next')">
-                    Next image
-                    <span class="glyphicon glyphicon-chevron-right"></span>
-                </button>
-            </div>
-        </div>
     </div>
 </template>
 
@@ -124,23 +124,23 @@
                     this.adjacentImage = data.data;
                     api.get(`/api/abstractimage/${this.adjacentImage.baseImage}/imageservers.json?&imageinstance=${this.adjacentImage.id}`).then(data => {
                         this.$emit('updateImsServer', data.data.imageServersURLs[0]);
-                        this.changeImage(data.data.imageServersURLs[0]);
+                        this.$emit('changeImage', this.adjacentImage);
                     })
                 })
             },
-            changeImage(imsBaseUrl) {
-                let layer = new OlTile({
-                    source: new Zoomify({
-                        url: `${this.filterUrl}${imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.adjacentImage.mime}`,
-                        size: [this.adjacentImage.width, this.adjacentImage.height],
-                        extent: [0, 0, this.adjacentImage.width, this.adjacentImage.height],
-                    }),
-                    extent: [0, 0, this.adjacentImage.width, this.adjacentImage.height],
-                })
-
-                this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
-                this.$emit('updateOverviewMap');
-            },
+            // changeImage(imsBaseUrl) {
+            //     let layer = new OlTile({
+            //         source: new Zoomify({
+            //             url: `${this.filterUrl}${imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.adjacentImage.mime}`,
+            //             size: [this.adjacentImage.width, this.adjacentImage.height],
+            //             extent: [0, 0, this.adjacentImage.width, this.adjacentImage.height],
+            //         }),
+            //         extent: [0, 0, this.adjacentImage.width, this.adjacentImage.height],
+            //     })
+            //
+            //     this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
+            //     this.$emit('updateOverviewMap');
+            // },
         },
     }
 </script>

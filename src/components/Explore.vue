@@ -438,6 +438,8 @@
             changeImage(payload) {
                 api.get(`/api/abstractimage/${payload.baseImage}/imageservers.json?&imageinstance=${payload.id}`).then(data => {
                     this.imsBaseUrl = data.data.imageServersURLs[0];
+
+                    let reset = this.currentMap.data.width != payload.width || this.currentMap.data.height != payload.height;
                     this.$emit('updateMap', {old: this.currentMap, new: payload});
 
                     this.extent = [0, 0, this.mapWidth, this.mapHeight];
@@ -455,6 +457,15 @@
                     // this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
                     // oldLayers.forEach(layer => this.$openlayers.getMap(this.currentMap.id).removeLayer(layer));
                     this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
+
+                    this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
+                    this.maxZoom = this.$openlayers.getView(this.currentMap.id).getMaxZoom();
+                    if (reset) {
+                        this.$openlayers.getView(this.currentMap.id).setCenter([this.mapWidth / 2, this.mapHeight / 2]);
+                        this.$openlayers.getView(this.currentMap.id).setZoom(this.initZoom);
+                        this.$openlayers.getMap(this.currentMap.id).updateSize();
+                        this.zoom = this.$openlayers.getView(this.currentMap.id).getZoom();
+                    }
                 });
             },
             setVectorLayersOpacity(payload) {
