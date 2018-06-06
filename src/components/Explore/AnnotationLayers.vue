@@ -332,9 +332,9 @@
             },
             refreshAnnotationsIndex() {
                 api.get(`/api/imageinstance/${this.currentMap.imageId}/annotationindex.json`).then(data => {
-                    data.data.collection.map(item => {
-                        let index = this.userLayers.findIndex(user => item.user == user.id);
-                        this.userLayers[index].size = item.countAnnotation;
+                    this.userLayers.map((layer, index) => {
+                        let annotIndex = data.data.collection.find(index => layer.id === index.user);
+                        this.userLayers[index].size = (annotIndex) ? annotIndex.countAnnotation : 0;
                     });
 
                     this.layersSelected.map((layer, index) => {

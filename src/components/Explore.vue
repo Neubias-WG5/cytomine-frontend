@@ -467,6 +467,10 @@
 
                     this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
                     this.maxZoom = this.$openlayers.getView(this.currentMap.id).getMaxZoom();
+
+                    this.setUpdateLayers(true);
+                    this.setUpdateAnnotationsIndex(true);
+                    this.setFeatureSelected(undefined);
                 });
             },
             setVectorLayersOpacity(payload) {
