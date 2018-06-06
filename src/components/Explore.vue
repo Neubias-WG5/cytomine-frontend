@@ -66,7 +66,7 @@
         </div>
         <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '')"
              class="panel component-panel component-panel-bottom"
-             :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:50%;' :  ''}`">
+             :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:33%;' :  ''}`">
             <div class="panel-body">
                 <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
                               @changeImage="changeImage" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
@@ -449,6 +449,11 @@
                         }),
                         extent: this.extent,
                     });
+
+                    // Find a way to avoid "blank flashes" when image change at least for multidimensional images.
+                    // let oldLayers = this.$openlayers.getMap(this.currentMap.id).getLayers().getArray();
+                    // this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
+                    // oldLayers.forEach(layer => this.$openlayers.getMap(this.currentMap.id).removeLayer(layer));
                     this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
                 });
             },

@@ -13,47 +13,86 @@
             </select>
         </div>
         <template v-if="imageGroupSelected">
-            <div class="form-horizontal">
-                <div class="form-group" v-if="imageGroupSelected.channel.length > 1">
-                    <div class="col-xs-4 control-label">Channel (c)
-                        {{prettyPrintDimensions(imageGroupSelected.channel)}}
-                    </div>
-                    <div class="col-xs-1 control-label">
-                        <span class="label label-default">{{currentSequence.channel}}</span>
-                    </div>
-                    <div class="col-xs-7">
-                        <vue-slider v-model="sequenceSelected.channel" :piecewise="true" :piecewiseLabel="true"
-                                    tooltip="hover" tooltip-dir="left" :lazy="true"
-                                    :data="imageGroupSelected.channel"></vue-slider>
-                    </div>
-                </div>
-                <div class="form-group" v-if="imageGroupSelected.zStack.length > 1">
-                    <div class="col-xs-4 control-label">Slice (z) {{prettyPrintDimensions(imageGroupSelected.zStack)}}
-                    </div>
-                    <div class="col-xs-1 control-label">
-                        <span class="label label-default">{{currentSequence.zStack}}</span>
-                    </div>
-                    <div class="col-xs-7">
-                        <vue-slider v-model="sequenceSelected.zStack" :piecewise="true" :piecewiseLabel="true"
-                                    tooltip="hover" tooltip-dir="left" :lazy="true"
-                                    :data="imageGroupSelected.zStack"></vue-slider>
-                    </div>
-                </div>
-                <div class="form-group" v-if="imageGroupSelected.time.length > 1">
-                    <div class="col-xs-4 control-label">Time frame (t)
-                        {{prettyPrintDimensions(imageGroupSelected.time)}}
-                    </div>
-                    <div class="col-xs-1 control-label">
-                        <span class="label label-default">{{currentSequence.time}}</span>
-                    </div>
-                    <div class="col-xs-7">
-                        <vue-slider v-model="sequenceSelected.time" :piecewise="true" :piecewiseLabel="true"
-                                    tooltip="hover" tooltip-dir="left" :lazy="true"
-                                    :data="imageGroupSelected.time"></vue-slider>
-                    </div>
-                </div>
+            <div>
+                <dl>
+                    <template v-if="imageGroupSelected.channel && imageGroupSelected.channel.length > 1">
+                        <dt>Channel (c)
+                            {{prettyPrintDimensions(imageGroupSelected.channel)}} </dt>
+                        <dd>
+                            <div style="width: 100px;" class="pull-left">
+                                <span class="label label-default">{{currentSequence.channel}}</span>
+                                <div class="pull-right">
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentChannel(1)" :disabled="currentSequence.channel === imageGroupSelected.channel.length - 1">+</button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentChannel(-1)" :disabled="currentSequence.channel === 0">-</button>
+                                </div>
+                            </div>
+                            <div style="width: calc(100% - 110px);" class="pull-right">
+                                <vue-slider v-model="sequenceSelected.channel" :piecewise="true" :piecewiseLabel="true"
+                                            tooltip="hover" tooltip-dir="left" :lazy="true"
+                                            :data="imageGroupSelected.channel" ref="channelslider">
+                                    <template slot="label" slot-scope="{ label, active }">
+                              <span :class="['vue-slider-piecewise-label', { active }]"
+                                    v-if="showLabel(label, imageGroupSelected.channel)">
+                                {{ label }}
+                              </span>
+                                    </template>
+                                </vue-slider>
+                            </div>
+                        </dd>
+                    </template>
+                    <template v-if="imageGroupSelected.zStack && imageGroupSelected.zStack.length > 1">
+                        <dt>Slice (z)
+                            {{prettyPrintDimensions(imageGroupSelected.zStack)}}</dt>
+                        <dd>
+                            <div style="width: 100px;" class="pull-left">
+                                <span class="label label-default">{{currentSequence.zStack}}</span>
+                                <div class="pull-right">
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentZstack(1)" :disabled="currentSequence.zStack === imageGroupSelected.zStack.length - 1">+</button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentZstack(-1)" :disabled="currentSequence.zStack === 0">-</button>
+                                </div>
+                            </div>
+                            <div style="width: calc(100% - 110px);" class="pull-right">
+                                <vue-slider v-model="sequenceSelected.zStack" :piecewise="true" :piecewiseLabel="true"
+                                            tooltip="hover" tooltip-dir="left" :lazy="true"
+                                            :data="imageGroupSelected.zStack" ref="zstackslider">
+                                    <template slot="label" slot-scope="{ label, active }">
+                              <span :class="['vue-slider-piecewise-label', { active }]"
+                                    v-if="showLabel(label, imageGroupSelected.zStack)">
+                                {{ label }}
+                              </span>
+                                    </template>
+                                </vue-slider>
+                            </div>
+                        </dd>
+                    </template>
+                    <template v-if="imageGroupSelected.time && imageGroupSelected.time.length > 1">
+                        <dt>Time (t)
+                            {{prettyPrintDimensions(imageGroupSelected.time)}}</dt>
+                        <dd>
+                            <div style="width: 100px;" class="pull-left">
+                                <span class="label label-default">{{currentSequence.time}}</span>
+                                <div class="pull-right">
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentTime(1)" :disabled="currentSequence.time === imageGroupSelected.time.length - 1">+</button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentTime(-1)" :disabled="currentSequence.time === 0">-</button>
+                                </div>
+                            </div>
+                            <div style="width: calc(100% - 110px);" class="pull-right">
+                                <vue-slider v-model="sequenceSelected.time" :piecewise="true" :piecewiseLabel="true"
+                                            tooltip="hover" tooltip-dir="left" :lazy="true"
+                                            :data="imageGroupSelected.time" ref="timeslider">
+                                    <template slot="label" slot-scope="{ label, active }">
+                              <span :class="['vue-slider-piecewise-label', { active }]"
+                                    v-if="showLabel(label, imageGroupSelected.time)">
+                                {{ label }}
+                              </span>
+                                    </template>
+                                </vue-slider>
+                            </div>
+                        </dd>
+                    </template>
+                </dl>
             </div>
-
+            <div style="clear: both;"></div>
             <overlay :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"
                      :imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>
             <spectra :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"></spectra>
@@ -166,7 +205,27 @@
                 else
                     result += "]";
                 return result;
-            }
+            },
+            showLabel(label, array) {
+                let length = array.length;
+                if (label === array[0] || label === array[length - 1] || length <= 10)
+                    return true;
+                else {
+                    return label % parseInt(length / 10) === 0;
+                }
+            },
+            addToCurrentChannel(value) {
+                this.currentSequence.channel += value;
+                this.$refs.channelslider.setValue(this.currentSequence.channel)
+            },
+            addToCurrentZstack(value) {
+                this.currentSequence.zStack += value;
+                this.$refs.zstackslider.setValue(this.currentSequence.zStack)
+            },
+            addToCurrentTime(value) {
+                this.currentSequence.time += value;
+                this.$refs.timeslider.setValue(this.currentSequence.time)
+            },
         },
         created() {
             api.get(`/api/imageinstance/${this.currentMap.imageId}/imagesequence.json`).then(data => {
@@ -179,5 +238,13 @@
 </script>
 
 <style scoped>
+    dt {
+        clear: both;
+        padding: 6px 0 3px 0;
+    }
 
+    dl {
+        padding-bottom: 1em;
+        clear: both;
+    }
 </style>
