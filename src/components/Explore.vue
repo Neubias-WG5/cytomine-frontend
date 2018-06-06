@@ -443,6 +443,13 @@
                     this.$emit('updateMap', {old: this.currentMap, new: payload});
 
                     this.extent = [0, 0, this.mapWidth, this.mapHeight];
+                    if (reset) {
+                        this.$openlayers.getView(this.currentMap.id).setCenter([this.mapWidth / 2, this.mapHeight / 2]);
+                        this.$openlayers.getView(this.currentMap.id).setZoom(this.initZoom);
+                        this.$openlayers.getView(this.currentMap.id).getProjection().setExtent(this.extent);
+                        this.zoom = this.$openlayers.getView(this.currentMap.id).getZoom();
+                    }
+
                     let layer = new OlTile({
                         source: new Zoomify({
                             url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
@@ -460,12 +467,6 @@
 
                     this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
                     this.maxZoom = this.$openlayers.getView(this.currentMap.id).getMaxZoom();
-                    if (reset) {
-                        this.$openlayers.getView(this.currentMap.id).setCenter([this.mapWidth / 2, this.mapHeight / 2]);
-                        this.$openlayers.getView(this.currentMap.id).setZoom(this.initZoom);
-                        this.$openlayers.getMap(this.currentMap.id).updateSize();
-                        this.zoom = this.$openlayers.getView(this.currentMap.id).getZoom();
-                    }
                 });
             },
             setVectorLayersOpacity(payload) {
