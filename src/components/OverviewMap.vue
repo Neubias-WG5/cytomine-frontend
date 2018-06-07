@@ -19,67 +19,75 @@
         data() {
             return {
                 overviewMap: {},
-                overviewMapCount: 0,
                 showOverviewMap: true,
                 overviewMapId: uuid(),
             }
         },
         props: [
-            'lastEventMapId',
-            'maps',
+            'currentMap',
+            'elementWidth',
+            'elementHeight',
         ],
+        computed: {
+            height() {
+                return 200 / this.elementWidth * this.elementHeight;
+            }
+        },
         watch: {
-            maps() {
-                if (this.overviewMapCount < 1) {
-                    this.initOverviewMap();
-                    this.overviewMapCount++
-                }
+            elementWidth() {
+                if (this.overviewMap && this.overviewMap.getOverviewMap())
+                    this.overviewMap.getOverviewMap().setSize([200, this.height]);
             },
-            lastEventMapId(newId, oldId) {
-                let index = (id) => {
-                    return this.maps.findIndex(map => {
-                        return map.id === id;
-                    })
-                };
-                if (newId === 'reload') {
-                    return;
-                } else if (oldId === 'reload') {
-                    this.initOverviewMap(this.maps[index(newId)]);
-                    return;
-                } else if (newId !== oldId && oldId) {
-                    this.$openlayers.getMap(oldId).removeControl(this.overviewMap);
-                    this.initOverviewMap(this.maps[index(newId)]);
-                }
+            elementHeight() {
+                if (this.overviewMap && this.overviewMap.getOverviewMap())
+                    this.overviewMap.getOverviewMap().setSize([200, this.height]);
             },
+            'currentMap.data.id'() {
+                this.initOverviewMap()
+            }
         },
         methods: {
-            initOverviewMap(map = this.maps[0]) {
-                if (this.overviewMap.hasOwnProperty('ol_uid')) {
-                    this.$openlayers.getMap(this.overviewMap.get('mapId')).removeControl(this.overviewMap);
-                }
-                this.overviewMap = new OverviewMap({
-                    collapsed: true,
-                    target: this.overviewMapId,
-                    view: new View({
-                        projection: new Projection({
-                            code: 'CYTO',
-                            extent: [0, 0, parseInt(map.data.width), parseInt(map.data.height)],
-                        }),
-                        center: [0, 0],
-                        minZoom: -1,
-                        maxZoom: 0,
-                    }),
-                });
-                this.overviewMap.set('mapId', map.id);
-                this.$openlayers.getMap(map.id).addControl(this.overviewMap);
+            initOverviewMap() {
+                let interval = setInterval(() => {
+                    if (this.overviewMap.hasOwnProperty('ol_uid')) {
+                        this.$openlayers.getMap(this.overviewMap.get('mapId')).removeControl(this.overviewMap);
+                    }
+
+                    if (this.$openlayers.getMap(this.currentMap.id) != undefined) {
+                        let viewportSize = this.$openlayers.getMap(this.currentMap.id).getSize();
+                        this.overviewMap = new OverviewMap({
+                            collapsed: true,
+                            target: this.overviewMapId,
+                            view: new View({
+                                projection: new Projection({
+                                    code: 'CYTO',
+                                    extent: [0, 0, this.currentMap.data.width, this.currentMap.data.height],
+                                    worldExtent: [0, 0, viewportSize[0], viewportSize[1]]
+                                }),
+                                center: [this.currentMap.data.width / 2, this.currentMap.data.height / 2],
+                            }),
+                        });
+                        this.overviewMap.set('mapId', this.currentMap.id);
+
+
+                        this.$openlayers.getMap(this.currentMap.id).addControl(this.overviewMap);
+                        this.overviewMap.getOverviewMap().setSize([200, this.height]);
+                        clearInterval(interval);
+                    }}, 100
+                );
             },
+
+        },
+        mounted() {
+            this.initOverviewMap();
         },
     }
 </script>
 
 <style>
     .overview-container {
-        position: fixed;
+        position: absolute;
+        top: 0;
         right: 15px;
         z-index: 9999;
         border: 3px solid black;
@@ -89,7 +97,6 @@
 
     .ol-overviewmap-map {
         width: 200px;
-        height: 200px;
     }
 
     .ol-overviewmap .ol-overviewmap-box {

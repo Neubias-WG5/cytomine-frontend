@@ -12,11 +12,10 @@
             </template>
         </div>
         <p v-else>You can only have {{maxMapsToShow}} views displayed in an explorer tab.</p>
-        <overview-map :lastEventMapId="lastEventMapId" :maps="maps"></overview-map>
         <div class="maps-container" :style="`height: calc(100vh - ${paddingTop}px);`">
             <explore v-for="map in maps" :currentRoute="currentRoute" :key="map.id" @updateMap="updateMap"
                      @dragged="setMap" @mapIsLinked="linkMaps" @deleteMap="deleteMap"
-                     @updateOverviewMap="updateOverviewMap" :mapView="mapView" :maps='maps' :currentMap="map"
+                     :mapView="mapView" :maps='maps' :currentMap="map"
                      :lastEventMapId="lastEventMapId" :filters="filters" :imageGroups="imageGroups"
                      :padding-top="paddingTop" :project="project" :currentUser="currentUser"></explore>
         </div>
@@ -25,7 +24,6 @@
 
 <script>
     import Explore from './components/Explore'
-    import OverviewMap from './components/OverviewMap'
 
     import uuid from 'uuid'
 
@@ -33,7 +31,6 @@
         name: 'app',
         components: {
             Explore,
-            OverviewMap
         },
         data() {
             return {
@@ -119,15 +116,20 @@
                         data: this.images[this.imageIndex(imageId)]
                     })
                 }
+
+                this.updateMapsSize();
             },
             deleteMap(payload) {
                 let index = this.maps.findIndex(map => {
                     return map.id === payload;
                 });
                 this.maps.splice(index, 1);
+                this.updateMapsSize();
             },
-            updateOverviewMap() {
-                this.lastEventMapId = 'reload';
+            updateMapsSize() {
+              this.maps.forEach(map => {
+                  this.$openlayers.getMap(map.id).updateSize();
+              })
             },
             updateMap(payload) {
                 let index = this.maps.findIndex(map => map == payload.old);

@@ -1,6 +1,6 @@
 <template>
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
-        <div :style="`height:calc(100vh - ${paddingTop}px);`" @mousemove="sendView" @mousewheel="sendView"
+        <div  @mousemove="sendView" @mousewheel="sendView"
              :id="currentMap.id" ref="exploreMap">
         </div>
         <div class="controls" :id="'controls-'+currentMap.id"></div>
@@ -8,6 +8,7 @@
                       @featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"
                       @updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity">
         </interactions>
+        <overview-map :currentMap="currentMap" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>
         <div>
             <div v-show="this.lastEventMapId == this.currentMap.id" class="bottom-panel btn-group" role="group">
                 <button v-if="mustBeShown('project-explore-info')" @click="setShowComponent('informations')"
@@ -69,7 +70,7 @@
              :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:33%;' :  ''}`">
             <div class="panel-body">
                 <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
-                              @changeImage="changeImage" @updateOverviewMap="updateOverviewMap" :filterUrl="filterUrl"
+                              @changeImage="changeImage" :filterUrl="filterUrl"
                               :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
 
                 <div v-show="showComponent == 'linkmap' && mustBeShown('project-explore-link') && this.maps.length > 1">
@@ -163,6 +164,7 @@
     import Review from './Explore/Review'
     import ScaleLine from './Explore/ScaleLine'
     import ColorMaps from './Explore/Colormaps'
+    import OverviewMap from './OverviewMap'
 
     import OlTile from 'ol/layer/tile';
     import Zoomify from 'ol/source/zoomify';
@@ -189,6 +191,7 @@
             Review,
             ScaleLine,
             ColorMaps,
+            OverviewMap
         },
         data() {
             return {
@@ -335,7 +338,6 @@
                 });
                 this.$openlayers.getMap(this.currentMap.id).getLayers().getArray()[0] = layer;
                 this.$openlayers.getMap(this.currentMap.id).render();
-                this.updateOverviewMap();
             },
             lastEventMapId() {
                 this.showPanel = this.lastEventMapId == this.currentMap.id;
@@ -344,6 +346,12 @@
                 if (newValue != this.currentMap.data.project) {
                     this.centerOnFeature(newValue);
                 }
+            },
+            elementWidth(newValue) {
+                this.$openlayers.getMap(this.currentMap.id).setSize([newValue, this.elementHeight])
+            },
+            elementHeight(newValue) {
+                this.$openlayers.getMap(this.currentMap.id).setSize([this.elementWidth, newValue])
             },
         },
         methods: {
@@ -410,9 +418,6 @@
                     }
                     this.$openlayers.getView(this.currentMap.id).fit(feature.getGeometry());
                 })
-            },
-            updateOverviewMap() {
-                this.$emit('updateOverviewMap');
             },
             deleteMap() {
                 this.$emit('deleteMap', this.currentMap.id);
@@ -581,8 +586,7 @@
                 if (this.centeredFeature != '' && this.centeredFeature != this.currentMap.data.project) {
                     this.centerOnFeature(this.centeredFeature);
                 }
-            })
-
+            });
         },
         beforeDestroy() {
             window.removeEventListener('resize', this.getWindowHeight);
