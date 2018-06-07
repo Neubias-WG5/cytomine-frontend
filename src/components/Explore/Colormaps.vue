@@ -49,7 +49,7 @@ export default {
           bitdepth: 16,
           colorspace: 'rgb',
         },
-        colorSelected: 'r',
+        selectedColor: 'r',
         modeSelected: 'grayscale',
         xSelected: 0,
         yValue: 0,
@@ -83,7 +83,7 @@ export default {
         }
       },
       colorToRender() {
-        switch (this.colorSelected) {
+        switch (this.selectedColor) {
           case 'r':
             return 'danger'
             break;
@@ -93,7 +93,7 @@ export default {
           case 'b':
             return 'info'
             break;
-        
+
           default:
             return 'default'
             break;
@@ -102,7 +102,7 @@ export default {
     },
     watch: {
       yValue() {
-        let color = this.modeSelected == 'rgb' ? this.colorSelected : 'l'
+        let color = this.modeSelected == 'rgb' ? this.selectedColor : 'l'
         let trace = this.traces[color];
         let index = () => trace.x.findIndex(item => item == this.xSelected);
 
@@ -153,7 +153,7 @@ export default {
         }
       },
       setValueToEdit(data) {
-        let color = this.modeSelected == 'rgb' ? this.colorSelected : 'l'
+        let color = this.modeSelected == 'rgb' ? this.selectedColor : 'l'
         let trace = this.traces[color];
         let yCoordinate;
         // Uses p2l() method to determine coordinate from pixel postion
@@ -175,13 +175,13 @@ export default {
           trace.x.reverse();
           firstPointIndex = (trace.x.length - 1) - firstPointIndex;
           let firstPoint = [trace.x[firstPointIndex], trace.y[firstPointIndex]];
-          
+
           // Get secondPoint
           let secondPointIndex = trace.x.findIndex(item => item > xCoordinate);
           let secondPoint = [trace.x[secondPointIndex], trace.y[secondPointIndex]]
 
           let m = (secondPoint[1] - firstPoint[1])/(secondPoint[0] - firstPoint[0]);
-          let b = firstPoint[1] - (m*firstPoint[0]); 
+          let b = firstPoint[1] - (m*firstPoint[0]);
 
           yCoordinate = Math.round(m*xCoordinate+b);
         }
@@ -223,7 +223,7 @@ export default {
 
 <style scoped>
   .flex {
-    display: flex;  
+    display: flex;
     max-width: 100%;
   }
   .input-group {
