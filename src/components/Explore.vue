@@ -12,51 +12,51 @@
         <div>
             <div v-show="this.lastEventMapId == this.currentMap.id" class="bottom-panel btn-group" role="group">
                 <button v-if="mustBeShown('project-explore-info')" @click="setShowComponent('informations')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'informations' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'informations' }]" title="Informations">
                     <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                 </button>
                 <button v-if="mustBeShown('project-explore-link') && this.maps.length > 1"
                         @click="setShowComponent('linkmap')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'linkmap' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'linkmap' }]" title="Vue link">
                     <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
                 </button>
                 <button v-if="mustBeShown('project-explore-image-layers') && this.filters.length > 1"
                         @click="setShowComponent('filter')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'filter' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'filter' }]" title="Image filters">
                     <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
                 </button>
                 <button v-if="mustBeShown('project-explore-digital-zoom')" @click="setShowComponent('digitalZoom')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'digitalZoom' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'digitalZoom' }]" title="Digital zoom">
                     <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                 </button>
                 <button v-if="mustBeShown('project-explore-colormap')" @click="setShowComponent('colormap')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'colormap' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'colormap' }]" title="Color maps">
                     <span class="glyphicon glyphicon-adjust" aria-hidden="true"></span>
                 </button>
                 <button @click="setShowComponent('annotationLayers')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'annotationLayers' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'annotationLayers' }]" title="Annotation layers">
                     Annotation layers
                 </button>
                 <button v-if="mustBeShown('project-explore-annotation-panel')"
                         @click="setShowComponent('annotationList')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'annotationList' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'annotationList' }]" title="User annotations list">
                     <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
                     Annotation list
                 </button>
                 <button v-if="imageGroups[0]" @click="setShowComponent('multidimension')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'multidimension' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'multidimension' }]" title="Multidimension">
                     Multidimension
                 </button>
                 <button v-if="isReviewing" @click="setShowComponent('review')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'review' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'review' }]" title="Review">
                     <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
                     Review
                 </button>
                 <button v-if="mustBeShown('project-explore-property')" @click="setShowComponent('properties')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'properties' }]">
+                        :class="['btn', 'btn-default', {active: showComponent == 'properties' }]" title="Annotation properties">
                     <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
                 </button>
-                <button v-if="this.maps.length > 1" class="btn btn-danger" @click="deleteMap">
+                <button v-if="this.maps.length > 1" class="btn btn-danger" @click="deleteMap" title="Remove this view from the explorer">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
             </div>

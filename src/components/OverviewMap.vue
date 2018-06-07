@@ -2,7 +2,7 @@
     <div class="overview-container">
         <div v-show="showOverviewMap" :id="overviewMapId"></div>
         <button class="btn btn-default" style="width: 100%;" id="overview-map-collapse"
-                @click="showOverviewMap = !showOverviewMap">
+                @click="showOverviewMap = !showOverviewMap" title="Show/Hide overview map">
             <span :class="`glyphicon glyphicon-chevron-${showOverviewMap ? 'right' : 'left'}`"></span>
         </button>
     </div>

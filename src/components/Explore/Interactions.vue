@@ -4,87 +4,87 @@
             <div class="btn-group" role="group">
                 <template v-if="mustBeShown('project-tools-select')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Select'}]"
-                            @click="addInteraction('Select')">
+                            @click="addInteraction('Select')" title="Select an annotation">
                         <span class="glyphicon glyphicon-move" aria-hidden="true"></span>
                         Select
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-point')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Point'}]"
-                            @click="addInteraction('Point')">
+                            @click="addInteraction('Point')" title="Add a point as new annotation">
                         <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
                         Point
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-line')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Line'}]"
-                            @click="addInteraction('Line')">
+                            @click="addInteraction('Line')" title="Add a line as new annotation">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                         Line
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-arrow')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Arrow'}]"
-                            @click="addInteraction('Arrow')">
+                            @click="addInteraction('Arrow')" title="Add an arrow as new annotation">
                         <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
                         Arrow
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-rectangle')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rectangle'}]"
-                            @click="addInteraction('Rectangle')">
+                            @click="addInteraction('Rectangle')" title="Add a rectangle as new annotation">
                         <span class="glyphicon glyphicon-stop"></span>
                         Rectangle
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-diamond')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Ellipse'}]"
-                            @click="addInteraction('Ellipse')">
+                            @click="addInteraction('Ellipse')" title="Add an ellipse as new annotation">
                         Ellipse
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-circle')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Circle'}]"
-                            @click="addInteraction('Circle')">
+                            @click="addInteraction('Circle')" title="Add a circle as new annotation">
                         Circle
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-polygon')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Polygon'}]"
-                            @click="addInteraction('Polygon')">
+                            @click="addInteraction('Polygon')" title="Add a polygon as new annotation">
                         <span class="glyphicon glyphicon-play"></span>
                         Polygon
                     </button>
                 </template>
                 <!-- <template v-if="mustBeShown('project-tools-magicwand')"> TODO MAGICWAND
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'MagicWand'}]" @click="addInteraction('MagicWand')">
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'MagicWand'}]" @click="addInteraction('MagicWand')" title="Add a new annotation with magic wand">
                         MagicWand
                     </button>
                 </template> -->
                 <template v-if="mustBeShown('project-tools-freehand')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Freehand'}]"
-                            @click="addInteraction('Polygon', true)">
+                            @click="addInteraction('Polygon', true)" title="Add a new annotation with freehand draw">
                         <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                         Freehand
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-union')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Union'}]"
-                            @click="addInteraction('Correction', true)">
+                            @click="addInteraction('Correction', true)" title="Correct an annotation by adding a freehand area">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-difference')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Difference'}]"
-                            @click="addInteraction('Correction', true, true)">
+                            @click="addInteraction('Correction', true, true)" title="Correct an annotation by removing a freehand area">
                         <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
                         <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-rule')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Ruler'}]"
-                            @click="addInteraction('Ruler')">
+                            @click="addInteraction('Ruler')" title="Measure with a ruler">
                         Ruler
                     </button>
                 </template>
@@ -94,39 +94,39 @@
                     <template v-if="mustBeShown('project-tools-fill') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'
                     && featureSelected.getArray()[0].getGeometry().getType() != 'LineString' ">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Fill'}]"
-                                @click="addInteraction('Fill')">
+                                @click="addInteraction('Fill')" title="Fill holes in the selected annotation">
                             Fill
                         </button>
                     </template>
                     <template v-if="mustBeShown('project-tools-edit') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Edit'}]"
-                                @click="addInteraction('Edit')">
+                                @click="addInteraction('Edit')" title="Edit geometry of the selected annotation">
                             <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                             Edit
                         </button>
                     </template>
                     <template v-if="mustBeShown('project-tools-rotate') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rotate'}]"
-                                @click="addInteraction('Rotate')">
+                                @click="addInteraction('Rotate')" title="Rotate the selected annotation">
                             <span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
                             Rotate
                         </button>
                     </template>
                     <!-- <template v-if="mustBeShown('project-tools-resize') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'"> TODO RESIZE
-                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Resize'}]" @click="addInteraction('Resize')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Resize'}]" @click="addInteraction('Resize')" title="Resize the selected annotation">
                             <span class="glyphicon glyphicon-resize-full"></span>
                             Resize
                         </button>
                     </template> -->
                     <template v-if="mustBeShown('project-tools-move')">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Drag'}]"
-                                @click="addInteraction('Drag')">
+                                @click="addInteraction('Drag')" title="Drag the selected annotation">
                             Drag
                         </button>
                     </template>
                     <template v-if="mustBeShown('project-tools-delete')">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Remove'}]"
-                                @click="addInteraction('Remove')">
+                                @click="addInteraction('Remove')" title="Delete the selected annotation (irreversible !)">
                             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
                         </button>
                     </template>
