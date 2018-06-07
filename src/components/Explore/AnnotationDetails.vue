@@ -126,8 +126,10 @@
         ],
         computed: {
             editable() {
-                return this.findIndex(this.project.admins, this.currentUser.id) != -1
-                    || (this.currentUser.id == this.data.user && !this.project.isReadOnly);
+                return this.data.class != "be.cytomine.ontology.AlgoAnnotation"
+                    && (this.findIndex(this.project.admins, this.currentUser.id) != -1
+                        || (!this.project.isReadOnly && !this.project.isRestricted)
+                        || (this.currentUser.id == this.data.user && this.project.isRestricted));
             },
             isRetrievalActive() {
                 return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer;

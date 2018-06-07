@@ -9,87 +9,91 @@
                         Select
                     </button>
                 </template>
-                <template v-if="mustBeShown('project-tools-point')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Point'}]"
-                            @click="addInteraction('Point')" title="Add a point as new annotation">
-                        <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
-                        Point
-                    </button>
+                <template v-if="this.canDraw">
+                    <template v-if="mustBeShown('project-tools-point')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Point'}]"
+                                @click="addInteraction('Point')" title="Add a point as new annotation">
+                            <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+                            Point
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-line')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Line'}]"
+                                @click="addInteraction('Line')" title="Add a line as new annotation">
+                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                            Line
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-arrow')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Arrow'}]"
+                                @click="addInteraction('Arrow')" title="Add an arrow as new annotation">
+                            <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                            Arrow
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-rectangle')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rectangle'}]"
+                                @click="addInteraction('Rectangle')" title="Add a rectangle as new annotation">
+                            <span class="glyphicon glyphicon-stop"></span>
+                            Rectangle
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-diamond')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Ellipse'}]"
+                                @click="addInteraction('Ellipse')" title="Add an ellipse as new annotation">
+                            Ellipse
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-circle')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Circle'}]"
+                                @click="addInteraction('Circle')" title="Add a circle as new annotation">
+                            Circle
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-polygon')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Polygon'}]"
+                                @click="addInteraction('Polygon')" title="Add a polygon as new annotation">
+                            <span class="glyphicon glyphicon-play"></span>
+                            Polygon
+                        </button>
+                    </template>
+                    <!-- <template v-if="mustBeShown('project-tools-magicwand')"> TODO MAGICWAND
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'MagicWand'}]" @click="addInteraction('MagicWand')" title="Add a new annotation with magic wand">
+                            MagicWand
+                        </button>
+                    </template> -->
+                    <template v-if="mustBeShown('project-tools-freehand')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Freehand'}]"
+                                @click="addInteraction('Polygon', true)" title="Add a new annotation with freehand draw">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                            Freehand
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-union')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Union'}]"
+                                @click="addInteraction('Correction', true)" title="Correct an annotation by adding a freehand area">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                        </button>
+                    </template>
+                    <template v-if="mustBeShown('project-tools-difference')">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Difference'}]"
+                                @click="addInteraction('Correction', true, true)" title="Correct an annotation by removing a freehand area">
+                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                        </button>
+                    </template>
                 </template>
-                <template v-if="mustBeShown('project-tools-line')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Line'}]"
-                            @click="addInteraction('Line')" title="Add a line as new annotation">
-                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                        Line
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-arrow')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Arrow'}]"
-                            @click="addInteraction('Arrow')" title="Add an arrow as new annotation">
-                        <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
-                        Arrow
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-rectangle')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Rectangle'}]"
-                            @click="addInteraction('Rectangle')" title="Add a rectangle as new annotation">
-                        <span class="glyphicon glyphicon-stop"></span>
-                        Rectangle
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-diamond')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Ellipse'}]"
-                            @click="addInteraction('Ellipse')" title="Add an ellipse as new annotation">
-                        Ellipse
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-circle')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Circle'}]"
-                            @click="addInteraction('Circle')" title="Add a circle as new annotation">
-                        Circle
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-polygon')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Polygon'}]"
-                            @click="addInteraction('Polygon')" title="Add a polygon as new annotation">
-                        <span class="glyphicon glyphicon-play"></span>
-                        Polygon
-                    </button>
-                </template>
-                <!-- <template v-if="mustBeShown('project-tools-magicwand')"> TODO MAGICWAND
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'MagicWand'}]" @click="addInteraction('MagicWand')" title="Add a new annotation with magic wand">
-                        MagicWand
-                    </button>
-                </template> -->
-                <template v-if="mustBeShown('project-tools-freehand')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Freehand'}]"
-                            @click="addInteraction('Polygon', true)" title="Add a new annotation with freehand draw">
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                        Freehand
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-union')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Union'}]"
-                            @click="addInteraction('Correction', true)" title="Correct an annotation by adding a freehand area">
-                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                    </button>
-                </template>
-                <template v-if="mustBeShown('project-tools-difference')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Difference'}]"
-                            @click="addInteraction('Correction', true, true)" title="Correct an annotation by removing a freehand area">
-                        <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
-                    </button>
-                </template>
+
                 <template v-if="mustBeShown('project-tools-rule')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Ruler'}]"
                             @click="addInteraction('Ruler')" title="Measure with a ruler">
                         Ruler
                     </button>
                 </template>
+
             </div>
-            <template v-if="featureSelected.getArray()[0]">
+            <template v-if="featureSelected.getArray()[0] && isFeatureEditable(featureSelected.getArray()[0])">
                 <div class="btn-group" role="group">
                     <template v-if="mustBeShown('project-tools-fill') && featureSelected.getArray()[0].getGeometry().getType() != 'Point'
                     && featureSelected.getArray()[0].getGeometry().getType() != 'LineString' ">
@@ -163,11 +167,13 @@
             'currentMap',
             'vectorLayersOpacity',
             'isReviewing',
+            'project',
+            'currentUser',
         ],
         data() {
             return {
                 draw: {
-                    layer: {},
+                    layers: [],
                     interaction: {},
                     overlay: {
                         helpTooltip: {},
@@ -195,6 +201,10 @@
             },
             featureSelectedId() {
                 return this.featureSelected.getArray()[0].getId();
+            },
+            canDraw() {
+                return !this.project.isReadOnly
+                    || this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1;
             }
         },
         watch: {
@@ -274,20 +284,26 @@
                 this.removeInteraction();
                 this.removeOverlay(this.draw.overlay.helpTooltip);
 
-                // Creates layer if not found
-                if (this.currentUserLayer == undefined && this.layerIndex(this.layersArray, 'draw') < 0) {
-                    this.draw.layer = new LayerVector({
-                        title: 'draw',
-                        source: new SrcVector(),
-                        extent: this.extent,
-                    });
-                    currentMap.addLayer(this.draw.layer);
-                } else if (this.currentUserLayer != undefined) {
-                    this.draw.layer = this.currentUserLayer;
+                if (['Point', 'Line', 'Arrow', 'Rectangle',
+                    'Ellipse', 'Circle', 'Polygon', 'Freehand'].includes(interactionType)) {
+                    this.draw.layers = this.layersArray.filter(layer => layer.get('drawable'))
                 }
+                else {
+                    // Creates layer if not found
+                    // if (this.currentUserLayer == undefined && this.layerIndex(this.layersArray, 'draw') < 0) {
+                    //     this.draw.layers = [new LayerVector({
+                    //         title: 'draw',
+                    //         source: new SrcVector(),
+                    //         extent: this.extent,
+                    //     })];
+                    //     currentMap.addLayer(this.draw.layer);
+                    // } else if (this.currentUserLayer != undefined) {
+                        this.draw.layers = [this.currentUserLayer];
+                    // }
+                }
+
                 // Adds interaction
-                let source = this.draw.layer.getSource(),
-                    geometryFunction, type;
+                let geometryFunction, type;
                 switch (interactionType) {
                     case 'Select':
                         this.draw.interaction = new Select({
@@ -570,14 +586,15 @@
                         break;
                 }
 
-                this.draw.interaction = new Draw({
-                    source,
-                    type,
-                    geometryFunction,
-                    freehand,
-                });
 
                 if (interactionType == 'Correction') {
+                    this.draw.interaction = new Draw({
+                        source: this.draw.layers[0].getSource(),
+                        type,
+                        geometryFunction,
+                        freehand,
+                    });
+
                     this.draw.interaction.on('drawend', evt => {
                         let location = this.getWktLocation(evt.feature);
                         let layers = this.layersArray.filter(layer => layer.getType() == "VECTOR" && layer.get('title') != 'draw').map(layer => layer.get('title'));
@@ -597,6 +614,13 @@
                         })
                     })
                 } else if (interactionType == 'Ruler') {
+                    this.draw.interaction = new Draw({
+                        source: this.draw.layers[0].getSource(),
+                        type,
+                        geometryFunction,
+                        freehand,
+                    });
+
                     this.draw.interaction.on('drawstart',
                         (evt) => {
                             // set sketch
@@ -629,21 +653,30 @@
                             Observable.unByKey(listener);
                         }, this);
                 } else {
-                    this.draw.interaction.on('drawend', evt => {
-                        api.post(`/api/annotation.json`, {
-                            name: "",
-                            location: this.getWktLocation(evt.feature),
-                            image: this.currentMap.imageId,
-                            roi: false,
-                            term: [],
-                            user: this.currentMap.user.id,
-                        }).then((data) => {
-                            this.notification("Annotation added", data.data.message, "success");
-                            this.$emit('updateAnnotationsIndex', true);
-                            this.$emit('updateLayers', true);
-                            this.selectFeature(data.data.annotation);
-                        }).catch(error => {
-                            this.notification("Cannot add annotation", error.response.data.errors, "error");
+                    this.draw.layers.forEach(layer => {
+                        this.draw.interaction = new Draw({
+                            source: layer.getSource(),
+                            type,
+                            geometryFunction,
+                            freehand,
+                        });
+
+                        this.draw.interaction.on('drawend', evt => {
+                            api.post(`/api/annotation.json`, {
+                                name: "",
+                                location: this.getWktLocation(evt.feature),
+                                image: this.currentMap.imageId,
+                                roi: false,
+                                term: [],
+                                user: this.currentMap.user.id,
+                            }).then((data) => {
+                                this.notification("Annotation added", data.data.message, "success");
+                                this.$emit('updateAnnotationsIndex', true);
+                                this.$emit('updateLayers', true);
+                                this.selectFeature(data.data.annotation);
+                            }).catch(error => {
+                                this.notification("Cannot add annotation", error.response.data.errors, "error");
+                            })
                         })
                     })
                 }
@@ -674,6 +707,12 @@
                 // Depends on [BACKBONE]
                 console.log("message" + message);
                 window.app.view.message(title, message, type, timer);
+            },
+            isFeatureEditable(feature) {
+                return feature.get('class') != "be.cytomine.ontology.AlgoAnnotation"
+                    && (this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1
+                        || (!this.project.isReadOnly && !this.project.isRestricted)
+                        || (this.currentUser.id == feature.get('user') && this.project.isRestricted));
             },
         },
         mounted() {

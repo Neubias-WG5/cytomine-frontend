@@ -6,7 +6,8 @@
         <div class="controls" :id="'controls-'+currentMap.id"></div>
         <interactions v-show="this.lastEventMapId == this.currentMap.id" @updateLayers="setUpdateLayers"
                       @featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"
-                      @updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity">
+                      @updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity"
+                      :currentUser="currentUser" :project="project">
         </interactions>
         <overview-map :currentMap="currentMap" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>
         <div>
@@ -111,7 +112,7 @@
                                        @updateAnnotationsIndex="setUpdateAnnotationsIndex"
                                        :layerToAdd="addLayer" :onlineUsers="onlineUsers" :isReviewing="isReviewing"
                                        :updateLayers="updateLayers" :updateAnnotationsIndex="updateAnnotationsIndex"
-                                       :termsToShow="termsToShow"
+                                       :termsToShow="termsToShow" :currentUser="currentUser"
                                        :showWithNoTerm="showWithNoTerm" :allTerms="allTerms" :project="project"
                                        :currentMap="currentMap"></annotation-layers>
                     <ontology :currentMap="currentMap" :featureSelectedData="featureSelectedData"

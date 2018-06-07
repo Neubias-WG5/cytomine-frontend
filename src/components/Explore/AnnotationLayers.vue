@@ -16,22 +16,40 @@
         <ul class="list-group mt-4">
             <li class="list-group-item clearfix" v-for="layer in layersSelected" :key="layer.id">
                 {{userDisplayName(layer)}}
-                <div class="btn-group pull-right" role="group">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.visible}]"
-                            @click="toggleVisibility(layer)">
-                        <span class="glyphicon glyphicon-eye-open"></span>
-                        Show
-                    </button>
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.editable}]"
-                            @click="toggleEditability(layer)">
-                        <span class="glyphicon glyphicon-edit"></span>
-                        Edit
-                    </button>
-                    <button class="btn btn-default btn-xs" @click="removeLayer(layer.id)">
-                        <span class="glyphicon glyphicon-remove"></span>
-                        Remove
-                    </button>
+                <div class="pull-right">
+                    <template v-if="isEditable(layer)">
+                    <span class="label label-success" style="margin: 2px;">
+                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                        Editable
+                    </span>
+                    </template>
+                    <template v-else>
+                    <span class="label label-danger" style="margin: 2px;">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                        Read-only
+                    </span>
+                    </template>
+
+                    <div class="btn-group" role="group">
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.visible}]"
+                                @click="toggleVisibility(layer)" title="Show annotations from this layer">
+                            <span class="glyphicon glyphicon-eye-open"></span>
+                            Show
+                        </button>
+                        <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.drawable}]"
+                                 :disabled="!isEditable(layer) || layer.id != currentUser.id" title="Add new annotations in this layer">
+                            <!--@click="toggleDrawability(layer)"-->
+                            <span class="glyphicon glyphicon-pencil"></span>
+                            Draw
+                        </button>
+                        <button class="btn btn-default btn-xs" @click="removeLayer(layer.id)" title="Remove this layer from the view">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            Remove
+                        </button>
+                    </div>
                 </div>
+
+
 
                 <!--<label :for="'hide-layer-' + layer.id">Visible</label>-->
                 <!--<input @click="followUser(layer.id)" v-model="userToFollow" :disabled="isUserOnline(layer.id)" :value="layer.id" type="checkbox" :name="'follow-' + layer.id" :id="'follow-' + layer.id">-->
@@ -76,7 +94,8 @@
             'onlineUsers',
             'layerToAdd',
             'project',
-            'updateAnnotationsIndex'
+            'updateAnnotationsIndex',
+            'currentUser',
         ],
         data() {
             return {
@@ -217,14 +236,15 @@
                     if (addToSelected) {
                         // Push added item to selected
                         toAdd.visible = true;
-                        toAdd.editable = true;
+                        toAdd.drawable = toAdd.id == this.currentUser.id && this.isEditable(toAdd);
                         this.layersSelected.push(toAdd);
                     }
-                    this.vectorLayer = this.createVectorLayer(toAdd.id, this.vectorLoader);
+                    this.vectorLayer = this.createVectorLayer(toAdd, this.vectorLoader);
                     this.toAdd = toAdd;
                     this.layerToBeAdded = {};
                 } else if (layerType == 'reviewedLayer' && this.isReviewing) {
-                    this.reviewedLayer = this.createVectorLayer('reviewed', this.reviewLoader);
+                    // this.reviewedLayer = this.createVectorLayer('reviewed', this.reviewLoader);
+                    this.reviewedLayer = this.createVectorLayer(toAdd, this.reviewLoader);
                     this.reviewedLayer.setVisible(this.showReviewLayer);
                 }
             },
@@ -242,6 +262,7 @@
                         let feature = format.readFeature(element.location);
                         feature.setId(element.id);
                         feature.set('user', userId);
+                        feature.set('class', element.class);
                         let strokeColor;
                         if (this.isReviewing) {
                             strokeColor = areReviewed ? [91, 183, 91] : [189, 54, 47];
@@ -263,9 +284,9 @@
                 });
                 return compact(test);
             },
-            createVectorLayer(title, loader) {
+            createVectorLayer(userLayer, loader) {
                 let layer = new LayerVector({
-                    title,
+                    title: userLayer.id,
                     source: new SrcVector({
                         strategy: loadingstrategy.bbox,
                         loader,
@@ -273,6 +294,8 @@
                     extent: this.extent,
                 });
                 layer.setOpacity(this.vectorLayersOpacity);
+                layer.setVisible(userLayer.visible);
+                layer.set('drawable', userLayer.drawable);
                 this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
                 return layer;
             },
@@ -305,8 +328,16 @@
                 layer.visible = !layer.visible;
                 this.layersSelected.splice(index, 1, layer);
             },
-            toggleEditability(layer) {
-                //TODO
+            toggleDrawability(layer) {
+                let index = this.layerIndex(this.layersArray, layer.id);
+                this.layersArray[index].set('drawable', !layer.drawable);
+
+                index = this.layersSelected.findIndex(l => {
+                    return l.id === layer.id
+                });
+
+                layer.drawable = !layer.drawable;
+                this.layersSelected.splice(index, 1, layer);
             },
             followUser(userId) {
                 let index = this.userToFollow.findIndex(user => user == userId);
@@ -339,12 +370,18 @@
 
                     this.layersSelected.map((layer, index) => {
                         let userLayer = this.userLayers.find(item => layer.id == item.id);
-                        layer.size = this.userLayers[index].size;
+                        layer.size = userLayer.size;
                         this.$set(this.layersSelected, index, layer);
                         return layer;
                     })
                 })
             },
+            isEditable(layer) {
+                return !layer.algo
+                    && (this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1
+                        || (!this.project.isReadOnly && !this.project.isRestricted)
+                        || (this.currentUser.id == layer.id && this.project.isRestricted));
+            }
         },
         mounted() {
             api.get(`/api/project/${this.currentMap.data.project}/userlayer.json?image=${this.currentMap.imageId}`).then(data => {
@@ -366,7 +403,7 @@
                         }
                         this.layersSelected.map((layer, index) => {
                             let userLayer = this.userLayers.find(item => layer.id == item.id);
-                            layer.size = this.userLayers[index].size;
+                            layer.size = userLayer.size;
                             this.$set(this.layersSelected, index, layer);
                             return layer;
                         })
