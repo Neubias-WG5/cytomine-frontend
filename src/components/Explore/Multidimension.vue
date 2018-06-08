@@ -95,7 +95,8 @@
             <div style="clear: both;"></div>
             <overlay :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"
                      :imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>
-            <spectra :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"></spectra>
+            <spectra :imageSequence="currentSequence" :imageGroup="imageGroupSelected" :mousePosition="mousePosition"
+                     :currentMap="currentMap"></spectra>
         </template>
 
     </div>
@@ -118,6 +119,7 @@
             'imsBaseUrl',
             'filterUrl',
             'imageGroups',
+            'mousePosition',
         ],
         data() {
             return {

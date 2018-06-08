@@ -136,7 +136,7 @@
                 <multidimension v-if="imageGroups[0]" v-show="showComponent == 'multidimension'"
                                 @imageGroupHasChanged="setImageGroup" :imageGroups="imageGroups"
                                 :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @changeImage="changeImage"
-                                :currentMap="currentMap"></multidimension>
+                                :currentMap="currentMap"  :mousePosition="mousePosition"></multidimension>
 
                 <properties v-show="showComponent == 'properties'" :layersSelected="layersSelected"
                             :currentMap="currentMap"></properties>
