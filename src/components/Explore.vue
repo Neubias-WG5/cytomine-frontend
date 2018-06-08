@@ -93,14 +93,19 @@
                 <div
                     v-show="showComponent == 'filter' && mustBeShown('project-explore-image-layers') && this.filters.length > 1">
                     <div class="alert alert-info">Choose a filter to apply</div>
-                    <label :for="'original-filter-'+currentMap.id">Original</label>
-                    <input v-model="filterSelected" type="radio" :name="'filter-original-'+currentMap.id"
-                           :id="'filter-original-'+currentMap.id" value="">
-                    <div v-for="filter in filters" :key="filter.id">
-                        <label :for="'filter-'+filter.id+'-'+currentMap.id">{{filter.name}}</label>
-                        <input v-model="filterSelected" type="radio" :name="'filter-'+filter.id+'-'+currentMap.id"
-                               :id="'filter-'+filter.id+'-'+currentMap.id" :value="filter">
+
+                    <div class="radio">
+                        <input v-model="filterSelected" type="radio" :name="'filter-original-'+currentMap.id"
+                               :id="'filter-original-'+currentMap.id" value="">
+                        <label :for="'filter-original-'+currentMap.id">Original</label>
+
+                        <div v-for="filter in filters" :key="filter.id">
+                            <input v-model="filterSelected" type="radio" :name="'filter-'+filter.id+'-'+currentMap.id"
+                                   :id="'filter-'+filter.id+'-'+currentMap.id" :value="filter">
+                            <label :for="'filter-'+filter.id+'-'+currentMap.id">{{filter.name}}</label>
+                        </div>
                     </div>
+
                 </div>
 
                 <color-maps v-show="showComponent == 'colormap' && mustBeShown('project-explore-colormap')"
