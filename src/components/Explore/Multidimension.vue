@@ -93,8 +93,8 @@
                 </dl>
             </div>
             <div style="clear: both;"></div>
-            <overlay :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"
-                     :imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>
+            <!--<overlay :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"-->
+                     <!--:imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>-->
             <spectra :imageSequence="currentSequence" :imageGroup="imageGroupSelected" :mousePosition="mousePosition"
                      :currentMap="currentMap"></spectra>
         </template>
