@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                             <div style="width: calc(100% - 110px);" class="pull-right">
-                                <vue-slider v-model="sequenceSelected.channel" :piecewise="true" :piecewiseLabel="true"
+                                <vue-slider v-model="sequenceSelected.channel" :piecewise="imageGroupSelected.channel.length < 300" :piecewiseLabel="imageGroupSelected.channel.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
                                             :data="imageGroupSelected.channel" ref="channelslider">
                                     <template slot="label" slot-scope="{ label, active }">
@@ -52,7 +52,7 @@
                                 </div>
                             </div>
                             <div style="width: calc(100% - 110px);" class="pull-right">
-                                <vue-slider v-model="sequenceSelected.zStack" :piecewise="true" :piecewiseLabel="true"
+                                <vue-slider v-model="sequenceSelected.zStack" :piecewise="imageGroupSelected.zStack.length < 300" :piecewiseLabel="imageGroupSelected.zStack.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
                                             :data="imageGroupSelected.zStack" ref="zstackslider">
                                     <template slot="label" slot-scope="{ label, active }">
@@ -77,7 +77,7 @@
                                 </div>
                             </div>
                             <div style="width: calc(100% - 110px);" class="pull-right">
-                                <vue-slider v-model="sequenceSelected.time" :piecewise="true" :piecewiseLabel="true"
+                                <vue-slider v-model="sequenceSelected.time" :piecewise="imageGroupSelected.time.length < 300" :piecewiseLabel="imageGroupSelected.time.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
                                             :data="imageGroupSelected.time" ref="timeslider">
                                     <template slot="label" slot-scope="{ label, active }">
