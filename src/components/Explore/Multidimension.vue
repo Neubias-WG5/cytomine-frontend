@@ -30,9 +30,9 @@
                                 <vue-slider v-model="sequenceSelected.channel" :piecewise="imageGroupSelected.channel.length < 300" :piecewiseLabel="imageGroupSelected.channel.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
                                             :data="imageGroupSelected.channel" ref="channelslider">
-                                    <template slot="label" slot-scope="{ label, active }">
+                                    <template slot="label" slot-scope="{ label, index, active }">
                               <span :class="['vue-slider-piecewise-label', { active }]"
-                                    v-if="showLabel(label, imageGroupSelected.channel)">
+                                    v-if="showLabel(index, imageGroupSelected.channel)">
                                 {{ label }}
                               </span>
                                     </template>
@@ -55,9 +55,9 @@
                                 <vue-slider v-model="sequenceSelected.zStack" :piecewise="imageGroupSelected.zStack.length < 300" :piecewiseLabel="imageGroupSelected.zStack.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
                                             :data="imageGroupSelected.zStack" ref="zstackslider">
-                                    <template slot="label" slot-scope="{ label, active }">
+                                    <template slot="label" slot-scope="{ label, index, active }">
                               <span :class="['vue-slider-piecewise-label', { active }]"
-                                    v-if="showLabel(label, imageGroupSelected.zStack)">
+                                    v-if="showLabel(index, imageGroupSelected.zStack)">
                                 {{ label }}
                               </span>
                                     </template>
@@ -80,9 +80,9 @@
                                 <vue-slider v-model="sequenceSelected.time" :piecewise="imageGroupSelected.time.length < 300" :piecewiseLabel="imageGroupSelected.time.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
                                             :data="imageGroupSelected.time" ref="timeslider">
-                                    <template slot="label" slot-scope="{ label, active }">
+                                    <template slot="label" slot-scope="{ label, index, active }">
                               <span :class="['vue-slider-piecewise-label', { active }]"
-                                    v-if="showLabel(label, imageGroupSelected.time)">
+                                    v-if="showLabel(index, imageGroupSelected.time)">
                                 {{ label }}
                               </span>
                                     </template>
@@ -192,10 +192,10 @@
                     }
                     else {
                         if (nbConsecutiveValues == 0)
-                            result += "," + array[i];
+                            result += ", " + array[i];
                         else {
                             nbConsecutiveValues = 0;
-                            result += ".." + ini + "," + array[i];
+                            result += ".." + ini + ", " + array[i];
                         }
                         ini = array[i];
                     }
@@ -206,24 +206,27 @@
                     result += "]";
                 return result;
             },
-            showLabel(label, array) {
+            showLabel(index, array) {
                 let length = array.length;
-                if (label === array[0] || label === array[length - 1] || length <= 10)
+                if (index === 0 || index === length - 1 || length <= 10)
                     return true;
                 else {
-                    return label % parseInt(length / 10) === 0;
+                    return index % parseInt(length / 10) === 0;
                 }
             },
             addToCurrentChannel(value) {
-                this.currentSequence.channel += value;
+                let index = this.$refs.channelslider.getIndex();
+                this.currentSequence.channel = this.imageGroupSelected.channel[index + value];
                 this.$refs.channelslider.setValue(this.currentSequence.channel)
             },
             addToCurrentZstack(value) {
-                this.currentSequence.zStack += value;
+                let index = this.$refs.zstackslider.getIndex();
+                this.currentSequence.zStack = this.imageGroupSelected.zStack[index + value];
                 this.$refs.zstackslider.setValue(this.currentSequence.zStack)
             },
             addToCurrentTime(value) {
-                this.currentSequence.time += value;
+                let index = this.$refs.timeslider.getIndex();
+                this.currentSequence.time = this.imageGroupSelected.time[index + value];
                 this.$refs.timeslider.setValue(this.currentSequence.time)
             },
         },
