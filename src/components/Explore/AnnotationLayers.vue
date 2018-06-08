@@ -113,22 +113,12 @@
         },
         computed: {
             layersNotAdded() {
-                return differenceby(this.userLayers, this.layersSelected, 'id').sort((a, b) => {
-                    if (!a.algo && !b.algo) {
-                        if (this.userDisplayName(a).toLowerCase() < this.userDisplayName(b).toLowerCase()) return -1;
-                        if (this.userDisplayName(a).toLowerCase() > this.userDisplayName(b).toLowerCase()) return 1;
-                        return 0;
-                    }
-                }).filter(item => !item.algo);
+                return differenceby(this.userLayers, this.layersSelected, 'id').filter(item => !item.algo).sort((a, b) => {
+                    return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())});
             },
             algoNotAdded() {
-                return differenceby(this.userLayers, this.layersSelected, 'id').sort((a, b) => {
-                    if (a.algo && b.algo) {
-                        if (this.userDisplayName(a).toLowerCase() < this.userDisplayName(b).toLowerCase() || a.created < b.created) return -1;
-                        if (this.userDisplayName(a).toLowerCase() > this.userDisplayName(b).toLowerCase() || a.created > b.created) return 1;
-                        return 0;
-                    }
-                }).filter(item => item.algo);
+                return differenceby(this.userLayers, this.layersSelected, 'id').filter(item => item.algo).sort((a, b) => {
+                    return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())});
             },
             layersToShow() {
                 return this.layersNotAdded.concat(this.algoNotAdded);
