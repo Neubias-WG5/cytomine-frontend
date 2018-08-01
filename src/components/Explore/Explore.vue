@@ -157,19 +157,19 @@
 </template>
 
 <script>
-    import AnnotationLayers from './Explore/AnnotationLayers'
-    import Interactions from './Explore/Interactions';
-    import Informations from './Explore/Informations';
-    import Position from './Explore/Position';
-    import Ontology from './Explore/Ontology';
-    import AnnotationDetails from './Explore/AnnotationDetails';
-    import Annotations from './Explore/Annotations';
-    import Properties from './Explore/Properties';
-    import Multidimension from './Explore/Multidimension';
-    import DigitalZoom from './Explore/DigitalZoom'
-    import Review from './Explore/Review'
-    import ScaleLine from './Explore/ScaleLine'
-    import ColorMaps from './Explore/Colormaps'
+    import AnnotationLayers from './AnnotationLayers'
+    import Interactions from './Interactions';
+    import Informations from './Informations';
+    import Position from './Position';
+    import Ontology from './Ontology';
+    import AnnotationDetails from './AnnotationDetails';
+    import Annotations from './Annotations';
+    import Properties from './Properties';
+    import Multidimension from './Multidimension';
+    import DigitalZoom from './DigitalZoom'
+    import Review from './Review'
+    import ScaleLine from './ScaleLine'
+    import ColorMaps from './Colormaps'
     import OverviewMap from './OverviewMap'
 
     import OlTile from 'ol/layer/tile';
@@ -179,7 +179,7 @@
     import RotateControls from 'ol/control/rotate';
     import WKT from 'ol/format/wkt';
 
-    import mustBeShown from '../helpers/mustBeShown';
+    import mustBeShown from '../../helpers/mustBeShown';
 
     export default {
         name: 'Explore',

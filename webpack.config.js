@@ -2,11 +2,14 @@ var path = require('path')
 var webpack = require('webpack')
 
 module.exports = {
-  entry: './src/main.js',
+  entry: {
+    Explorer: './src/apps/explorer/main.js',
+    Software: './src/apps/software/main.js'
+  },
   output: {
     path: path.resolve(__dirname, './dist'),
-    publicPath: 'application/views/explorer/v2.0/dist/',
-    filename: 'build.js'
+    publicPath: 'application/views/v2.0/dist/',
+    filename: '[name].bundle.js'
   },
   module: {
     rules: [
@@ -61,7 +64,7 @@ module.exports = {
         exclude: /node_modules/
       },
       {
-        test: /\.(png|jpg|gif|svg)$/,
+        test: /\.(jpe|jpg|woff|woff2|eot|ttf|svg)(\?.*$|$)/,
         loader: 'file-loader',
         options: {
           name: '[name].[ext]?[hash]'

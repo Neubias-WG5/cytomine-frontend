@@ -23,7 +23,7 @@
 </template>
 
 <script>
-    import Explore from './components/Explore'
+    import Explore from '../../components/Explore/Explore'
 
     import uuid from 'uuid'
 
