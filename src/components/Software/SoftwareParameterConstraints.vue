@@ -1,5 +1,5 @@
 <template>
-    <span v-if="parameterConstraints.length > 0">
+    <span v-if="parameterConstraints && parameterConstraints.length > 0">
         <ul class="list-unstyled">
             <li v-for="pc in parameterConstraints" :key="pc.id">
                 <template v-if="constraintById(pc.parameterConstraint).name == 'minimum'">

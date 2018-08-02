@@ -207,17 +207,21 @@
                 <div class="col-md-4">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <h3 class="panel-title">Projects</h3>
+                            <h3 class="panel-title">Projects using {{software.fullName}}</h3>
                         </div>
-                        <div class="panel-body">
-                            <ol>
-                                <li v-for="project in projects" :key="project.id">
-                                    <a :href="'#tabs-algos-'+project.id+'-'+software.id+'-'">{{project.name}}</a>
-                                </li>
-                            </ol>
-                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item" v-for="(project, index) in projects" :key="project.id">
+                                <div class="btn-group pull-right">
+                                    <button class="btn btn-default btn-xs" @click="openInfoProjectModal(index)"><i class="fa fa-info-circle" aria-hidden="true"></i> Info</button>
+                                    <a class="btn btn-default btn-xs" :href="'#tabs-dashboard-'+project.id"><i class="fa fa-eye" aria-hidden="true"></i> Explore</a>
+                                </div>
+                                <a :href="'#tabs-algos-'+project.id+'-'+software.id+'-'">{{project.name}}</a>
+
+                            </li>
+                        </ul>
                     </div>
                 </div>
+                <project-info-modal :project="openInfoProject" :open="openInfoModal" @close="setOpenInfoModal"></project-info-modal>
             </div>
         </div>
     </div>
@@ -234,10 +238,12 @@
     import SoftwareSourceButtons from "./SoftwareUserRepository/SoftwareSourceButtons";
     import Modal from "uiv/src/components/modal/Modal";
     import SoftwareParameterConstraints from "./SoftwareParameterConstraints";
+    import ProjectInfoModal from "../Project/ProjectInfoModal";
 
     export default {
         name: "SoftwareDetail",
         components: {
+            ProjectInfoModal,
             SoftwareParameterConstraints,
             Modal,
             SoftwareSourceButtons,
@@ -262,14 +268,12 @@
                 showMoreInfo: false,
                 showParameters: [],
                 showParametersMoreInfo: [],
-                openStatsModal: false
+                openStatsModal: false,
+                openInfoModal: false,
+                openInfoProject: {}
             }
         },
         computed: {
-            // fullName() {
-            //     let v = (this.software.softwareVersion) ? ` (${this.software.softwareVersion})` : '';
-            //     return `${this.software.name} ${v}`;
-            // },
             statisticsData() {
                 return {
                     labels: ['Not launched', 'Waiting', 'In queue', 'Running', 'Successful', 'Failed', 'Indeterminate', 'Killed'],
@@ -302,6 +306,13 @@
                 return this.softwareUserRepositories.find(s => {
                     return s.id === id;
                 });
+            },
+            openInfoProjectModal(index) {
+                this.openInfoProject = this.projects[index];
+                this.openInfoModal = true;
+            },
+            setOpenInfoModal(value) {
+                this.openInfoModal = value;
             }
         },
         created() {
@@ -312,8 +323,6 @@
             api.get(`api/software/${this.software.id}/project.json`).then(response => {
                 this.projects = response.data.collection;
             });
-
-
 
             this.software.parameters.forEach(function(parameter) {
                 api.get(`api/domain/be.cytomine.processing.SoftwareParameter/${parameter.id}/description.json`).then(response => {
