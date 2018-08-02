@@ -1,13 +1,24 @@
 <template>
     <span class="td-date">
-        {{ parseInt(value) | moment("YYYY-MM-DD, HH:mm:ss") }}
+        <template v-if="!isNaN(integerValue)">
+            {{ integerValue | moment("YYYY-MM-DD, HH:mm:ss") }}
+        </template>
+        <template v-else>
+            <em>Never</em>
+        </template>
+
     </span>
 </template>
 
 <script>
     export default {
         name: 'DateItem',
-        props: ['value']
+        props: ['value'],
+        computed: {
+            integerValue() {
+                return parseInt(this.value)
+            }
+        }
     }
 </script>
 
