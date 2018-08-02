@@ -1,13 +1,14 @@
 <template>
     <div>
-        <tabs>
+        <tabs v-model="tabIndex">
             <tab title="Software list">
                 <p class="tab-content">
-                    <software-list></software-list>
+                    <software-list @addSoftwareTab="goToSoftwareTab"></software-list>
                 </p>
             </tab>
-            <tab title="A">
-                <software-detail v-for="softwareTab in softwareTabs" :key="softwareTab" :softwareId="softwareTab"></software-detail>
+            <tab v-for="software in softwareTabs" :key="software.id" :title="software.fullName">
+                <button class="btn pull-right" @click="removeSoftwareTab(software)">Close</button>
+                <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories"></software-detail>
             </tab>
 
         </tabs>
@@ -30,8 +31,10 @@
         },
         data() {
             return {
-                softwareTabs: [286],
+                softwareTabs: [],
                 maxTabs: 6,
+                tabIndex: 0,
+                softwareUserRepositories: [],
             }
         },
         computed: {
@@ -39,10 +42,40 @@
 
         },
         methods: {
+            goToSoftwareTab(software) {
+                let index = this.softwareTabs.findIndex(s => {
+                    return s.id === software.id;
+                });
 
+                if (index != -1)
+                    this.tabIndex = index + 1;
+                else
+                    this.addSoftwareTab(software);
+            },
+            addSoftwareTab(software) {
+                this.softwareTabs.push(software);
+                this.softwareTabs.splice(0, this.softwareTabs.length - this.maxTabs);
+                this.tabIndex = this.softwareTabs.length;
+            },
+            removeSoftwareTab(software) {
+                let index = this.softwareTabs.findIndex(s => {
+                    return s.id === software.id;
+                });
+                this.softwareTabs.splice(index, 1);
+                this.tabIndex = this.softwareTabs.length
+            },
+            checkRoute() {
+                // DEPENDS ON [BACKBONE]
+                this.currentRoute = Backbone.history.getFragment();
+            },
         },
         created() {
+            api.get(`api/software_user_repository.json`).then(response => {
+                this.softwareUserRepositories = response.data.collection;
+            });
 
+            // DEPENDS ON [BACKBONE]
+            setInterval(this.checkRoute, 1000)
         },
     }
 </script>
