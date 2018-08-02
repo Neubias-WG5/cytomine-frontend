@@ -1,6 +1,11 @@
 <template>
     <div>
-        <span v-if="value">
+        <span v-if="!row.softwareVersion">
+            <span class="label label-default">
+                No info
+            </span>
+        </span>
+        <span v-else-if="value">
             <span class="label label-default">
                 Deprecated
             </span>
@@ -17,7 +22,7 @@
 <script>
     export default {
         name: "SoftwareDeprecatedItem",
-        props: ['value']
+        props: ['value', 'row']
     }
 </script>
 

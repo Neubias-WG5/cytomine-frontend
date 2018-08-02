@@ -1,6 +1,6 @@
 <template>
     <btn-group>
-        <btn size="xs"><i class="fa fa-plus" aria-hidden="true"></i> Details</btn>
+        <button class="btn btn-xs" @click="addSoftwareTab(row)"><i class="fa fa-plus" aria-hidden="true"></i> Details</button>
     </btn-group>
 </template>
 
@@ -8,10 +8,16 @@
     import {BtnGroup, Btn} from 'uiv'
     export default {
         name: "SoftwareActionItem",
-        props: ['value', 'row'],
+        props: ['value', 'row', 'xprops'],
         components: {
             BtnGroup,
             Btn
+        },
+        methods: {
+            addSoftwareTab(software) {
+                this.xprops.eventbus.$emit('clickSoftwareDetails', software);
+
+            }
         }
     }
 </script>
