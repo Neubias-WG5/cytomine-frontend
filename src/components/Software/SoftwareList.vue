@@ -5,11 +5,11 @@
 </template>
 
 <script>
+    import Vue from 'vue'
     import DateItem from '../Datatable/DateItem'
     import BooleanItem from '../Datatable/BooleanItem'
     import SoftwareStatItem from './SoftwareStatItem'
     import SoftwareDeprecatedItem from './SoftwareDeprecatedItem'
-    import SoftwareNameItem from './SoftwareNameItem'
     import SoftwareActionItem from './SoftwareActionItem'
 
     export default {
@@ -19,14 +19,13 @@
             BooleanItem,
             SoftwareStatItem,
             SoftwareDeprecatedItem,
-            SoftwareNameItem,
             SoftwareActionItem
         },
         data() {
             return {
                 columns: [
                     { title: 'ID', field: 'id', group: 'General', sortable: true },
-                    { title: 'Name', field: 'name', group: 'General', sortable: true, visible: 'true', tdComp: 'SoftwareNameItem' },
+                    { title: 'Full name', field: 'fullName', group: 'General', sortable: true, visible: 'true'},
                     { title: 'Version', field: 'softwareVersion', group: 'General', sortable: true },
                     { title: 'Status', field: 'deprecated', group: 'General', sortable: true, tdComp: 'SoftwareDeprecatedItem' },
                     { title: 'Executable', field: 'executable', group: 'General', sortable: true, tdComp: 'BooleanItem' },
@@ -41,7 +40,11 @@
                 ],
                 data: [],
                 total: 0,
-                query: {}
+                xprops: {
+                    eventbus: new Vue() // only for the current Datatable instance
+                },
+                query: {},
+
 
             }
         },
@@ -55,7 +58,11 @@
                 },
                 deep: true
             }
-        }
+        },
+        created () {
+            this.xprops.eventbus
+                .$on('clickSoftwareDetails', (payload) => { this.$emit('addSoftwareTab', payload)})
+        },
     }
 </script>
 
