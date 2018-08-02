@@ -162,7 +162,10 @@
                                                 <dd v-else>No</dd>
 
                                                 <dt>Constraints</dt>
-                                                <dd>...</dd>
+                                                <dd>
+                                                    <software-parameter-constraints :parameterConstraints="parameter.constraints"
+                                                                                    :constraints="parameterConstraints"></software-parameter-constraints>
+                                                </dd>
                                             </dl>
 
                                             <button class="btn pull-right" @click="toogleMoreInfo(index)">
@@ -230,10 +233,12 @@
     import SoftwareRepositoryName from "./SoftwareUserRepository/SoftwareRepositoryName";
     import SoftwareSourceButtons from "./SoftwareUserRepository/SoftwareSourceButtons";
     import Modal from "uiv/src/components/modal/Modal";
+    import SoftwareParameterConstraints from "./SoftwareParameterConstraints";
 
     export default {
         name: "SoftwareDetail",
         components: {
+            SoftwareParameterConstraints,
             Modal,
             SoftwareSourceButtons,
             SoftwareRepositoryName,
@@ -246,7 +251,8 @@
         },
         props: [
             'software',
-            'softwareUserRepositories'
+            'softwareUserRepositories',
+            'parameterConstraints'
         ],
         data() {
             return {
@@ -293,14 +299,9 @@
                 this.$set(this.showParametersMoreInfo, index, !this.showParametersMoreInfo[index])
             },
             findSoftwareRepository(id) {
-
-                console.log(this.softwareUserRepositories);
-                let found =  this.softwareUserRepositories.find(s => {
+                return this.softwareUserRepositories.find(s => {
                     return s.id === id;
                 });
-                console.log(found);
-                console.log("--");
-                return found;
             }
         },
         created() {
@@ -317,6 +318,10 @@
             this.software.parameters.forEach(function(parameter) {
                 api.get(`api/domain/be.cytomine.processing.SoftwareParameter/${parameter.id}/description.json`).then(response => {
                     parameter.description = response.data.data;
+                });
+
+                api.get(`api/softwareparameter/${parameter.id}/constraint.json`).then(response => {
+                    parameter.constraints = response.data.collection;
                 })
             });
 

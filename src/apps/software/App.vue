@@ -8,7 +8,8 @@
             </tab>
             <tab v-for="software in softwareTabs" :key="software.id" :title="software.fullName">
                 <button class="btn pull-right" @click="removeSoftwareTab(software)">Close</button>
-                <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories"></software-detail>
+                <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories"
+                :parameterConstraints="parameterConstraints"></software-detail>
             </tab>
 
         </tabs>
@@ -35,6 +36,7 @@
                 maxTabs: 6,
                 tabIndex: 0,
                 softwareUserRepositories: [],
+                parameterConstraints: [],
             }
         },
         computed: {
@@ -72,6 +74,10 @@
         created() {
             api.get(`api/software_user_repository.json`).then(response => {
                 this.softwareUserRepositories = response.data.collection;
+            });
+
+            api.get(`api/parameter_constraint.json`).then(response => {
+                this.parameterConstraints = response.data.collection;
             });
 
             // DEPENDS ON [BACKBONE]
