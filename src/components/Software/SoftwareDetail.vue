@@ -343,8 +343,8 @@
 </script>
 
 <style scoped>
-    .container-fluid {
-        width: 99%;
+    .row {
+        margin-right: -14px;
     }
 
     ol {

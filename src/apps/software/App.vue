@@ -89,6 +89,14 @@
 <style>
     .tab-content {
         padding: 1em;
+        padding-top: 40px;
+    }
+
+    .nav-tabs {
+        position: fixed;
+        z-index: 1000;
+        width: 100%;
+        background-color: white;
     }
 
 </style>
