@@ -12,8 +12,8 @@
                         <div class="panel-heading clearfix">
                             <h3 class="panel-title pull-left">General information</h3>
                             <div class="btn-group pull-right">
-                                <button class="btn btn-default btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                <button class="btn btn-default btn-xs"><i class="fa fa-trash" aria-hidden="true"></i></button>
+                                <button class="btn btn-default btn-xs" @click="openEditModal=true"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                <delete-object-button :object="software" domain="software" domain-pretty-print="software" @delete-software="deleteSoftware"></delete-object-button>
                             </div>
                         </div>
                         <div class="panel-body">
@@ -76,6 +76,7 @@
                             </collapse>
                         </div>
                     </div>
+                    <software-edit-modal :software="software" :open="openEditModal" @close="setOpenEditModal" @update-software="updateSoftware"></software-edit-modal>
 
                 </div>
                 <div class="col-md-4">
@@ -142,8 +143,12 @@
                         <div class="panel-body">
                             <div class="panel-group">
                                 <div class="panel panel-default" v-for="(parameter, index) in software.parameters" :key="parameter.id">
-                                    <div class="panel-heading" role="button" @click="toggleAccordion(index)">
-                                        <h4 class="panel-title">{{parameter.humanName}} (<code>{{parameter.name}}</code>)</h4>
+                                    <div class="panel-heading clearfix" role="button" @click="toggleAccordion(index)">
+                                        <h4 class="panel-title pull-left">{{parameter.humanName}} (<code>{{parameter.name}}</code>)</h4>
+                                        <div class="btn-group pull-right">
+                                            <button class="btn btn-default btn-xs" @click="showEditParameterModal(index)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                            <delete-object-button :object="parameter" domain="softwareparameter" domain-pretty-print="software parameter" @delete-softwareparameter="deleteSoftwareParameter"></delete-object-button>
+                                        </div>
                                     </div>
                                     <collapse v-model="showParameters[index]">
                                         <div class="panel-body">
@@ -204,6 +209,8 @@
                         </div>
                     </div>
                 </div>
+                <software-parameter-edit-modal :sp="openParameter" :open="openEditParameterModal" @close="setOpenEditParameterModal" @update-softwareparameter="updateSoftwareParameter"></software-parameter-edit-modal>
+
                 <div class="col-md-4">
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -239,10 +246,16 @@
     import Modal from "uiv/src/components/modal/Modal";
     import SoftwareParameterConstraints from "./SoftwareParameterConstraints";
     import ProjectInfoModal from "../Project/ProjectInfoModal";
+    import SoftwareEditModal from "./SoftwareEditModal";
+    import SoftwareParameterEditModal from "./SoftwareParameterEditModal";
+    import DeleteObjectButton from "../Datatable/DeleteObjectButton";
 
     export default {
         name: "SoftwareDetail",
         components: {
+            DeleteObjectButton,
+            SoftwareEditModal,
+            SoftwareParameterEditModal,
             ProjectInfoModal,
             SoftwareParameterConstraints,
             Modal,
@@ -270,7 +283,10 @@
                 showParametersMoreInfo: [],
                 openStatsModal: false,
                 openInfoModal: false,
-                openInfoProject: {}
+                openInfoProject: {},
+                openEditModal: false,
+                openEditParameterModal: false,
+                openParameter: {},
             }
         },
         computed: {
@@ -311,8 +327,43 @@
                 this.openInfoProject = this.projects[index];
                 this.openInfoModal = true;
             },
+            showEditParameterModal(index) {
+                this.openEditParameterModal = true;
+                this.openParameter = this.software.parameters[index];
+            },
             setOpenInfoModal(value) {
                 this.openInfoModal = value;
+            },
+            setOpenEditModal(value) {
+                this.openEditModal = value;
+            },
+            setOpenEditParameterModal(value) {
+                this.openEditParameterModal = value;
+            },
+            deleteSoftware(payload) {
+                this.$emit('delete-software', payload);
+            },
+            updateSoftware(payload) {
+                this.$emit('update-software', payload);
+            },
+            deleteSoftwareParameter(payload) {
+                let index = this.software.parameters.findIndex(s => {
+                    return s.id === payload.id;
+                });
+
+                if (index != -1) {
+                    this.software.parameters.splice(index, 1);
+                }
+            },
+            updateSoftwareParameter(payload) {
+                let index = this.software.parameters.findIndex(s => {
+                    return s.id === payload.id;
+                });
+
+                if (index != -1) {
+                    this.$set(this.software.parameters, index, payload);
+                    this.$emit('update-software', this.software);
+                }
             }
         },
         created() {

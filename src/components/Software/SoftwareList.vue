@@ -21,6 +21,7 @@
             SoftwareDeprecatedItem,
             SoftwareActionItem
         },
+        props: ['refresh'],
         data() {
             return {
                 columns: [
@@ -51,12 +52,23 @@
         watch: {
             query: {
                 handler (query) {
-                    api.get(`api/software.json?max=${query.limit}&offset=${query.offset}`).then(response => {
-                        this.data = response.data.collection;
-                        this.total = response.data.size;
-                    });
+                    this.callAPI(query)
                 },
                 deep: true
+            },
+            refresh(newValue) {
+                if (newValue) {
+                    this.callAPI(this.query);
+                    this.$emit('update:refresh', false);
+                }
+            }
+        },
+        methods: {
+            callAPI(query) {
+                api.get(`api/software.json?max=${query.limit}&offset=${query.offset}`).then(response => {
+                    this.data = response.data.collection;
+                    this.total = response.data.size;
+                });
             }
         },
         created () {

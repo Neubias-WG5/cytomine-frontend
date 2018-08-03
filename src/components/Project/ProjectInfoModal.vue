@@ -140,12 +140,6 @@
                 })
             }
         },
-        created() {
-
-        },
-        mounted() {
-
-        }
     }
 </script>
 

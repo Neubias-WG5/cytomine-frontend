@@ -7,10 +7,15 @@ import Datatable from 'vue2-datatable-component'
 // import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'vue-popperjs/dist/css/vue-popper.css';
 import 'font-awesome/css/font-awesome.css'
+import * as uiv from 'uiv'
 
 window.api = Axios.create({
     baseUrl: 'http://localhost:8085/',
 })
+
+
+
+Vue.use(uiv);
 
 // Vue.use(BootstrapVue);
 Vue.use(Datatable);

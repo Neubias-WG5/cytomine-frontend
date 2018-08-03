@@ -3,13 +3,13 @@
         <tabs v-model="tabIndex">
             <tab title="Software list">
                 <p class="tab-content">
-                    <software-list @addSoftwareTab="goToSoftwareTab"></software-list>
+                    <software-list @addSoftwareTab="goToSoftwareTab" v-bind:refresh.sync="refreshDatatable"></software-list>
                 </p>
             </tab>
             <tab v-for="software in softwareTabs" :key="software.id" :title="software.fullName">
                 <button class="btn pull-right" @click="removeSoftwareTab(software)">Close</button>
                 <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories"
-                :parameterConstraints="parameterConstraints"></software-detail>
+                :parameterConstraints="parameterConstraints" @delete-software="deleteSoftware" @update-software="updateSoftware"></software-detail>
             </tab>
 
         </tabs>
@@ -37,6 +37,7 @@
                 tabIndex: 0,
                 softwareUserRepositories: [],
                 parameterConstraints: [],
+                refreshDatatable: false,
             }
         },
         computed: {
@@ -44,11 +45,13 @@
 
         },
         methods: {
-            goToSoftwareTab(software) {
-                let index = this.softwareTabs.findIndex(s => {
+            findSoftwareIndex(software) {
+                return this.softwareTabs.findIndex(s => {
                     return s.id === software.id;
                 });
-
+            },
+            goToSoftwareTab(software) {
+                let index = this.findSoftwareIndex(software);
                 if (index != -1)
                     this.tabIndex = index + 1;
                 else
@@ -60,11 +63,21 @@
                 this.tabIndex = this.softwareTabs.length;
             },
             removeSoftwareTab(software) {
-                let index = this.softwareTabs.findIndex(s => {
-                    return s.id === software.id;
-                });
-                this.softwareTabs.splice(index, 1);
-                this.tabIndex = this.softwareTabs.length
+                let index = this.findSoftwareIndex(software);
+                if (index != -1) {
+                    this.softwareTabs.splice(index, 1);
+                    this.tabIndex = this.softwareTabs.length
+                }
+            },
+            deleteSoftware(software) {
+                this.removeSoftwareTab(software);
+                this.tabIndex = 0;
+                this.refreshDatatable = true;
+            },
+            updateSoftware(software) {
+                let index = this.findSoftwareIndex(software);
+                this.$set(this.softwareTabs, index, software);
+                this.refreshDatatable = true;
             },
             checkRoute() {
                 // DEPENDS ON [BACKBONE]
