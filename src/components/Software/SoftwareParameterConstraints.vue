@@ -1,5 +1,5 @@
 <template>
-    <span v-if="parameterConstraints && parameterConstraints.length > 0">
+    <div v-if="parameterConstraints && parameterConstraints.length > 0">
         <ul class="list-unstyled">
             <li v-for="pc in parameterConstraints" :key="pc.id">
                 <template v-if="constraintById(pc.parameterConstraint).name == 'minimum'">
@@ -16,10 +16,8 @@
                 </template>
             </li>
         </ul>
-    </span>
+    </div>
     <span v-else>/</span>
-
-
 </template>
 
 <script>
@@ -36,7 +34,6 @@
                 });
             }
         }
-
     }
 </script>
 

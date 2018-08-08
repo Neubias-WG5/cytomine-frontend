@@ -56,9 +56,6 @@
                     <input v-model="localData.commandLineFlag" type="text" class="form-control" id="command-line-flag" placeholder="Command line flag">
                 </div>
             </div>
-
-
-
         </form>
 
         <div slot="footer">
@@ -69,6 +66,7 @@
 </template>
 
 <script>
+    import Vue from 'vue'
     import { Modal, Alert } from 'uiv';
 
     export default {
@@ -79,23 +77,23 @@
         },
         data() {
             return {
-                localData: {}
+                localData: {},
+                errors: null
             }
         },
         props: [
             'open',
             'sp',
-            'errors'
         ],
         watch: {
             open(newValue) {
                 if (newValue)
-                    this.localData = JSON.parse(JSON.stringify(this.sp));
+                    this.localData = Vue.util.extend({}, this.sp);
             }
         },
         methods: {
             close() {
-                this.$emit('close', false)
+                this.$emit('update:open', false)
             },
             tryToEdit() {
                 api.put(`api/softwareparameter/${this.sp.id}.json`, this.localData).then(response => {

@@ -6,21 +6,27 @@
 
         <dl class="dl-horizontal">
             <dt>Creator</dt>
-            <dd><username-list :users="creators" :online="online"></username-list></dd>
+            <dd>
+                <username-list :users="creators" :online="online"></username-list>
+            </dd>
 
             <dt>Managers</dt>
-            <dd><username-list :users="admins" :online="online"></username-list></dd>
+            <dd>
+                <username-list :users="admins" :online="online"></username-list>
+            </dd>
 
             <dt>Contributors</dt>
-            <dd><username-list :users="contributors" :online="online"></username-list></dd>
-
-            <!--<dt>Online users</dt>-->
-            <!--<dd><username-list :users="online"></username-list></dd>-->
+            <dd>
+                <username-list :users="contributors" :online="online"></username-list>
+            </dd>
 
             <dt>Contact <i class="fa fa-envelope" aria-hidden="true"></i></dt>
             <dd>
                 <ul class="list-unstyled" v-if="representatives.length > 0">
-                    <li v-for="u in representatives"><username :user="userById(u.user)"></username> - {{userById(u.user).email}} </li>
+                    <li v-for="u in representatives">
+                        <username :user="userById(u.user)"></username>
+                        - {{userById(u.user).email}}
+                    </li>
                 </ul>
                 <span v-else>No contact</span>
             </dd>
@@ -63,7 +69,7 @@
             <p class="lead">Some images</p>
             <carousel>
                 <slide v-for="(slide, index) in images" :key="index">
-                    <img :src="slide.thumb" :alt="slide.instanceFilename" />
+                    <img :src="slide.thumb" :alt="slide.instanceFilename"/>
                 </slide>
             </carousel>
         </template>
@@ -73,9 +79,10 @@
 </template>
 
 <script>
-    import { Modal, Carousel, Slide } from "uiv";
+    import {Modal, Carousel, Slide} from "uiv";
     import Username from "../User/Username";
     import UsernameList from "../User/UsernameList";
+
     export default {
         name: "ProjectInfoModal",
         components: {
@@ -88,7 +95,7 @@
         props: ['project', 'open'],
         data() {
             return {
-                description: undefined,
+                description: null,
                 images: [],
                 creators: [],
                 admins: [],
@@ -104,7 +111,7 @@
                 });
             },
             close() {
-                this.$emit('close', false)
+                this.$emit('update:open', false)
             }
         },
         watch: {
@@ -147,26 +154,30 @@
     .milestone-counter {
         text-align: center;
     }
+
     .stat {
-        margin:10px auto;
+        margin: 10px auto;
     }
+
     .highlight {
-        color:#111;
-        padding:20px 0;
-        font-weight:bold;
-        display:block;
-        overflow:hidden;
-        margin-bottom:0;
-        font-size:36px;
+        color: #111;
+        padding: 20px 0;
+        font-weight: bold;
+        display: block;
+        overflow: hidden;
+        margin-bottom: 0;
+        font-size: 36px;
         -ms-word-wrap: break-word;
         word-wrap: break-word;
     }
+
     .stat i {
         color: #3498db;
     }
+
     .milestone-details {
-        font-weight:bold;
-        font-size:18px;
-        color:#999;
+        font-weight: bold;
+        font-size: 18px;
+        color: #999;
     }
 </style>

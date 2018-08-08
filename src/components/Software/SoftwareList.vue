@@ -45,8 +45,6 @@
                     eventbus: new Vue() // only for the current Datatable instance
                 },
                 query: {},
-
-
             }
         },
         watch: {
@@ -72,8 +70,7 @@
             }
         },
         created () {
-            this.xprops.eventbus
-                .$on('clickSoftwareDetails', (payload) => { this.$emit('addSoftwareTab', payload)})
+            this.xprops.eventbus.$on('clickSoftwareDetails', (payload) => { this.$emit('addSoftwareTab', payload)})
         },
     }
 </script>

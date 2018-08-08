@@ -1,17 +1,18 @@
 <template>
-    <div>
-        <tabs v-model="tabIndex">
+    <div class="software">
+        <tabs v-model="currentTabIndex">
             <tab title="Software list">
                 <p class="tab-content">
-                    <software-list @addSoftwareTab="goToSoftwareTab" v-bind:refresh.sync="refreshDatatable"></software-list>
+                    <software-list @addSoftwareTab="goToSoftwareTab"
+                                   v-bind:refresh.sync="refreshDatatable"></software-list>
                 </p>
             </tab>
             <tab v-for="software in softwareTabs" :key="software.id" :title="software.fullName">
                 <button class="btn pull-right" @click="removeSoftwareTab(software)">Close</button>
                 <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories"
-                :parameterConstraints="parameterConstraints" @delete-software="deleteSoftware" @update-software="updateSoftware"></software-detail>
+                                 :parameterConstraints="parameterConstraints" @delete-software="deleteSoftware"
+                                 @update-software="updateSoftware"></software-detail>
             </tab>
-
         </tabs>
     </div>
 
@@ -19,8 +20,8 @@
 
 <script>
     import {Tabs, Tab} from 'uiv'
-    import SoftwareList from "../../components/Software/SoftwareList";
-    import SoftwareDetail from "../../components/Software/SoftwareDetail"
+    import SoftwareList from "./SoftwareList";
+    import SoftwareDetail from "./SoftwareDetail"
 
     export default {
         name: 'app-software',
@@ -34,15 +35,13 @@
             return {
                 softwareTabs: [],
                 maxTabs: 6,
-                tabIndex: 0,
+                currentTabIndex: 0,
+                refreshDatatable: false,
+
+                // TODO: externalize in VueX.
                 softwareUserRepositories: [],
                 parameterConstraints: [],
-                refreshDatatable: false,
             }
-        },
-        computed: {
-
-
         },
         methods: {
             findSoftwareIndex(software) {
@@ -53,25 +52,25 @@
             goToSoftwareTab(software) {
                 let index = this.findSoftwareIndex(software);
                 if (index != -1)
-                    this.tabIndex = index + 1;
+                    this.currentTabIndex = index + 1;
                 else
                     this.addSoftwareTab(software);
             },
             addSoftwareTab(software) {
                 this.softwareTabs.push(software);
                 this.softwareTabs.splice(0, this.softwareTabs.length - this.maxTabs);
-                this.tabIndex = this.softwareTabs.length;
+                this.currentTabIndex = this.softwareTabs.length;
             },
             removeSoftwareTab(software) {
                 let index = this.findSoftwareIndex(software);
                 if (index != -1) {
                     this.softwareTabs.splice(index, 1);
-                    this.tabIndex = this.softwareTabs.length
+                    this.currentTabIndex = this.softwareTabs.length
                 }
             },
             deleteSoftware(software) {
                 this.removeSoftwareTab(software);
-                this.tabIndex = 0;
+                this.currentTabIndex = 0;
                 this.refreshDatatable = true;
             },
             updateSoftware(software) {
@@ -85,6 +84,7 @@
             },
         },
         created() {
+            // TODO: externalize in VueX
             api.get(`api/software_user_repository.json`).then(response => {
                 this.softwareUserRepositories = response.data.collection;
             });
@@ -100,17 +100,15 @@
 </script>
 
 <style>
-    .tab-content {
+    .software .tab-content {
         padding: 1em;
         padding-top: 40px;
     }
 
-    .nav-tabs {
+    .software .nav-tabs {
         position: fixed;
         z-index: 1000;
         width: 100%;
         background-color: white;
     }
-
 </style>
-

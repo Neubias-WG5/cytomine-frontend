@@ -1,15 +1,23 @@
 <template>
     <span>
         <template v-if="sourceCodeProvider == 'github'">
-            <a class="btn btn-primary" :href="sourceCodeUrl"><i class="fa fa-github fa-fw" aria-hidden="true"></i> See source code on GitHub</a>
+            <a class="btn btn-primary" :href="sourceCodeUrl">
+                <i class="fa fa-github fa-fw" aria-hidden="true"></i> See source code on GitHub
+            </a>
         </template>
         <template v-else-if="sourceCodeProvider == 'gitlab'">
-            <a class="btn btn-primary" :href="sourceCodeUrl"><i class="fa fa-gitlab fa-fw" aria-hidden="true"></i> See source code on GitLab</a>
+            <a class="btn btn-primary" :href="sourceCodeUrl">
+                <i class="fa fa-gitlab fa-fw" aria-hidden="true"></i> See source code on GitLab
+            </a>
         </template>
         <template v-else>
-            <a class="btn btn-primary" :href="sourceCodeUrl"><i class="fa fa-bitbucket fa-fw" aria-hidden="true"></i> See source code on Bitbucket</a>
+            <a class="btn btn-primary" :href="sourceCodeUrl">
+                <i class="fa fa-bitbucket fa-fw" aria-hidden="true"></i> See source code on Bitbucket
+            </a>
         </template>
-        <a class="btn btn-primary" :href="environmentUrl"><i class="fa fa-ship fa-fw" aria-hidden="true"></i> See environment on DockerHub</a>
+        <a class="btn btn-primary" :href="environmentUrl">
+            <i class="fa fa-ship fa-fw" aria-hidden="true"></i> See environment on DockerHub
+        </a>
     </span>
 </template>
 

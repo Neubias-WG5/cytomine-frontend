@@ -7,7 +7,7 @@
         name: "DeleteObjectButton",
         props: ['object', 'domain', 'domainPrettyPrint'],
         methods: {
-            confirm () {
+            confirm() {
                 this.$confirm({
                     title: 'Confirm',
                     okType: 'danger',
@@ -29,7 +29,6 @@
                                 content: error.response.data.errors
                             })
                         })
-
                     })
                     .catch(() => {
                         this.$notify({
