@@ -24,9 +24,12 @@
              class="panel component-panel component-panel-bottom"
              :style="`max-height:66%; ${selectedComponent == 'multidimension' ? 'width:33%;' :  ''}`">
             <div class="panel-body">
-                <informations v-show="selectedComponent == 'informations'" @updateImsServer="setImsServer"
-                              @changeImage="changeImage" :filterUrl="filterUrl"
-                              :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
+                <div v-show="selectedComponent == 'informations'">
+                    <informations :image="currentMap.data" :project="project"></informations>
+                    <hr>
+                    <navigation-image :current-image-id="currentMap.id" @changeImage=""></navigation-image>
+                </div>
+
 
                 <div v-show="selectedComponent == 'linkmap' && mustBeShown('project-explore-link') && hasMultiViews">
                     <div class="alert alert-info">Choose a view to link with this one.</div>
@@ -35,7 +38,7 @@
                         <template v-if="index !== viewerIndex">
                             <input v-model="linkValue" :value="map.id" @change="sendLink(map.id)" type="checkbox"
                                    :name="currentMap.id + map.id" :id="currentMap.id + map.id">
-                            <label :for="currentMap.id + map.id">{{ mapNames[index] }}
+                            <label :for="currentMap.id + map.id">{{ viewerNames[index] }}
                                 ({{instanceFilename(map.data)}})</label>
                         </template>
                     </div>
@@ -100,7 +103,7 @@
 <script>
     import AnnotationLayers from './AnnotationLayers'
     import Interactions from './Interactions';
-    import Informations from './Informations';
+    import Informations from './Panels/Informations';
     import Position from './Position';
     import Ontology from './Ontology';
     import AnnotationDetails from './AnnotationDetails';
@@ -123,11 +126,13 @@
 
     import mustBeShown from '../../helpers/mustBeShown';
     import Filters from "./Panels/Filters";
+    import NavigationImage from "./Panels/NavigationImage";
 
 
     export default {
         name: 'Viewer',
         components: {
+            NavigationImage,
             Filters,
             ViewerButtons,
             AnnotationLayers,
@@ -147,7 +152,7 @@
         },
         data() {
             return {
-                mapNames: ['View 1', 'View 2', 'View 3', 'View 4'],
+                viewerNames: ['View 1', 'View 2', 'View 3', 'View 4'],
                 selectedComponent: '',
                 selectedFilter: "",
 
