@@ -1,84 +1,38 @@
 <template>
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
-        <div  @mousemove="sendView" @mousewheel="sendView"
-             :id="currentMap.id" ref="exploreMap">
-        </div>
+        <div  @mousemove="sendView" @mousewheel="sendView" :id="currentMap.id" ref="exploreMap"></div>
         <div class="controls" :id="'controls-'+currentMap.id"></div>
-        <interactions v-show="this.lastEventMapId == this.currentMap.id" @updateLayers="setUpdateLayers"
+
+        <interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"
                       @featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"
                       @updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity"
                       :currentUser="currentUser" :project="project">
         </interactions>
+
         <overview-map :currentMap="currentMap" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>
-        <div>
-            <div v-show="this.lastEventMapId == this.currentMap.id" class="bottom-panel btn-group" role="group">
-                <button v-if="mustBeShown('project-explore-info')" @click="setShowComponent('informations')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'informations' }]" title="Informations">
-                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                </button>
-                <button v-if="mustBeShown('project-explore-link') && this.maps.length > 1"
-                        @click="setShowComponent('linkmap')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'linkmap' }]" title="Vue link">
-                    <span class="glyphicon glyphicon-link" aria-hidden="true"></span>
-                </button>
-                <button v-if="mustBeShown('project-explore-image-layers') && this.filters.length > 1"
-                        @click="setShowComponent('filter')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'filter' }]" title="Image filters">
-                    <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
-                </button>
-                <button v-if="mustBeShown('project-explore-digital-zoom')" @click="setShowComponent('digitalZoom')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'digitalZoom' }]" title="Digital zoom">
-                    <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
-                </button>
-                <button v-if="mustBeShown('project-explore-colormap')" @click="setShowComponent('colormap')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'colormap' }]" title="Color maps">
-                    <span class="glyphicon glyphicon-adjust" aria-hidden="true"></span>
-                </button>
-                <button @click="setShowComponent('annotationLayers')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'annotationLayers' }]" title="Annotation layers">
-                    Annotation layers
-                </button>
-                <button v-if="mustBeShown('project-explore-annotation-panel')"
-                        @click="setShowComponent('annotationList')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'annotationList' }]" title="User annotations list">
-                    <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
-                    Annotation list
-                </button>
-                <button v-if="imageGroups[0]" @click="setShowComponent('multidimension')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'multidimension' }]" title="Multidimension">
-                    Multidimension
-                </button>
-                <button v-if="isReviewing" @click="setShowComponent('review')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'review' }]" title="Review">
-                    <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
-                    Review
-                </button>
-                <button v-if="mustBeShown('project-explore-property')" @click="setShowComponent('properties')"
-                        :class="['btn', 'btn-default', {active: showComponent == 'properties' }]" title="Annotation properties">
-                    <span class="glyphicon glyphicon-tag" aria-hidden="true"></span>
-                </button>
-                <button v-if="this.maps.length > 1" class="btn btn-danger" @click="deleteMap" title="Remove this view from the explorer">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                </button>
-            </div>
-            <div v-show="this.lastEventMapId == this.currentMap.id" class="scale-line-panel">
+        <div v-show="isCurrentViewer">
+            <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
+                            :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
+                            :has-image-groups="hasImageGroups" :project-config="currentMap.projectConfig"></viewer-buttons>
+
+            <div class="scale-line-panel">
                 <scale-line :currentMap="currentMap" :mousePosition="mousePosition"
                             :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
             </div>
         </div>
-        <div v-show="(this.lastEventMapId == this.currentMap.id && showComponent != '')"
+        <div v-show="(isCurrentViewer && selectedComponent != '')"
              class="panel component-panel component-panel-bottom"
-             :style="`max-height:66%; ${showComponent == 'multidimension' ? 'width:33%;' :  ''}`">
+             :style="`max-height:66%; ${selectedComponent == 'multidimension' ? 'width:33%;' :  ''}`">
             <div class="panel-body">
-                <informations v-show="showComponent == 'informations'" @updateImsServer="setImsServer"
+                <informations v-show="selectedComponent == 'informations'" @updateImsServer="setImsServer"
                               @changeImage="changeImage" :filterUrl="filterUrl"
                               :imsBaseUrl="imsBaseUrl" :currentMap="currentMap" :project="project"></informations>
 
-                <div v-show="showComponent == 'linkmap' && mustBeShown('project-explore-link') && this.maps.length > 1">
+                <div v-show="selectedComponent == 'linkmap' && mustBeShown('project-explore-link') && hasMultiViews">
                     <div class="alert alert-info">Choose a view to link with this one.</div>
                     <label :for="'link-'+currentMap.id">Link this view with </label>
-                    <div v-for="(map, index) in maps" :key="'linkdiv' + map.id">
-                        <template v-if="index !== mapIndex">
+                    <div v-for="(map, index) in viewers" :key="'linkdiv' + map.id">
+                        <template v-if="index !== viewerIndex">
                             <input v-model="linkValue" :value="map.id" @change="sendLink(map.id)" type="checkbox"
                                    :name="currentMap.id + map.id" :id="currentMap.id + map.id">
                             <label :for="currentMap.id + map.id">{{ mapNames[index] }}
@@ -87,31 +41,18 @@
                     </div>
                 </div>
 
-                <digital-zoom v-show="showComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
+                <digital-zoom v-show="selectedComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
                               :currentMap="currentMap"></digital-zoom>
 
-                <div
-                    v-show="showComponent == 'filter' && mustBeShown('project-explore-image-layers') && this.filters.length > 1">
-                    <div class="alert alert-info">Choose a filter to apply</div>
 
-                    <div class="radio">
-                        <input v-model="filterSelected" type="radio" :name="'filter-original-'+currentMap.id"
-                               :id="'filter-original-'+currentMap.id" value="">
-                        <label :for="'filter-original-'+currentMap.id">Original</label>
+                <filters v-show="selectedComponent == 'filter' && mustBeShown('project-explore-image-layers') && hasFilters"
+                         :viewer-id="currentMap.id" :filters="filters" :selectedFilter.sync="selectedFilter">
+                </filters>
 
-                        <div v-for="filter in filters" :key="filter.id">
-                            <input v-model="filterSelected" type="radio" :name="'filter-'+filter.id+'-'+currentMap.id"
-                                   :id="'filter-'+filter.id+'-'+currentMap.id" :value="filter">
-                            <label :for="'filter-'+filter.id+'-'+currentMap.id">{{filter.name}}</label>
-                        </div>
-                    </div>
-
-                </div>
-
-                <color-maps v-show="showComponent == 'colormap' && mustBeShown('project-explore-colormap')"
+                <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
                             :currentMap="currentMap"></color-maps>
 
-                <div v-show="showComponent == 'annotationLayers'">
+                <div v-show="selectedComponent == 'annotationLayers'">
                     <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity"
                                        @layersSelected="setLayersSelected" @userLayers="setUserLayers"
                                        @updateAnnotationsIndex="setUpdateAnnotationsIndex"
@@ -126,24 +67,24 @@
                               @allTerms="setAllTerms"></ontology>
                 </div>
 
-                <annotations v-show="showComponent == 'annotationList'"
+                <annotations v-show="selectedComponent == 'annotationList'"
                              @updateAnnotationsIndex="setUpdateAnnotationsIndex"
                              :updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing"
                              :users="userLayers" :terms="allTerms" :currentMap="currentMap"></annotations>
 
-                <review v-if="isReviewing" v-show="showComponent == 'review'"
+                <review v-if="isReviewing" v-show="selectedComponent == 'review'"
                         @updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers"
                         @featureSelectedData="setFeatureSelectedData" @changeImage="changeImage"
                         :layersSelected="layersSelected" :currentMap="currentMap"
                         :featureSelectedData="featureSelectedData" :featureSelected="featureSelected"
                         :userLayers="userLayers"></review>
 
-                <multidimension v-if="imageGroups[0]" v-show="showComponent == 'multidimension'"
+                <multidimension v-if="imageGroups[0]" v-show="selectedComponent == 'multidimension'"
                                 @imageGroupHasChanged="setImageGroup" :imageGroups="imageGroups"
                                 :filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @changeImage="changeImage"
                                 :currentMap="currentMap"  :mousePosition="mousePosition"></multidimension>
 
-                <properties v-show="showComponent == 'properties'" :layersSelected="layersSelected"
+                <properties v-show="selectedComponent == 'properties'" :layersSelected="layersSelected"
                             :currentMap="currentMap"></properties>
             </div>
         </div>
@@ -178,12 +119,17 @@
     import ZoomControls from 'ol/control/zoom';
     import RotateControls from 'ol/control/rotate';
     import WKT from 'ol/format/wkt';
+    import ViewerButtons from "./ViewerButtons";
 
     import mustBeShown from '../../helpers/mustBeShown';
+    import Filters from "./Panels/Filters";
+
 
     export default {
-        name: 'Explore',
+        name: 'Viewer',
         components: {
+            Filters,
+            ViewerButtons,
             AnnotationLayers,
             Interactions,
             Informations,
@@ -201,10 +147,12 @@
         },
         data() {
             return {
-                linkValue: [],
                 mapNames: ['View 1', 'View 2', 'View 3', 'View 4'],
+                selectedComponent: '',
+                selectedFilter: "",
+
+                linkValue: [],
                 imsBaseUrl: '',
-                filterSelected: "",
                 extent: [],
                 mousePosition: [0, 0],
                 termsToShow: [],
@@ -218,7 +166,7 @@
                 updateLayers: false,
                 updateAnnotationsIndex: false,
                 onlineUsers: [],
-                showComponent: '',
+
                 showPanel: true,
                 addLayer: '',
                 zoom: 0,
@@ -228,31 +176,46 @@
             }
         },
         props: [
-            'mapView',
-            'maps',
-            'currentMap',
-            'lastEventMapId',
+            'currentRoute',
+            'project',
+            'projectConfig',
             'filters',
             'imageGroups',
-            'currentRoute',
-            'paddingTop',
-            'project',
             'currentUser',
+            'viewers',
+            'paddingTop',
+
+            'mapView',
+            'currentMap',
+            'lastEventMapId',
         ],
         computed: {
+            isCurrentViewer() {
+                return this.lastEventMapId == this.currentMap.id;
+            },
+            hasFilters() {
+                return this.filters.length > 0
+            },
+            hasImageGroups() {
+                return this.imageGroups.length > 0
+            },
+            hasMultiViews() {
+                return this.viewers.length > 1
+            },
+            filterUrl() {
+                if (!this.selectedFilter)
+                    return "";
+                return `${this.selectedFilter.imagingServer}${this.selectedFilter.baseUrl}`;
+            },
+
+
             linkedTo() {
                 return this.currentMap.linkedTo;
             },
-            mapIndex() {
-                return this.maps.findIndex(map => map.id === this.currentMap.id);
+            viewerIndex() {
+                return this.viewers.findIndex(map => map.id === this.currentMap.id);
             },
-            filterUrl() {
-                if (this.filterSelected !== "") {
-                    return `${this.filterSelected.processingServer}${this.filterSelected.baseUrl}`;
-                } else {
-                    return "";
-                }
-            },
+
             mapWidth() {
                 return parseInt(this.currentMap.data.width)
             },
@@ -283,14 +246,14 @@
                 return this.innerHeight - this.paddingTop
             },
             elementHeight() {
-                let fullHeight = this.innerHeight - (50 + 42 + 34);
+                let fullHeight = this.innerHeight - this.paddingTop;
                 let heights = [
                     [fullHeight],
                     [fullHeight, fullHeight],
                     [fullHeight / 2, fullHeight / 2, fullHeight / 2],
                     [fullHeight / 2, fullHeight / 2, fullHeight / 2, fullHeight / 2],
                 ];
-                return heights[this.maps.length - 1][this.mapIndex]
+                return heights[this.viewers.length - 1][this.viewerIndex]
             },
             elementHeightPercentage() {
                 return this.elementHeight / this.fullHeight * 100;
@@ -303,7 +266,7 @@
                     [fullWidth / 2, fullWidth / 2, fullWidth],
                     [fullWidth / 2, fullWidth / 2, fullWidth / 2, fullWidth / 2],
                 ];
-                return widths[this.maps.length - 1][this.mapIndex]
+                return widths[this.viewers.length - 1][this.viewerIndex]
             },
             elementWidthPercentage() {
                 return this.elementWidth / this.innerWidth * 100;
@@ -332,7 +295,7 @@
                 // Sets the local value to the value sent by the parent
                 this.linkValue = this.currentMap.linkedTo;
             },
-            filterSelected() {
+            selectedFilter() {
                 //sets filter on change
                 let layer = new OlTile({
                     source: new Zoomify({
@@ -344,9 +307,6 @@
                 });
                 this.$openlayers.getMap(this.currentMap.id).getLayers().getArray()[0] = layer;
                 this.$openlayers.getMap(this.currentMap.id).render();
-            },
-            lastEventMapId() {
-                this.showPanel = this.lastEventMapId == this.currentMap.id;
             },
             centeredFeature(newValue) {
                 if (newValue != this.currentMap.data.project) {
@@ -361,6 +321,9 @@
             },
         },
         methods: {
+            deleteViewer() {
+                this.$emit('deleteViewer', this.currentMap.id);
+            },
             getWindowHeight(e) {
                 this.innerHeight = window.innerHeight
             },
@@ -425,9 +388,7 @@
                     this.$openlayers.getView(this.currentMap.id).fit(feature.getGeometry());
                 })
             },
-            deleteMap() {
-                this.$emit('deleteMap', this.currentMap.id);
-            },
+
             showTerms(payload) {
                 this.termsToShow = payload;
             },
@@ -499,11 +460,11 @@
             setUpdateAnnotationsIndex(payload) {
                 this.updateAnnotationsIndex = payload;
             },
-            setShowComponent(component) {
-                if (component == this.showComponent) {
-                    this.showComponent = '';
+            setSelectedComponent(component) {
+                if (component == this.selectedComponent) {
+                    this.selectedComponent = '';
                 } else {
-                    this.showComponent = component;
+                    this.selectedComponent = component;
                 }
             },
             setImsServer(payload) {

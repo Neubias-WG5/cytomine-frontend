@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import App from './App.vue'
+import App from '../../components/Explore/Explorer.vue'
 import VueOpenLayers from './vue-openlayers'
 import Axios from 'axios';
 import 'vue-popperjs/dist/css/vue-popper.css';
