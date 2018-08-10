@@ -57,7 +57,7 @@
                     </div>
                     <div slot="reference">
                         <a class="annot-link"
-                           :href="`#tabs-${isReviewing ? 'review' : 'image'}-${currentMap.data.project}-${currentMap.imageId}-${annotation.id}`">
+                           :href="`#tabs-${isReviewing ? 'review' : 'image'}-${image.project}-${image.id}-${annotation.id}`">
                             <img class="annot-img" :src="cropURL(annotation.smallCropURL)" alt="">
                         </a>
                     </div>
@@ -90,7 +90,7 @@
             }
         },
         props: [
-            'currentMap',
+            'image',
             'users',
             'terms',
             'isReviewing',
@@ -110,12 +110,12 @@
                 this.currentPage = page;
                 let termQuery = term != null ? `&term=${term}` : '';
                 this.filter = term;
-                api.get(`/api/annotation.json?&image=${this.currentMap.imageId}&reviewed=false&max=${max}&offset=${page * max}${termQuery}`).then(data => {
+                api.get(`/api/annotation.json?&image=${this.image.id}&reviewed=false&max=${max}&offset=${page * max}${termQuery}`).then(data => {
                     this.annotations = data.data.collection;
                     this.totalPages = data.data.totalPages;
                 })
                 if (this.isReviewing) {
-                    api.get(`/api/annotation.json?&image=${this.currentMap.imageId}&showTerm=true&reviewed=true&notReviewedOnly=true&showMeta=true&max=${max}&offset=${page * max}${termQuery}`).then(data => {
+                    api.get(`/api/annotation.json?&image=${this.image.id}&showTerm=true&reviewed=true&notReviewedOnly=true&showMeta=true&max=${max}&offset=${page * max}${termQuery}`).then(data => {
                         this.reviewedAnnotations = data.data.collection;
                     })
                 }

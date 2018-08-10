@@ -7,7 +7,7 @@
              <span v-show="magnification != 0">Magnification: {{magnification}}X</span>
         </div>
         <div class="scale-line-position">
-            <position :mousePosition="mousePosition" :currentMapId="currentMap.id"></position>
+            <position :mousePosition="mousePosition" :currentMapId="viewerId"></position>
         </div>
 
     </div>
@@ -24,7 +24,8 @@
             Position
         },
         props: [
-            'currentMap',
+            'viewerId',
+            'image',
             'mousePosition',
             'currentZoom',
             'maxZoom'
@@ -36,11 +37,11 @@
         },
         computed: {
             magnification() {
-                let magnification = Math.pow(2, this.currentZoom - this.currentMap.data.depth) * this.currentMap.data.magnification;
+                let magnification = Math.pow(2, this.currentZoom - this.image.depth) * this.image.magnification;
                 return Math.round(magnification * 100) / 100;
             },
             resolution() {
-                return Math.pow(2, this.currentZoom - this.currentMap.data.depth) * this.currentMap.data.resolution;
+                return Math.pow(2, this.currentZoom - this.image.depth) * this.image.resolution;
             },
             scaleLength() {
                 let length = this.scaleLineLength;

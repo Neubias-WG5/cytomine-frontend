@@ -35,7 +35,7 @@
             'featureSelectedData',
             'featureSelected',
             'vectorLayersOpacity',
-            'currentMap',
+            'image',
         ],
         data() {
             return {
@@ -114,7 +114,7 @@
             }
         },
         created() {
-            api.get(`/api/project/${this.currentMap.data.project}/stats/term.json`).then(data => {
+            api.get(`/api/project/${this.image.project}/stats/term.json`).then(data => {
                 this.terms = data.data.collection;
                 this.visibleTerms = this.termsId;
                 this.$emit('showTerms', this.termsId);

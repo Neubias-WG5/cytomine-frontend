@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="alert alert-info text-center">Click on the graph to select a value to edit</div>
-    <div :id="'colormaps-' + currentMap.id"></div>
+    <div :id="'colormaps-' + viewerId"></div>
     <div class="btn-group flex">
       <button class="btn btn-default" v-if="modeSelected" @click="switchMode">{{modeToShow}}</button>
       <select :class="`btn btn-${colorToRender}`" v-if="modeSelected == 'rgb'" v-model="colorSelected">
@@ -41,7 +41,7 @@ import Plotly from 'plotly.js/lib/core';
 export default {
     name: 'Colormaps',
     props: [
-      'currentMap'
+      'viewerId'
     ],
     data() {
       return {
@@ -68,7 +68,7 @@ export default {
         return document.getElementById(this.colormapId);
       },
       colormapId() {
-        return `colormaps-${this.currentMap.id}`;
+        return `colormaps-${this.viewerId}`;
       },
       tracesArray() {
         return this.modeSelected == 'rgb' ? [this.traces.r, this.traces.g, this.traces.b] : [this.traces.l];

@@ -24,7 +24,8 @@
             }
         },
         props: [
-            'currentMap',
+            'viewerId',
+            'image',
             'elementWidth',
             'elementHeight',
         ],
@@ -42,7 +43,7 @@
                 if (this.overviewMap && this.overviewMap.getOverviewMap())
                     this.overviewMap.getOverviewMap().setSize([200, this.height]);
             },
-            'currentMap.data.id'() {
+            'image.id'() {
                 this.initOverviewMap()
             }
         },
@@ -53,24 +54,24 @@
                         this.$openlayers.getMap(this.overviewMap.get('mapId')).removeControl(this.overviewMap);
                     }
 
-                    if (this.$openlayers.getMap(this.currentMap.id) != undefined) {
-                        let viewportSize = this.$openlayers.getMap(this.currentMap.id).getSize();
+                    if (this.$openlayers.getMap(this.viewerId) != undefined) {
+                        let viewportSize = this.$openlayers.getMap(this.viewerId).getSize();
                         this.overviewMap = new OverviewMap({
                             collapsed: true,
                             target: this.overviewMapId,
                             view: new View({
                                 projection: new Projection({
                                     code: 'CYTO',
-                                    extent: [0, 0, this.currentMap.data.width, this.currentMap.data.height],
+                                    extent: [0, 0, this.image.width, this.image.height],
                                     worldExtent: [0, 0, viewportSize[0], viewportSize[1]]
                                 }),
-                                center: [this.currentMap.data.width / 2, this.currentMap.data.height / 2],
+                                center: [this.image.width / 2, this.image.height / 2],
                             }),
                         });
-                        this.overviewMap.set('mapId', this.currentMap.id);
+                        this.overviewMap.set('mapId', this.viewerId);
 
 
-                        this.$openlayers.getMap(this.currentMap.id).addControl(this.overviewMap);
+                        this.$openlayers.getMap(this.viewerId).addControl(this.overviewMap);
                         this.overviewMap.getOverviewMap().setSize([200, this.height]);
                         clearInterval(interval);
                     }}, 100

@@ -2,8 +2,8 @@
     <section>
         <h4>Layers</h4>
         <div v-if="isReviewing">
-            <input :id="'showReviewLayer-' + currentMap.id" type="checkbox" v-model="showReviewLayer">
-            <label :for="'showReviewLayer-' + currentMap.id">Display review layer</label>
+            <input :id="'showReviewLayer-' + viewerId" type="checkbox" v-model="showReviewLayer">
+            <label :for="'showReviewLayer-' + viewerId">Display review layer</label>
         </div>
         <div class="btn-group" style="display:flex;">
             <select class="btn btn-default" v-model="layerToBeAdded" name="user-layer" id="user-layer"
@@ -85,7 +85,8 @@
     export default {
         name: 'AnnotationLayers',
         props: [
-            'currentMap',
+            'viewerId',
+            'image',
             'termsToShow',
             'showWithNoTerm',
             'allTerms',
@@ -124,13 +125,13 @@
                 return this.layersNotAdded.concat(this.algoNotAdded);
             },
             extent() {
-                return [0, 0, parseInt(this.currentMap.data.width), parseInt(this.currentMap.data.height)];
+                return [0, 0, parseInt(this.image.width), parseInt(this.image.height)];
             },
             layersArray() {
-                return this.$openlayers.getMap(this.currentMap.id).getLayers().getArray();
+                return this.$openlayers.getMap(this.viewerId).getLayers().getArray();
             },
             bbox() {
-                return this.$openlayers.getView(this.currentMap.id).calculateExtent().join();
+                return this.$openlayers.getView(this.viewerId).calculateExtent().join();
             }
         },
         watch: {
@@ -200,14 +201,14 @@
                 }
             },
             vectorLoader(extent, resolution, projection) {
-                api.get(`/api/annotation.json?&user=${this.toAdd.id}&image=${this.currentMap.imageId}&showWKT=true&showTerm=true&notReviewedOnly=${this.isReviewing}&kmeans=true&bbox=${extent.join(',')}`).then(data => {
+                api.get(`/api/annotation.json?&user=${this.toAdd.id}&image=${this.image.id}&showWKT=true&showTerm=true&notReviewedOnly=${this.isReviewing}&kmeans=true&bbox=${extent.join(',')}`).then(data => {
                     let geoms = this.createFeatures(data.data.collection, this.toAdd.id);
                     this.loadFeatures(geoms);
                 })
             },
             reviewLoader(extent, resolution, projection) {
                 this.userLayers.map(user => {
-                    api.get(`/api/annotation.json?&user=${user.id}&image=${this.currentMap.imageId}&roi=false&notReviewedOnly=true&reviewed=true&showWKT=true&showTerm=true&kmeans=true&bbox=${extent.join(',')}`).then(resp => {
+                    api.get(`/api/annotation.json?&user=${user.id}&image=${this.image.id}&roi=false&notReviewedOnly=true&reviewed=true&showWKT=true&showTerm=true&kmeans=true&bbox=${extent.join(',')}`).then(resp => {
                         let collection = resp.data.collection;
                         let geoms = this.createFeatures(collection, user.id, true);
                         this.loadFeatures(geoms, true)
@@ -286,7 +287,7 @@
                 layer.setOpacity(this.vectorLayersOpacity);
                 layer.setVisible(userLayer.visible);
                 layer.set('drawable', userLayer.drawable);
-                this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
+                this.$openlayers.getMap(this.viewerId).addLayer(layer);
                 return layer;
             },
             removeLayer(toRemoveId, removeFromSelected = true) {
@@ -305,7 +306,7 @@
                 if (index < 0) return;
 
                 this.layersArray.splice(index, 1);
-                this.$openlayers.getMap(this.currentMap.id).render();
+                this.$openlayers.getMap(this.viewerId).render();
             },
             toggleVisibility(layer) {
                 let index = this.layerIndex(this.layersArray, layer.id);
@@ -341,10 +342,10 @@
                 }
             },
             setUserPosition() {
-                api.get(`/api/imageinstance/${this.currentMap.imageId}/position/${this.userToFollow[0]}.json`).then(data => {
+                api.get(`/api/imageinstance/${this.image.id}/position/${this.userToFollow[0]}.json`).then(data => {
                     let {x, y, zoom} = data.data;
-                    this.$openlayers.getView(this.currentMap.id).setCenter([x, y]);
-                    this.$openlayers.getView(this.currentMap.id).setZoom(zoom);
+                    this.$openlayers.getView(this.viewerId).setCenter([x, y]);
+                    this.$openlayers.getView(this.viewerId).setZoom(zoom);
                 })
             },
             isUserOnline(userId) {
@@ -352,7 +353,7 @@
                 return index > 0 ? false : true;
             },
             refreshAnnotationsIndex() {
-                api.get(`/api/imageinstance/${this.currentMap.imageId}/annotationindex.json`).then(data => {
+                api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(data => {
                     this.userLayers.map((layer, index) => {
                         let annotIndex = data.data.collection.find(index => layer.id === index.user);
                         this.userLayers[index].size = (annotIndex) ? annotIndex.countAnnotation : 0;
@@ -374,22 +375,22 @@
             }
         },
         mounted() {
-            api.get(`/api/project/${this.currentMap.data.project}/userlayer.json?image=${this.currentMap.imageId}`).then(data => {
+            api.get(`/api/project/${this.image.project}/userlayer.json?image=${this.image.id}`).then(data => {
                 this.userLayers = data.data.collection;
-                api.get(`/api/imageinstance/${this.currentMap.imageId}/annotationindex.json`).then(data => {
+                api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(data => {
                     data.data.collection.map(item => {
                         let index = this.userLayers.findIndex(user => item.user == user.id);
                         this.userLayers[index].size = item.countAnnotation;
                     });
                     this.$emit('userLayers', this.userLayers);
-                    api.get(`/api/project/${this.currentMap.data.project}/defaultlayer.json`).then(data => {
+                    api.get(`/api/project/${this.image.project}/defaultlayer.json`).then(data => {
                         if (data.data.collection[0]) {
                             data.data.collection.map(layer => {
                                 let index = this.userLayers.findIndex(user => user.id == layer.user);
                                 this.addLayer(this.userLayers[index], 'userLayer');
                             });
                         } else {
-                            this.addLayer(this.currentMap.user, 'userLayer');
+                            this.addLayer(this.currentUser, 'userLayer');
                         }
                         this.layersSelected.map((layer, index) => {
                             let userLayer = this.userLayers.find(item => layer.id == item.id);

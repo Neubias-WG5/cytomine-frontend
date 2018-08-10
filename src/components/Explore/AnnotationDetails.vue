@@ -115,7 +115,7 @@
             }
         },
         props: [
-            'currentMap',
+            'projectConfig',
             'featureSelected',
             'users',
             'terms',
@@ -198,7 +198,7 @@
                 return humanDate(date);
             },
             mustBeShown(key) {
-                return mustBeShown(key, this.currentMap.projectConfig);
+                return mustBeShown(key, this.projectConfig);
             },
             setFocus(focus) {
                 this.focus = focus;

@@ -21,7 +21,8 @@
     export default {
         name: 'Properties',
         props: [
-            'currentMap',
+            'viewerId',
+            'image',
             'layersSelected',
         ],
         data() {
@@ -75,7 +76,7 @@
             layersSelected() {
                 this.handleKey();
             },
-            'currentMap.data.id'() {
+            'image.id'() {
                 this.layersSelected.map(layer => {
                     this.removeKeys(layer.id);
                 });
@@ -85,12 +86,12 @@
         },
         methods: {
             updateAvailableProperties() {
-                api.get(`/api/annotation/property/key.json?idImage=${this.currentMap.imageId}&user=true`).then(data => {
+                api.get(`/api/annotation/property/key.json?idImage=${this.image.id}&user=true`).then(data => {
                     this.availableProperties = data.data.collection;
                 })
             },
             getLayers() {
-                return this.$openlayers.getMap(this.currentMap.id).getLayers().getArray();
+                return this.$openlayers.getMap(this.viewerId).getLayers().getArray();
             },
             getLayerIndex(userId) {
                 return this.getLayers().findIndex(layer => layer.get('title') == userId)
@@ -102,7 +103,7 @@
             handleKey() {
                 this.layersSelected.map(layer => {
                     this.removeKeys(layer.id);
-                    api.get(`/api/user/${layer.id}/imageinstance/${this.currentMap.imageId}/annotationposition.json?key=${this.selectedProperty.key}`).then(data => {
+                    api.get(`/api/user/${layer.id}/imageinstance/${this.image.id}/annotationposition.json?key=${this.selectedProperty.key}`).then(data => {
                         this.keys = data.data.collection;
                         this.keys.map(key => {
                             let index = this.getFeatures(layer.id).findIndex(feature => feature.getId() == key.idAnnotation);

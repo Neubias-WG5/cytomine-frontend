@@ -9,14 +9,14 @@
                       :currentUser="currentUser" :project="project">
         </interactions>
 
-        <overview-map :currentMap="currentMap" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>
+        <overview-map :viewer-id="id" :image="image" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
                             :has-image-groups="hasImageGroups" :project-config="projectConfig"></viewer-buttons>
 
             <div class="scale-line-panel">
-                <scale-line :currentMap="currentMap" :mousePosition="mousePosition"
+                <scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"
                             :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
             </div>
         </div>
@@ -54,7 +54,7 @@
                 </filters>
 
                 <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
-                            :currentMap="currentMap"></color-maps>
+                            :viewer-id="id"></color-maps>
 
                 <div v-show="selectedComponent == 'annotationLayers'">
                     <annotation-layers @updateLayers="setUpdateLayers" @vectorLayersOpacity="setVectorLayersOpacity"
@@ -64,8 +64,8 @@
                                        :updateLayers="updateLayers" :updateAnnotationsIndex="updateAnnotationsIndex"
                                        :termsToShow="termsToShow" :currentUser="currentUser"
                                        :showWithNoTerm="showWithNoTerm" :allTerms="allTerms" :project="project"
-                                       :currentMap="currentMap"></annotation-layers>
-                    <ontology :currentMap="currentMap" :featureSelectedData="featureSelectedData"
+                                       :image="image" :viewer-id="id"></annotation-layers>
+                    <ontology :image="image" :featureSelectedData="featureSelectedData"
                               :featureSelected="featureSelected" :vectorLayersOpacity="vectorLayersOpacity"
                               @showTerms="showTerms" @showWithNoTerm="setShowWithNoTerm"
                               @allTerms="setAllTerms"></ontology>
@@ -74,7 +74,7 @@
                 <annotations v-show="selectedComponent == 'annotationList'"
                              @updateAnnotationsIndex="setUpdateAnnotationsIndex"
                              :updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing"
-                             :users="userLayers" :terms="allTerms" :currentMap="currentMap"></annotations>
+                             :users="userLayers" :terms="allTerms" :image="image"></annotations>
 
                 <review v-if="isReviewing" v-show="selectedComponent == 'review'"
                         @updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers"
@@ -89,13 +89,13 @@
                                 :currentMap="currentMap"  :mousePosition="mousePosition"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties'" :layersSelected="layersSelected"
-                            :currentMap="currentMap"></properties>
+                            :viewer-id="id" :image="image"></properties>
             </div>
         </div>
 
         <annotation-details v-show="featureSelected != undefined" @featureSelectedData="setFeatureSelectedData"
                             :users="userLayers" :terms="allTerms"
-                            :featureSelected="featureSelected" :currentMap="currentMap" :currentUser="currentUser"
+                            :featureSelected="featureSelected" :project-config="projectConfig" :currentUser="currentUser"
                             :project="project" :element-height="elementHeight" :element-width="elementWidth">
         </annotation-details>
     </div>
