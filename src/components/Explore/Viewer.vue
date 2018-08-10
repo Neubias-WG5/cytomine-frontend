@@ -47,7 +47,7 @@
                 </div>
 
                 <digital-zoom v-show="selectedComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
-                              :currentMap="currentMap"></digital-zoom>
+                              :viewer-id="id" @incrementMaxZoom=""></digital-zoom>
 
                 <filters v-show="selectedComponent == 'filter' && mustBeShown('project-explore-image-layers') && hasFilters"
                          :viewer-id="id" :filters="filters" :selectedFilter.sync="selectedFilter">
@@ -111,7 +111,7 @@
     import Annotations from './Annotations';
     import Properties from './Properties';
     import Multidimension from './Multidimension';
-    import DigitalZoom from './DigitalZoom'
+    import DigitalZoom from './Panels/DigitalZoom'
     import Review from './Review'
     import ScaleLine from './ScaleLine'
     import ColorMaps from './Colormaps'
