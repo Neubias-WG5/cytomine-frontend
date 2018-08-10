@@ -1,7 +1,7 @@
 <template>
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
-        <div  @mousemove="sendView" @mousewheel="sendView" :id="currentMap.id" ref="exploreMap"></div>
-        <div class="controls" :id="'controls-'+currentMap.id"></div>
+        <div  @mousemove="sendView" @mousewheel="sendView" :id="id" ref="exploreMap"></div>
+        <div class="controls" :id="'controls-'+id"></div>
 
         <interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"
                       @featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"
@@ -13,7 +13,7 @@
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
-                            :has-image-groups="hasImageGroups" :project-config="currentMap.projectConfig"></viewer-buttons>
+                            :has-image-groups="hasImageGroups" :project-config="projectConfig"></viewer-buttons>
 
             <div class="scale-line-panel">
                 <scale-line :currentMap="currentMap" :mousePosition="mousePosition"
@@ -25,21 +25,23 @@
              :style="`max-height:66%; ${selectedComponent == 'multidimension' ? 'width:33%;' :  ''}`">
             <div class="panel-body">
                 <div v-show="selectedComponent == 'informations'">
-                    <informations :image="currentMap.data" :project="project"></informations>
+                    <informations :image="image" :project="project"></informations>
                     <hr>
-                    <navigation-image :current-image-id="currentMap.id" @changeImage=""></navigation-image>
+                    <navigation-image :current-image-id="imageId" @changeImage=""></navigation-image>
                 </div>
-
 
                 <div v-show="selectedComponent == 'linkmap' && mustBeShown('project-explore-link') && hasMultiViews">
                     <div class="alert alert-info">Choose a view to link with this one.</div>
-                    <label :for="'link-'+currentMap.id">Link this view with </label>
-                    <div v-for="(map, index) in viewers" :key="'linkdiv' + map.id">
+                    <label>Link this view with </label>
+                    <div v-for="(viewer, index) in viewers" :key="'link-div-' + viewer.id">
                         <template v-if="index !== viewerIndex">
-                            <input v-model="linkValue" :value="map.id" @change="sendLink(map.id)" type="checkbox"
-                                   :name="currentMap.id + map.id" :id="currentMap.id + map.id">
-                            <label :for="currentMap.id + map.id">{{ viewerNames[index] }}
-                                ({{instanceFilename(map.data)}})</label>
+                            <input v-model="linkedToValues" :value="viewer.id" @change="linkViewers(viewer.id)" type="checkbox"
+                                   :name="id + viewer.id" :id="id + viewer.id">
+                            <label :for="id + viewer.id">
+                                {{ viewerNames[index] }}
+                                <span v-if="!project.blindMode">({{viewer.image.instanceFilename}})</span>
+                                <span v-else>([BLIND] {{viewer.image.id}})</span>
+                            </label>
                         </template>
                     </div>
                 </div>
@@ -47,9 +49,8 @@
                 <digital-zoom v-show="selectedComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
                               :currentMap="currentMap"></digital-zoom>
 
-
                 <filters v-show="selectedComponent == 'filter' && mustBeShown('project-explore-image-layers') && hasFilters"
-                         :viewer-id="currentMap.id" :filters="filters" :selectedFilter.sync="selectedFilter">
+                         :viewer-id="id" :filters="filters" :selectedFilter.sync="selectedFilter">
                 </filters>
 
                 <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
@@ -155,8 +156,8 @@
                 viewerNames: ['View 1', 'View 2', 'View 3', 'View 4'],
                 selectedComponent: '',
                 selectedFilter: "",
+                linkedToValues: [],
 
-                linkValue: [],
                 imsBaseUrl: '',
                 extent: [],
                 mousePosition: [0, 0],
@@ -190,13 +191,18 @@
             'viewers',
             'paddingTop',
 
+            'id',
+            'imageId',
+            'linkedTo',
+            'image',
+
             'mapView',
             'currentMap',
             'lastEventMapId',
         ],
         computed: {
             isCurrentViewer() {
-                return this.lastEventMapId == this.currentMap.id;
+                return this.lastEventMapId == this.id;
             },
             hasFilters() {
                 return this.filters.length > 0
@@ -212,25 +218,22 @@
                     return "";
                 return `${this.selectedFilter.imagingServer}${this.selectedFilter.baseUrl}`;
             },
-
-
-            linkedTo() {
-                return this.currentMap.linkedTo;
-            },
             viewerIndex() {
-                return this.viewers.findIndex(map => map.id === this.currentMap.id);
+                return this.viewers.findIndex(map => map.id === this.id);
             },
+
+
 
             mapWidth() {
-                return parseInt(this.currentMap.data.width)
+                return parseInt(this.image.width)
             },
             mapHeight() {
-                return parseInt(this.currentMap.data.height)
+                return parseInt(this.image.height)
             },
             initZoom() {
                 let mapWidth = this.mapWidth;
                 let mapHeight = this.mapHeight;
-                let idealZoom = this.currentMap.data.depth;
+                let idealZoom = this.image.depth;
                 while (mapWidth > this.elementWidth || mapHeight > this.elementHeight) {
                     mapWidth /= 2;
                     mapHeight /= 2;
@@ -240,7 +243,7 @@
             },
             isReviewing() {
                 // DEPENDS ON [BACKBONE]
-                let type = ''; //document.querySelector('.get-data' + this.currentMap.imageId).dataset.type;
+                let type = ''; //document.querySelector('.get-data' + this.imageId).dataset.type;
                 let from = type.indexOf('-');
                 return type.substr(from + 1) == 'review';
             },
@@ -285,9 +288,9 @@
             mapView: {
                 handler() {
                     let {mapCenter, mapResolution, mapRotation} = this.mapView;
-                    let index = this.currentMap.linkedTo.findIndex(link => link == this.lastEventMapId);
+                    let index = this.linkedTo.findIndex(link => link == this.lastEventMapId);
                     if (index >= 0) {
-                        this.$openlayers.getView(this.currentMap.id).setProperties({
+                        this.$openlayers.getView(this.id).setProperties({
                             center: mapCenter,
                             resolution: mapResolution,
                             rotation: mapRotation,
@@ -298,37 +301,48 @@
             },
             linkedTo() {
                 // Sets the local value to the value sent by the parent
-                this.linkValue = this.currentMap.linkedTo;
+                this.linkedToValues = this.linkedTo;
             },
             selectedFilter() {
                 //sets filter on change
                 let layer = new OlTile({
                     source: new Zoomify({
-                        url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                        url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`,
                         size: [this.mapWidth, this.mapHeight],
                         extent: this.extent,
                     }),
                     extent: this.extent,
                 });
-                this.$openlayers.getMap(this.currentMap.id).getLayers().getArray()[0] = layer;
-                this.$openlayers.getMap(this.currentMap.id).render();
+                this.$openlayers.getMap(this.id).getLayers().getArray()[0] = layer;
+                this.$openlayers.getMap(this.id).render();
             },
             centeredFeature(newValue) {
-                if (newValue != this.currentMap.data.project) {
+                if (newValue != this.image.project) {
                     this.centerOnFeature(newValue);
                 }
             },
             elementWidth(newValue) {
-                this.$openlayers.getMap(this.currentMap.id).setSize([newValue, this.elementHeight])
+                this.$openlayers.getMap(this.id).setSize([newValue, this.elementHeight])
             },
             elementHeight(newValue) {
-                this.$openlayers.getMap(this.currentMap.id).setSize([this.elementWidth, newValue])
+                this.$openlayers.getMap(this.id).setSize([this.elementWidth, newValue])
             },
         },
         methods: {
             deleteViewer() {
-                this.$emit('deleteViewer', this.currentMap.id);
+                this.$emit('deleteViewer', this.id);
             },
+            linkViewers(mapId) {
+                let payload = {
+                    sender: this.id,
+                    newLinks: this.linkedToValues,
+                    modifiedValue: mapId,
+                };
+                this.$emit('linkViewers', payload);
+            },
+
+
+
             getWindowHeight(e) {
                 this.innerHeight = window.innerHeight
             },
@@ -338,8 +352,8 @@
             // Sends view infos
             sendView(e) {
                 let payload = {
-                    mapId: this.currentMap.id,
-                    view: this.$openlayers.getView(this.currentMap.id),
+                    mapId: this.id,
+                    view: this.$openlayers.getView(this.id),
                 };
                 let rect = this.$refs.exploreMap.getBoundingClientRect();
                 this.mousePosition = [
@@ -348,49 +362,40 @@
                 ];
                 this.$emit('dragged', payload);
             },
-            // Sends which map is linked to this one to the parent
-            sendLink(mapId) {
-                let payload = {
-                    sender: this.currentMap.id,
-                    newLinks: this.linkValue,
-                    modifiedValue: mapId,
-                };
-                this.$emit('mapIsLinked', payload);
-            },
             postPosition() {
-                let extent = this.$openlayers.getView(this.currentMap.id).calculateExtent();
+                let extent = this.$openlayers.getView(this.id).calculateExtent();
                 let payload = {
                     bottomLeftX: Math.round(extent[0]),
                     bottomLeftY: Math.round(extent[1]),
                     bottomRightX: Math.round(extent[2]),
                     bottomLeftY: Math.round(extent[1]),
-                    image: parseInt(this.currentMap.imageId),
+                    image: parseInt(this.imageId),
                     topLeftX: Math.round(extent[0]),
                     topLeftY: Math.round(extent[3]),
                     topRightX: Math.round(extent[2]),
                     topRightY: Math.round(extent[3]),
-                    zoom: this.$openlayers.getView(this.currentMap.id).getZoom(),
+                    zoom: this.$openlayers.getView(this.id).getZoom(),
                 };
-                api.post(`/api/imageinstance/${this.currentMap.imageId}/position.json`, payload);
+                api.post(`/api/imageinstance/${this.imageId}/position.json`, payload);
             },
             getOnlineUsers() {
-                api.get(`/api/project/${this.currentMap.data.project}/online/user.json`).then(data => {
-                    this.onlineUsers = data.data.collection;
+                api.get(`/api/project/${this.image.project}/online/user.json`).then(response => {
+                    this.onlineUsers = response.data.collection;
                 })
             },
             centerOnFeature(id) {
                 if (id == 0 || id == '') {
                     return;
                 }
-                api.get(`/api/annotation/${id}.json`).then(data => {
-                    let annotation = data.data;
+                api.get(`/api/annotation/${id}.json`).then(response => {
+                    let annotation = response.data;
                     let format = new WKT();
                     let feature = format.readFeature(annotation.location);
-                    let annotLayer = this.$openlayers.getMap(this.currentMap.id).getLayers().getArray().findIndex(layer => layer.get('title') == annotation.user);
+                    let annotLayer = this.$openlayers.getMap(this.id).getLayers().getArray().findIndex(layer => layer.get('title') == annotation.user);
                     if (annotLayer < 0) {
                         this.addLayer = annotation.user;
                     }
-                    this.$openlayers.getView(this.currentMap.id).fit(feature.getGeometry());
+                    this.$openlayers.getView(this.id).fit(feature.getGeometry());
                 })
             },
 
@@ -413,23 +418,23 @@
                 this.layersSelected = payload;
             },
             changeImage(payload) {
-                api.get(`/api/abstractimage/${payload.baseImage}/imageservers.json?&imageinstance=${payload.id}`).then(data => {
-                    this.imsBaseUrl = data.data.imageServersURLs[0];
+                api.get(`/api/abstractimage/${payload.baseImage}/imageservers.json?&imageinstance=${payload.id}`).then(response => {
+                    this.imsBaseUrl = response.data.imageServersURLs[0];
 
-                    let reset = this.currentMap.data.width != payload.width || this.currentMap.data.height != payload.height;
+                    let reset = this.image.width != payload.width || this.image.height != payload.height;
                     this.$emit('updateMap', {old: this.currentMap, new: payload});
 
                     this.extent = [0, 0, this.mapWidth, this.mapHeight];
                     if (reset) {
-                        this.$openlayers.getView(this.currentMap.id).setCenter([this.mapWidth / 2, this.mapHeight / 2]);
-                        this.$openlayers.getView(this.currentMap.id).setZoom(this.initZoom);
-                        this.$openlayers.getView(this.currentMap.id).getProjection().setExtent(this.extent);
-                        this.zoom = this.$openlayers.getView(this.currentMap.id).getZoom();
+                        this.$openlayers.getView(this.id).setCenter([this.mapWidth / 2, this.mapHeight / 2]);
+                        this.$openlayers.getView(this.id).setZoom(this.initZoom);
+                        this.$openlayers.getView(this.id).getProjection().setExtent(this.extent);
+                        this.zoom = this.$openlayers.getView(this.id).getZoom();
                     }
 
                     let layer = new OlTile({
                         source: new Zoomify({
-                            url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                            url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`,
                             size: [this.mapWidth, this.mapHeight],
                             extent: this.extent,
                         }),
@@ -437,13 +442,13 @@
                     });
 
                     // Find a way to avoid "blank flashes" when image change at least for multidimensional images.
-                    // let oldLayers = this.$openlayers.getMap(this.currentMap.id).getLayers().getArray();
-                    // this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
-                    // oldLayers.forEach(layer => this.$openlayers.getMap(this.currentMap.id).removeLayer(layer));
-                    this.$openlayers.getMap(this.currentMap.id).setLayerGroup(new Group({layers: [layer]}));
+                    // let oldLayers = this.$openlayers.getMap(this.id).getLayers().getArray();
+                    // this.$openlayers.getMap(this.id).addLayer(layer);
+                    // oldLayers.forEach(layer => this.$openlayers.getMap(this.id).removeLayer(layer));
+                    this.$openlayers.getMap(this.id).setLayerGroup(new Group({layers: [layer]}));
 
-                    this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
-                    this.maxZoom = this.$openlayers.getView(this.currentMap.id).getMaxZoom();
+                    this.$openlayers.getView(this.id).setMaxZoom(this.image.depth);
+                    this.maxZoom = this.$openlayers.getView(this.id).getMaxZoom();
 
                     this.setUpdateLayers(true);
                     this.setUpdateAnnotationsIndex(true);
@@ -454,7 +459,7 @@
                 this.vectorLayersOpacity = payload;
             },
             setImageGroup(payload) {
-                this.currentMap.imageGroup = payload;
+                this.imageGroup = payload;
             },
             setFeatureSelectedData(payload) {
                 this.featureSelectedData = payload;
@@ -476,7 +481,7 @@
                 this.imsBaseUrl = payload;
             },
             mustBeShown(key) {
-                return mustBeShown(key, this.currentMap.projectConfig);
+                return mustBeShown(key, this.projectConfig);
             },
             instanceFilename(image) {
                 if (this.project.blindMode)
@@ -498,15 +503,15 @@
 
             // Init map
             this.$openlayers.init({
-                element: this.currentMap.id,
+                element: this.id,
                 center: [this.mapWidth / 2, this.mapHeight / 2],
                 zoom: this.initZoom,
                 controls: [
                     new ZoomControls({
-                        target: document.getElementById('controls-' + this.currentMap.id),
+                        target: document.getElementById('controls-' + this.id),
                     }),
                     new RotateControls({
-                        target: document.getElementById('controls-' + this.currentMap.id),
+                        target: document.getElementById('controls-' + this.id),
                     })
                 ],
                 enablePan: true,
@@ -518,44 +523,44 @@
                     extent: this.extent,
                 },
             });
-            api.get(`/api/abstractimage/${this.currentMap.data.baseImage}/imageservers.json`).then(data => {
-                this.imsBaseUrl = data.data.imageServersURLs[0];
+            api.get(`/api/abstractimage/${this.image.baseImage}/imageservers.json`).then(response => {
+                this.imsBaseUrl = response.data.imageServersURLs[0];
                 // Adds layer
                 let layer = new OlTile({
                     source: new Zoomify({
-                        url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.currentMap.data.mime}`,
+                        url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`,
                         size: [this.mapWidth, this.mapHeight],
                         extent: this.extent,
                     }),
                     extent: this.extent,
                 });
-                this.$openlayers.getMap(this.currentMap.id).addLayer(layer);
-                this.$openlayers.getView(this.currentMap.id).setMaxZoom(this.currentMap.data.depth);
-                this.$openlayers.getMap(this.currentMap.id).on('moveend', () => {
-                    this.zoom = this.$openlayers.getView(this.currentMap.id).getZoom();
-                    this.maxZoom = this.$openlayers.getView(this.currentMap.id).getMaxZoom();
+                this.$openlayers.getMap(this.id).addLayer(layer);
+                this.$openlayers.getView(this.id).setMaxZoom(this.image.depth);
+                this.$openlayers.getMap(this.id).on('moveend', () => {
+                    this.zoom = this.$openlayers.getView(this.id).getZoom();
+                    this.maxZoom = this.$openlayers.getView(this.id).getMaxZoom();
                 });
-                this.$openlayers.getMap(this.currentMap.id).on('moveend', () => {
+                this.$openlayers.getMap(this.id).on('moveend', () => {
                     this.postPosition();
                 });
-                this.$openlayers.getMap(this.currentMap.id).getControls().getArray()[0].element.childNodes.forEach(child => {
+                this.$openlayers.getMap(this.id).getControls().getArray()[0].element.childNodes.forEach(child => {
                     child.classList.add('btn');
                     child.classList.add('btn-default');
                 });
-                this.$openlayers.getMap(this.currentMap.id).getControls().getArray()[1].element.childNodes.forEach(child => {
+                this.$openlayers.getMap(this.id).getControls().getArray()[1].element.childNodes.forEach(child => {
                     child.classList.add('btn');
                     child.classList.add('btn-default');
                 });
                 setInterval(this.postPosition, 5000);
                 setInterval(this.getOnlineUsers, 5000);
                 if (this.isReviewing) {
-                    api.put(`/api/imageinstance/${this.currentMap.imageId}/review.json`, {
-                        id: this.currentMap.imageId,
-                    }).then(data => {
-                        this.changeImage(data.data.imageinstance)
+                    api.put(`/api/imageinstance/${this.imageId}/review.json`, {
+                        id: this.imageId,
+                    }).then(response => {
+                        this.changeImage(response.data.imageinstance)
                     })
                 }
-                if (this.centeredFeature != '' && this.centeredFeature != this.currentMap.data.project) {
+                if (this.centeredFeature != '' && this.centeredFeature != this.image.project) {
                     this.centerOnFeature(this.centeredFeature);
                 }
             });

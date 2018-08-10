@@ -8,9 +8,9 @@
         <div class="maps-container" :style="`height: calc(100vh - ${paddingTop}px);`">
             <viewer v-for="viewer in viewers" :key="viewer.id" :currentRoute="currentRoute"
                     :project="project" :project-config="projectConfig" :filters="filters" :image-groups="imageGroups"
-                    :current-user="currentUser" :viewers="viewers" :currentMap="viewer" :padding-top="paddingTop"
-                    @deleteViewer="deleteViewer"
-                    @updateMap="updateMap" @dragged="setMap" @mapIsLinked="linkMaps"
+                    :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
+                    @deleteViewer="deleteViewer" @linkViewers="linkViewers"
+                    @updateMap="updateMap" @dragged="setMap" @current-map="viewer"
                     :mapView="mapView" :lastEventMapId="lastEventMapId"></viewer>
         </div>
     </div>
@@ -65,42 +65,58 @@
             },
         },
         methods: {
+            imageIndex(imageId) {
+                return this.images.findIndex(image => image.id == imageId);
+            },
+            viewerIndex(viewerId) {
+                return this.viewers.findIndex(viewer => viewer.id == viewerId)
+            },
             addViewer(imageId, id = uuid()) {
                 if (this.viewers.length < this.nbMaxViewers && imageId !== "") {
                     this.viewers.push({
                         id,
                         imageId,
                         linkedTo: [],
-                        data: this.images[this.imageIndex(imageId)],
-                        imageGroup: "", //TODO: remove
-                        projectConfig: this.projectConfig, //TODO: remove
-                        user: this.currentUser, //TODO: remove
+                        image: this.images[this.imageIndex(imageId)],
                     })
                 }
                 this.updateOpenLayersMapsSize();
             },
             deleteViewer(viewerId) {
-                let index = this.viewers.findIndex(map => {
-                    return map.id === viewerId;
-                });
+                let index = this.viewerIndex(viewerId);
                 this.viewers.splice(index, 1);
+
+                // Delete the viewer in other viewers linkedTo lists.
+                this.viewers.forEach(viewer => {
+                   viewer.linkedTo = viewer.linkedTo.filter(v => {
+                       return v != viewerId;
+                   })
+                });
                 this.updateOpenLayersMapsSize();
             },
+            linkViewers(payload) {
+                let viewerIndex = this.viewerIndex(payload.sender);
+                let isRemoving = this.viewers[viewerIndex].linkedTo.findIndex(viewer => viewer == payload.modifiedValue) >= 0;
+                this.viewers[viewerIndex].linkedTo = payload.newLinks;
+                if (isRemoving) {
+                    viewerIndex = this.viewerIndex(payload.modifiedValue);
+                    let linkToDeleteIndex = this.viewers[viewerIndex].linkedTo.findIndex(viewer => viewer == payload.sender);
+                    this.viewers[viewerIndex].linkedTo.splice(linkToDeleteIndex, 1);
+                } else {
+                    viewerIndex = this.viewerIndex(payload.modifiedValue);
+                    this.viewers[viewerIndex].linkedTo.push(payload.sender);
+                }
+            },
+
+
             updateOpenLayersMapsSize() {
                 this.viewers.forEach(map => {
                     this.$openlayers.getMap(map.id).updateSize();
                 })
             },
-            imageIndex(imageId) {
-                return this.images.findIndex(image => image.id == imageId);
-            },
 
 
 
-
-            viewerIndex(mapId) {
-                return this.viewers.findIndex(map => map.id == mapId)
-            },
             setMap(payload) {
                 this.mapView = {
                     mapCenter: payload.view.getCenter(),
@@ -110,24 +126,7 @@
                 this.lastEventMapId = payload.mapId;
                 this.$openlayers.getMap(payload.mapId).updateSize();
             },
-            linkMaps(payload) {
-                // Finds map index
-                let index = this.viewerIndex(payload.sender);
 
-                let isRemoving = this.viewers[index].linkedTo.findIndex(link => link == payload.modifiedValue) >= 0;
-
-                // Links maps
-                this.viewers[index].linkedTo = payload.newLinks;
-
-                if (isRemoving) {
-                    index = this.viewerIndex(payload.modifiedValue);
-                    let linkToDeleteIndex = this.viewers[index].linkedTo.findIndex(link => link == payload.sender);
-                    this.viewers[index].linkedTo.splice(linkToDeleteIndex, 1);
-                } else {
-                    index = this.viewerIndex(payload.modifiedValue);
-                    this.viewers[index].linkedTo.push(payload.sender);
-                }
-            },
 
 
             updateMap(payload) {

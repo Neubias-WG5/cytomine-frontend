@@ -1,5 +1,5 @@
 <template>
-    <span>{{user.firstname}} {{user.lastname}} ({{user.username}})</span>
+    <span v-if="user">{{user.firstname}} {{user.lastname}} ({{user.username}})</span>
 </template>
 
 <script>

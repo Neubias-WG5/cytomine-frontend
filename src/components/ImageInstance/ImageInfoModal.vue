@@ -20,6 +20,14 @@
             <dd><date-item :value="image.created"></date-item></dd>
             <!--<dt>Added in project by</dt>-->
             <!--<dd></dd>-->
+
+            <dt>Mime type</dt>
+            <dd>{{image.mime}}</dd>
+
+            <template v-if="vendor">
+                <dt>Vendor</dt>
+                <dd><img :src="'images/brands/'+vendor+'.png'" /></dd>
+            </template>
         </dl>
 
         <p class="lead">Image metadata</p>
@@ -66,6 +74,25 @@
         computed: {
             sortedMetadata() {
                 return this.metadata.sort((a, b) => a.key.toLowerCase().localeCompare(b.key.toLowerCase()));
+            },
+            vendor() {
+                let mime = this.image.mime;
+                if (mime == 'openslide/ndpi' || mime == 'openslide/vms')
+                    return 'hamamatsu';
+                else if (mime == 'openslide/mrxs')
+                    return '3dh';
+                else if (mime == 'openslide/svs')
+                    return 'aperio';
+                else if (mime == 'openslide/scn')
+                    return 'leica';
+                else if (mime == 'openslide/ventana' || mime == 'openslide/bif')
+                    return 'roche';
+                else if (mime == 'philips/tif')
+                    return 'philips';
+                else if (mime == 'sakura/svslide')
+                    return 'sakura';
+                else
+                    return '';
             }
         },
         methods: {
