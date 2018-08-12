@@ -30,14 +30,14 @@
         },
         methods: {
             setAdjacentImage(position) {
-                api.get(`/api/imageinstance/${this.currentMap.imageId}/${position}.json`).then(response => {
+                api.get(`/api/imageinstance/${this.currentImageId}/${position}.json`).then(response => {
                     this.adjacentImageError = '';
                     if (!response.data.hasOwnProperty('id')) {
                         this.adjacentImageError = position == 'next' ? 'This is the last image' : 'This is the first image';
                         return;
                     }
                     this.adjacentImage = response.data;
-                    this.$emit('changeImage', this.adjacentImage);
+                    this.$emit('changeImage', this.adjacentImage.id);
                 })
             },
         }

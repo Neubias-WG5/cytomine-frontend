@@ -29,11 +29,11 @@
                     <!--<button class="btn btn-default btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Rename</button>-->
                 <!--</div>-->
                 <a :href="`/api/imageinstance/${image.id}/download`" class="btn btn-default btn-xs">
-                    <i class="fa fa-download" aria-hidden="true"></i> Download
+                    <i class="fas fa-download" aria-hidden="true"></i> Download
                 </a>
                 <div class="btn-group">
                     <button class="btn btn-default btn-xs" @click="openImageMoreInfo=true">
-                        <i class="fa fa-info-circle" aria-hidden="true"></i> More info
+                        <i class="fas fa-info-circle" aria-hidden="true"></i> More info
                     </button>
                 </div>
             </div>

@@ -10,7 +10,7 @@
                     :project="project" :project-config="projectConfig" :filters="filters" :image-groups="imageGroups"
                     :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
                     @deleteViewer="deleteViewer" @linkViewers="linkViewers"
-                    @updateMap="updateMap" @dragged="setMap" @current-map="viewer"
+                    @changeImage="changeImage" @dragged="setMap" @current-map="viewer"
                     :mapView="mapView" :lastEventMapId="lastEventMapId"></viewer>
         </div>
     </div>
@@ -107,6 +107,10 @@
                     this.viewers[viewerIndex].linkedTo.push(payload.sender);
                 }
             },
+            changeImage(payload) {
+                let index = this.viewerIndex(payload.viewerId);
+                this.viewers[index].image = this.images[this.imageIndex(payload.newImageId)];
+            },
 
 
             updateOpenLayersMapsSize() {
@@ -129,11 +133,7 @@
 
 
 
-            updateMap(payload) {
-                let index = this.viewers.findIndex(map => map == payload.old);
-                this.viewers[index].data = payload.new;
-                this.viewers[index].imageId = payload.new.id;
-            },
+
 
             checkRoute() {
                 // DEPENDS ON [BACKBONE]

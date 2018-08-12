@@ -3,7 +3,7 @@ import App from '../../components/Software/Software.vue'
 import Axios from 'axios';
 import Datatable from 'vue2-datatable-component'
 import 'vue-popperjs/dist/css/vue-popper.css';
-import 'font-awesome/css/font-awesome.css'
+// import '@fortawesome/fontawesome-free/css/all.css'
 import * as uiv from 'uiv'
 
 window.api = Axios.create({});

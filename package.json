@@ -10,9 +10,9 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.2.0",
     "axios": "^0.17.1",
     "chart.js": "^2.7.2",
-    "font-awesome": "^4.7.0",
     "lodash.compact": "^3.0.1",
     "lodash.differenceby": "^4.8.0",
     "lodash.intersection": "^4.4.0",
