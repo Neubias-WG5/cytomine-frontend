@@ -1,55 +1,54 @@
 <template>
     <div>
         <div class="btn-group">
-            <button @click="getAnnotations(30, 0)" :class="['btn', 'btn-default', {active: filter == null}]">All
+            <button @click="setFilter(null)" :class="['btn', 'btn-default', {active: filter == null}]">All
             </button>
-            <button @click="getAnnotations(30, 0, term.id)" :class="['btn', 'btn-default', {active: filter == term.id}]"
-                    v-for="term in terms" :key="term.id + uuid()">
-                <span class="glyphicon glyphicon-stop" :style="`color: ${getTermColor(term.id)};`"></span>
-                {{term.key}}
+            <button @click="setFilter(term.id)" :class="['btn', 'btn-default', {active: filter == term.id}]"
+                    v-for="term in visibleTerms" :key="term.id + uuid()">
+                <term :size="sizeTerms[term.id]" :name="term.name" :color="term.color"></term>
             </button>
         </div>
-        <div>
+        <div class="pull-right">
             <ul class="pagination" v-if="totalPages > 0">
-                <li :class="{disabled: currentPage == 0}">
+                <li :class="{disabled: page == 0}">
                     <a @click="previousAnnotations" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
-                <li @click="getAnnotations(30, n - 1)" v-for="n in totalPages" :key="n"
-                    :class="{active: n-1 == currentPage}">
+                <li @click="page = (n-1)" v-for="n in totalPages" :key="n" :class="{active: n-1 == page}">
                     <a>
                         {{ n }}
                     </a>
                 </li>
-                <li :class="{disabled: currentPage == totalPages - 1}">
+                <li :class="{disabled: page == totalPages - 1}">
                     <a @click="nextAnnotations" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 </li>
             </ul>
         </div>
+        <div class="clearfix"></div>
         <ul class="annotations-container">
             <li class="img-box" v-for="annotation in annotations" :key="annotation.id + uuid()">
                 <popper>
                     <div class="popper" trigger="hover" :options="{placement: 'auto'}">
                         <div class="annotation-detail">
-                            <h4>Annotation details</h4>
+                            <!--<h4>Annotation details</h4>-->
                             <dl class="dl-horizontal">
                                 <dt>Created by</dt>
-                                <dd v-if="annotation.user !== undefined">{{userById(annotation.user)}}</dd>
+                                <dd v-if="annotation.user !== undefined">
+                                    <username :user="userById(annotation.user)"></username>
+                                </dd>
                                 <dt>Date</dt>
-                                <dd>{{humanDate(annotation.created)}}</dd>
+                                <dd><date-item :value="annotation.created"></date-item></dd>
                                 <template v-if="annotation.userByTerm[0]">
                                     <dt>Term(s)</dt>
                                     <dd v-for="term in annotation.userByTerm" :key="term.id + uuid()">
-                                        <span class="glyphicon glyphicon-stop"
-                                              :style="`color: ${getTermColor(term.term)};`"></span>
-                                        {{termById(term.term)}} by
+                                        <term v-bind="termById(term.term)"></term>&nbsp;by
                                         <span v-for="(user, index) in term.user" :key="user + uuid()">
-                                    {{userById(user)}}
-                                    <span v-if="index + 1 < term.user.length">, </span>
-                                </span>
+                                            <username :user="userById(user)"></username>
+                                            <span v-if="index + 1 < term.user.length">, </span>
+                                        </span>
                                     </dd>
                                 </template>
                             </dl>
@@ -63,7 +62,7 @@
                     </div>
                 </popper>
             </li>
-            <div v-if="annotations[0] == undefined" class="alert alert-info mt-4">
+            <div v-if="annotations && annotations.length == 0" class="alert alert-info mt-4">
                 No annotation
             </div>
         </ul>
@@ -74,19 +73,24 @@
     import Popper from 'vue-popperjs';
     import uuid from 'uuid'
     import humanDate from '../../helpers/humanDate'
+    import Term from "../Ontology/Term";
+    import Username from "../User/Username";
+    import DateItem from "../Datatable/DateItem";
 
     export default {
         name: 'Annotations',
         components: {
+            DateItem,
+            Username,
+            Term,
             Popper,
         },
         data() {
             return {
-                annotations: [],
-                reviewedAnnotations: [],
                 filter: null,
-                totalPages: null,
-                currentPage: 0,
+                page: 0,
+                max: 10,
+                totalPages: null
             }
         },
         props: [
@@ -94,50 +98,62 @@
             'users',
             'terms',
             'isReviewing',
-            'updateAnnotationsIndex'
+            'visibleNoTerm',
+            'visibleTermIds',
+            'visibleUserIds',
+            'sizeTerms'
         ],
-        watch: {
-            updateAnnotationsIndex(newValue) {
-                if (newValue == true) {
-                    this.getAnnotations(30, this.currentPage * 30);
-                    this.$emit('updateAnnotationsIndex', false);
-                }
-            }
+        asyncComputed: {
+            annotations() {
+                let terms;
+                if (this.filter)
+                    terms = `&term=${this.filter}`;
+                else
+                    terms = (this.visibleTermIds.length > 0) ? `&terms=${this.visibleTermIds.join(',')}` : '';
+                let users = (this.visibleUserIds.length > 0) ? `&users=${this.visibleUserIds.join(',')}` : '';
+                let reviewed = (this.isReviewing) ? 'true' : 'false';
+
+                return api.get(`/api/annotation.json?&image=${this.image.id}&reviewed=${reviewed}&max=${this.max}&offset=${this.page * this.max}${terms}${users}`).then(data => {
+                    let annots = data.data.collection;
+                    this.totalPages = data.data.totalPages;
+                    if (this.page >= this.totalPages)
+                        this.page = 0;
+                    // if (!this.filter && this.visibleNoTerm) {
+                    //     api.get(`/api/annotation.json&image=${this.image.id}&reviewed=${reviewed}&max=${this.max}&offset=${this.page * this.max}&noTerm=true&${users}`).then(data => {
+                    //         annots = annots.concat(data.data.collection)
+                    //     })
+                    // }
+                    return annots;
+                });
+            },
+        },
+        computed: {
+            visibleTerms() {
+                return this.terms.filter(term => this.visibleTermIds.includes(term.id))
+            },
         },
         methods: {
-            getAnnotations(max, page, term = null) {
-                // TODO: what about hideUsersLayer & hideAdminsLayer ?
-                this.currentPage = page;
-                let termQuery = term != null ? `&term=${term}` : '';
-                this.filter = term;
-                api.get(`/api/annotation.json?&image=${this.image.id}&reviewed=false&max=${max}&offset=${page * max}${termQuery}`).then(data => {
-                    this.annotations = data.data.collection;
-                    this.totalPages = data.data.totalPages;
-                })
-                if (this.isReviewing) {
-                    api.get(`/api/annotation.json?&image=${this.image.id}&showTerm=true&reviewed=true&notReviewedOnly=true&showMeta=true&max=${max}&offset=${page * max}${termQuery}`).then(data => {
-                        this.reviewedAnnotations = data.data.collection;
-                    })
-                }
-            },
+            uuid,
             previousAnnotations() {
-                if (this.currentPage !== 0) {
-                    this.getAnnotations(30, this.currentPage - 1);
-                }
+                if (this.page !== 0)
+                    this.page -= 1;
             },
             nextAnnotations() {
-                if (this.currentPage !== this.totalPages - 1) {
-                    this.getAnnotations(30, this.currentPage + 1);
-                }
+                if (this.page !== this.totalPages - 1)
+                    this.page += 1;
             },
-            uuid,
+            setFilter(filter) {
+                this.filter = filter;
+                this.page = 0;
+            },
             userById(userId) {
-                let index = this.users.findIndex(user => user.id === userId);
-                return index < 0 ? null : `${this.users[index].lastname} ${this.users[index].firstname} (${this.users[index].username})`
+                return this.users.find(user => user.id === userId);
             },
             termById(termId) {
-                let index = this.terms.findIndex(term => term.id === termId);
-                return index < 0 ? null : this.terms[index].key
+                console.log(termId);
+                let term = this.terms.find(term => term.id == termId);
+                // term.size = this.sizeTerms[termId];
+                return term;
             },
             getTermColor(termId) {
                 let index = this.terms.findIndex(term => term.id === termId);
@@ -149,9 +165,6 @@
             cropURL(url) {
                 return `${url.substring(0, url.indexOf('?'))}?maxSize=90&alphaMask=true`
             }
-        },
-        created() {
-            this.getAnnotations(30, 0);
         }
     }
 </script>
@@ -194,6 +207,14 @@
     .annotation-detail {
         text-align: left;
         margin: 5px;
+    }
+
+    .pagination {
+        margin: 0;
+    }
+
+    .pagination li {
+        cursor: pointer;
     }
 </style>
 

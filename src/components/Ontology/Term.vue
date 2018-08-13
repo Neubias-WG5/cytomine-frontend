@@ -7,7 +7,7 @@
         </span>
 
         <span class="label" :style="`background-color: ${color}; color:${overlayColor(color)};`">
-            {{ name }} <span v-if="size">({{size}}</span>
+            {{name}}<span v-if="size"> ({{size}})</span>
         </span>
     </span>
 </template>

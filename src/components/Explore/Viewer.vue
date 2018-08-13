@@ -71,10 +71,9 @@
                           :visible-no-term="visibleNoTerm" @toggleAssociateTerm="toggleAssociateTerm"
                           @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms"></ontology>
 
-                <!--<annotations v-show="selectedComponent == 'annotationList'"-->
-                             <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex"-->
-                             <!--:updateAnnotationsIndex="updateAnnotationsIndex" :isReviewing="isReviewing"-->
-                             <!--:users="userLayers" :terms="allTerms" :image="image"></annotations>-->
+                <annotations v-show="selectedComponent == 'annotationList'" :isReviewing="isReviewing"
+                             :users="userLayers" :terms="allTerms" :image="image" :visible-term-ids="visibleTerms"
+                             :visible-user-ids="visibleUserLayerIds" :size-terms="sizeTerms"></annotations>
 
                 <!--<review v-if="isReviewing" v-show="selectedComponent == 'review'"-->
                         <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers"-->
@@ -236,11 +235,14 @@
             availableAnnotationProperties() {
                 return this.annotationProperties.filter(item => this.selectedUserLayerIds.includes(parseInt(item.userId)))
             },
+            allTermIds() {
+                return this.allTerms.map(term => term.id);
+            },
             selectedUserLayerIds() {
-                return this.userLayers.map(userLayer => {
-                    if (userLayer.selected)
-                        return userLayer.id
-                })
+                return this.userLayers.filter(userLayer => userLayer.selected).map(userLayer => userLayer.id)
+            },
+            visibleUserLayerIds() {
+                return this.userLayers.filter(userLayer => userLayer.selected && userLayer.visible).map(userLayer => userLayer.id)
             },
             filterUrl() {
                 if (!this.selectedFilter)
@@ -445,7 +447,7 @@
             },
             showAllTerms(bool) {
                 if (bool) {
-                    this.visibleTerms = clone(this.allTerms);
+                    this.visibleTerms = clone(this.allTermIds);
                     this.visibleNoTerm = true;
                 }
                 else {
@@ -587,7 +589,7 @@
             getTerms(children) {
                 let terms = [];
                 children.forEach(child => {
-                    terms.push(child.id);
+                    terms.push(child);
                     terms = terms.concat(this.getTerms(child.children))
                 });
                 return terms;
@@ -607,8 +609,8 @@
             this.setNewImage(null, this.image);
 
             this.allTerms = this.getTerms(this.ontology.children);
-            this.visibleTerms = clone(this.allTerms);
-            this.allTerms.forEach(term => {
+            this.visibleTerms = clone(this.allTermIds);
+            this.allTermIds.forEach(term => {
                 this.$set(this.sizeTerms, term, 0)
             });
 

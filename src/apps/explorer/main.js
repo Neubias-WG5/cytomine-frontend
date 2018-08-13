@@ -5,6 +5,9 @@ import Axios from 'axios';
 import * as uiv from 'uiv'
 import SlVueTree from 'sl-vue-tree'
 import 'vue-popperjs/dist/css/vue-popper.css';
+import AsyncComputed from 'vue-async-computed'
+
+Vue.use(AsyncComputed);
 
 window.api = Axios.create({});
 
