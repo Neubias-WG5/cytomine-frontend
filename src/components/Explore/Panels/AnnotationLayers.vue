@@ -10,6 +10,7 @@
                 </option>
             </select>
             <button class="btn btn-default" @click="addLayer()">Add</button>
+            <button class="btn btn-default" @click="addAllLayers()">Add all</button>
         </div>
         <ul class="list-group mt-4">
             <li class="list-group-item clearfix" v-for="layer in selectedLayers" :key="layer.id" v-if="layer.selected">
@@ -103,14 +104,21 @@
         },
         watch: {},
         methods: {
-            addLayer() {
-                let index = this.layers.findIndex(l => l.id == this.layerToBeAdded.id);
-                this.layerToBeAdded.selected = true;
+            addLayer(layer = this.layerToBeAdded) {
+                let index = this.layers.findIndex(l => l.id == layer.id);
+                layer.selected = true;
+                layer.visible = true;
                 this.$emit('updateLayer', {
                     'index': index,
-                    'layer': this.layerToBeAdded
+                    'layer': layer
                 });
                 this.layerToBeAdded = {};
+            },
+            addAllLayers() {
+              let layers = this.notSelectedLayersSorted;
+              layers.forEach(layer => {
+                  this.addLayer(layer)
+              })
             },
             toggleVisibility(layer) {
                 let index = this.layers.findIndex(l => l.id == layer.id);
