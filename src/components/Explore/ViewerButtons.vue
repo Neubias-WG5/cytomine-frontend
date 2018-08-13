@@ -27,6 +27,11 @@
                 title="Annotation layers">
             <i class="fas fa-layer-group"></i>
         </button>
+        <button @click="setSelected('ontology')"
+                :class="['btn', 'btn-default', {active: selectedComponent == 'ontology' }]"
+                title="Ontology">
+            <i class="fas fa-palette"></i>
+        </button>
         <button v-if="mustBeShown('project-explore-annotation-panel')"
                 @click="setSelected('annotationList')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'annotationList' }]"

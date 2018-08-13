@@ -9,7 +9,7 @@
             <viewer v-for="viewer in viewers" :key="viewer.id" :currentRoute="currentRoute"
                     :project="project" :project-config="projectConfig" :filters="filters" :image-groups="imageGroups"
                     :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
-                    @deleteViewer="deleteViewer" @linkViewers="linkViewers"
+                    :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
                     @changeImage="changeImage" @dragged="setMap" @current-map="viewer"
                     :mapView="mapView" :lastEventMapId="lastEventMapId"></viewer>
         </div>
@@ -39,6 +39,7 @@
                 imageGroups: [],
                 onlineUsers: [],
                 currentUser: {},
+                ontology: {},
 
                 mapView: {
                     mapCenter: [0, 0],
@@ -161,6 +162,10 @@
                 api.get(`/api/project/${this.projectId}/online/user.json`).then(response => {
                     this.onlineUsers = response.data.collection;
                 });
+
+                api.get(`api/ontology/${this.project.ontology}.json`).then(response => {
+                    this.ontology = response.data;
+                })
             });
 
             api.get(`/custom-ui/config.json?project=${this.projectId}`).then(response => {

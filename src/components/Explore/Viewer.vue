@@ -59,15 +59,16 @@
                 <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
                             :viewer-id="id"></color-maps>
 
-                <div v-show="selectedComponent == 'annotationLayers'">
-                    <annotation-layers @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"
-                                       :user-layers="userLayers" :viewer-id="id" :current-user="currentUser">
-                    </annotation-layers>
-                    <!--<ontology :image="image" :featureSelectedData="featureSelectedData"-->
-                              <!--:featureSelected="featureSelected" :vectorLayersOpacity="vectorLayersOpacity"-->
-                              <!--@showTerms="showTerms" @showWithNoTerm="setShowWithNoTerm"-->
-                              <!--@allTerms="setAllTerms"></ontology>-->
-                </div>
+
+                <annotation-layers v-show="selectedComponent == 'annotationLayers'"
+                                   @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"
+                                   :user-layers="userLayers" :viewer-id="id" :current-user="currentUser">
+                </annotation-layers>
+
+                <ontology v-show="selectedComponent == 'ontology'" :project="project" :ontology="ontology"
+                          :visible-terms="visibleTerms" :associable-terms="associableTerms" :size-terms="sizeTerms"
+                          :visible-no-term="visibleNoTerm" @toggleAssociateTerm="toggleAssociateTerm"
+                          @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms"></ontology>
 
                 <!--<annotations v-show="selectedComponent == 'annotationList'"-->
                              <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex"-->
@@ -126,6 +127,7 @@
     import mustBeShown from '../../helpers/mustBeShown';
     import Filters from "./Panels/Filters";
     import NavigationImage from "./Panels/NavigationImage";
+    import clone from "lodash.clone"
 
 
     export default {
@@ -164,6 +166,11 @@
                 selectedFeatures: [],
 
                 userLayers: [],
+                visibleTerms: [],
+                associableTerms: [],
+                sizeTerms: {},
+                visibleNoTerm: false,
+                allTerms: [],
 
                 imsBaseUrl: '',
                 extent: [],
@@ -195,6 +202,7 @@
             'currentUser',
             'viewers',
             'paddingTop',
+            'ontology',
 
             'id',
             'linkedTo',
@@ -281,7 +289,7 @@
             },
             image(oldImage, newImage) {
                 this.setNewImage(oldImage, newImage)
-            }
+            },
             // mapView: {
             //     handler() {
             //         let {mapCenter, mapResolution, mapRotation} = this.mapView;
@@ -402,6 +410,30 @@
             },
             updateLayer(payload) {
                 this.userLayers.splice(payload.index, 1, payload.layer);
+            },
+            toggleVisibilityTerm(termId) {
+                let index = this.visibleTerms.findIndex(t => t == termId);
+                if (index == -1)
+                    this.visibleTerms.push(termId);
+                else
+                    this.visibleTerms.splice(index, 1)
+            },
+            toggleAssociateTerm(termId) {
+                let index = this.associableTerms.findIndex(t => t == termId);
+                if (index == -1)
+                    this.associableTerms.push(termId);
+                else
+                    this.associableTerms.splice(index, 1)
+            },
+            showAllTerms(bool) {
+                if (bool) {
+                    this.visibleTerms = clone(this.allTerms);
+                    this.visibleNoTerm = true;
+                }
+                else {
+                    this.visibleTerms = [];
+                    this.visibleNoTerm = false;
+                }
             },
             // // Sends view infos
             // sendView(e) {
@@ -534,6 +566,14 @@
             mustBeShown(key) {
                 return mustBeShown(key, this.projectConfig);
             },
+            getTerms(children) {
+                let terms = [];
+                children.forEach(child => {
+                    terms.push(child.id);
+                    terms = terms.concat(this.getTerms(child.children))
+                });
+                return terms;
+            },
         },
         created() {
             this.getWindowWidth();
@@ -547,6 +587,12 @@
 
             this.extent = [0, 0, this.imageWidth, this.imageHeight];
             this.setNewImage(null, this.image);
+
+            this.allTerms = this.getTerms(this.ontology.children);
+            this.visibleTerms = clone(this.allTerms);
+            this.allTerms.forEach(term => {
+                this.$set(this.sizeTerms, term, 0)
+            });
 
             // Init map
             // this.$openlayers.init({
