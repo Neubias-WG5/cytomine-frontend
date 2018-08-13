@@ -16,7 +16,8 @@
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
-                            :has-image-groups="hasImageGroups" :project-config="projectConfig"></viewer-buttons>
+                            :has-image-groups="hasImageGroups" :has-annotation-properties="hasAnnotationProperties"
+                            :project-config="projectConfig"></viewer-buttons>
 
             <div class="scale-line-panel">
                 <scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"
@@ -87,8 +88,8 @@
                                 <!--:filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @changeImage="changeImage"-->
                                 <!--:currentMap="currentMap"  :mousePosition="mousePosition"></multidimension>-->
 
-                <!--<properties v-show="selectedComponent == 'properties'" :layersSelected="layersSelected"-->
-                            <!--:viewer-id="id" :image="image"></properties>-->
+                <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
+                                    && hasAnnotationProperties" :properties="availableAnnotationProperties"></properties>
             </div>
         </div>
 
@@ -171,13 +172,14 @@
                 sizeTerms: {},
                 visibleNoTerm: false,
                 allTerms: [],
+                annotationProperties: [],
 
                 imsBaseUrl: '',
                 extent: [],
                 mousePosition: [0, 0],
                 termsToShow: [],
                 showWithNoTerm: true,
-                allTerms: [],
+
                 featureSelected: undefined,
                 featureSelectedData: {},
                 layersSelected: [],
@@ -227,6 +229,18 @@
             },
             hasMultiViews() {
                 return this.viewers.length > 1
+            },
+            hasAnnotationProperties() {
+                return this.availableAnnotationProperties.length > 0
+            },
+            availableAnnotationProperties() {
+                return this.annotationProperties.filter(item => this.selectedUserLayerIds.includes(parseInt(item.userId)))
+            },
+            selectedUserLayerIds() {
+                return this.userLayers.map(userLayer => {
+                    if (userLayer.selected)
+                        return userLayer.id
+                })
             },
             filterUrl() {
                 if (!this.selectedFilter)
@@ -361,7 +375,11 @@
                 // Update feature layers
                 // Update annotation indexes
                 // Remove selected features
-                this.setUserLayers(!oldImage)
+                this.setUserLayers(!oldImage);
+
+                api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
+                    this.annotationProperties = data.data.collection;
+                })
             },
             setUserLayers(selectDefaultLayers = true) {
                 api.get(`/api/project/${this.image.project}/userlayer.json?image=${this.image.id}`).then(response => {
