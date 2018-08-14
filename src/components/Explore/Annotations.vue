@@ -1,5 +1,8 @@
 <template>
     <div>
+        <h4>
+            <i class="fas fa-shapes"></i> Visible annotations
+        </h4>
         <div class="btn-group">
             <button @click="setFilter(null)" :class="['btn', 'btn-default', {active: filter == null}]">All
             </button>
@@ -9,7 +12,7 @@
             </button>
         </div>
         <div class="pull-right">
-            <ul class="pagination" v-if="totalPages > 0">
+            <ul class="pagination" v-if="totalPages > 1">
                 <li :class="{disabled: page == 0}">
                     <a @click="previousAnnotations" aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
@@ -105,6 +108,12 @@
         ],
         asyncComputed: {
             annotations() {
+                if (this.visibleTermIds.length == 0 || this.visibleUserIds.length == 0) {
+                    this.totalPages = 0;
+                    this.page = 0;
+                    return [];
+                }
+
                 let terms;
                 if (this.filter)
                     terms = `&term=${this.filter}`;

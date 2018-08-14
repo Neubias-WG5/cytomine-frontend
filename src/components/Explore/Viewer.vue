@@ -35,6 +35,7 @@
                 </div>
 
                 <div v-show="selectedComponent == 'linkmap' && mustBeShown('project-explore-link') && hasMultiViews">
+                    <h4><i class="fas fa-link"></i> Link viewers</h4>
                     <div class="alert alert-info">Choose a view to link with this one.</div>
                     <label>Link this view with </label>
                     <div v-for="(viewer, index) in viewers" :key="'link-div-' + viewer.id">
@@ -724,6 +725,7 @@
         border: 1px solid rgb(240, 240, 240);
         overflow-y: auto;
         position: absolute;
+        padding-top: 0;
     }
 
     .component-panel-bottom {

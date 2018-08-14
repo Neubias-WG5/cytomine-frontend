@@ -1,5 +1,8 @@
 <template>
     <div>
+        <h4>
+            <i class="fas fa-tags"></i> Properties
+        </h4>
         <div class="alert alert-info">Choose a color and a property to show</div>
         <div class="form-horizontal">
             <div class="form-group">

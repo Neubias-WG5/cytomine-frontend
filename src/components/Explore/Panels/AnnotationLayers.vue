@@ -1,6 +1,6 @@
 <template>
     <section>
-        <h4>Layers</h4>
+        <h4><i class="fas fa-layer-group"></i> Layers</h4>
         <div class="btn-group" style="display:flex;">
             <select class="btn btn-default" v-model="layerToBeAdded" name="user-layer" id="user-layer"
                     style="width: 100%;">

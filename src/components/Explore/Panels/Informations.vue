@@ -1,5 +1,8 @@
 <template>
     <div>
+        <h4>
+            <i class="fas fa-info-circle"></i> Informations
+        </h4>
         <dl class="dl-horizontal">
             <dt>Name</dt>
             <dd v-if="!project.blindMode">{{image.instanceFilename}}</dd>

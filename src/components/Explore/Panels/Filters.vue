@@ -1,5 +1,8 @@
 <template>
     <div>
+        <h4>
+            <i class="fas fa-filter"></i> Filters
+        </h4>
         <div class="alert alert-info">Choose a filter to apply</div>
 
         <div class="radio">

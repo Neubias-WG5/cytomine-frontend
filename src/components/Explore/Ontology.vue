@@ -1,6 +1,6 @@
 <template>
     <section>
-        <h4>Ontology</h4>
+        <h4><i class="fas fa-palette"></i> Ontology</h4>
 
         <ontology-tree :ontology="ontology" :editable="false" :visible-terms="visibleTerms"
                        :associated-terms="associableTerms" :size-terms="sizeTerms" @showAllTerms="showAllTerms"
