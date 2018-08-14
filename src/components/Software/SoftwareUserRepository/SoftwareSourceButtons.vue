@@ -2,7 +2,7 @@
     <span>
         <template v-if="sourceCodeProvider == 'github'">
             <a class="btn btn-primary" :href="sourceCodeUrl">
-                <i class="fa fa-github fa-fw" aria-hidden="true"></i> See source code on GitHub
+                <i class="fab fa-github fa-fw" aria-hidden="true"></i> See source code on GitHub
             </a>
         </template>
         <template v-else-if="sourceCodeProvider == 'gitlab'">
@@ -16,7 +16,7 @@
             </a>
         </template>
         <a class="btn btn-primary" :href="environmentUrl">
-            <i class="fa fa-ship fa-fw" aria-hidden="true"></i> See environment on DockerHub
+            <i class="fab fa-docker fa-fw" aria-hidden="true"></i> See environment on DockerHub
         </a>
     </span>
 </template>

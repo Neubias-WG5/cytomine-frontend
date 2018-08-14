@@ -1,7 +1,7 @@
 <template>
     <span>
         <template v-if="sourceCodeProvider == 'github'">
-            <i class="fa fa-github fa-fw" aria-hidden="true"></i> GitHub
+            <i class="fab fa-github fa-fw" aria-hidden="true"></i> GitHub
         </template>
         <template v-else-if="sourceCodeProvider == 'gitlab'">
             <i class="fa fa-gitlab fa-fw" aria-hidden="true"></i> GitLab
@@ -11,7 +11,7 @@
         </template>
          [{{softwareRepository.username}}]
         <template v-if="softwareRepository.prefix">(with prefix "{{softwareRepository.prefix}}") </template>
-        <br><i class="fa fa-ship fa-fw" aria-hidden="true"></i> DockerHub [{{softwareRepository.dockerUsername}}]
+        <br><i class="fab fa-docker fa-fw" aria-hidden="true"></i> DockerHub [{{softwareRepository.dockerUsername}}]
     </span>
 </template>
 

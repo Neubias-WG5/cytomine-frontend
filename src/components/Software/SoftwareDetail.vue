@@ -14,7 +14,7 @@
                             <h3 class="panel-title pull-left">General information</h3>
                             <div class="btn-group pull-right">
                                 <button class="btn btn-default btn-xs" @click="openEditModal=true">
-                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                    <i class="fa fa-edit" aria-hidden="true"></i>
                                 </button>
                                 <delete-object-button :object="software" domain="software"
                                                       domain-pretty-print="software"
@@ -134,7 +134,7 @@
                                         <div class="btn-group pull-right">
                                             <button class="btn btn-default btn-xs"
                                                     @click="openEditParameterModalByIndex(index)">
-                                                <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                                <i class="fa fa-edit" aria-hidden="true"></i>
                                             </button>
                                             <delete-object-button :object="parameter" domain="softwareparameter"
                                                                   domain-pretty-print="software parameter"
