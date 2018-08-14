@@ -17,7 +17,7 @@
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
                             :has-image-groups="hasImageGroups" :has-annotation-properties="hasAnnotationProperties"
-                            :project-config="projectConfig"></viewer-buttons>
+                            :project-config="projectConfig" :has-online-users="hasOnlineUsers"></viewer-buttons>
 
             <div class="scale-line-panel">
                 <scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"
@@ -90,6 +90,44 @@
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties" :properties="availableAnnotationProperties"></properties>
+
+                <div v-show="selectedComponent == 'follow' && mustBeShown('project-explore-follow') && hasOnlineUsers">
+                    <h4>
+                        <i class="fas fa-chess-rook"></i> Follow online users
+                    </h4>
+                    <div class="alert alert-info">Choose a user to follow</div>
+
+                    <div class="radio">
+                        <input v-model="followedUser" type="radio" :name="'follow-no-' + id"
+                               :id="'follow-no-' + id" value="">
+                        <label :for="'follow-no-' + id">No tracking</label>
+                    </div>
+                    <template v-if="onlineAdmins.length > 0">
+                        <h4>Managers</h4>
+                        <div class="radio">
+
+                            <div v-for="user in onlineAdmins" :key="user.id">
+                                <input v-model="followedUser" type="radio" :name="'follow-'+user.id+'-' + id"
+                                       :id="'follow-'+user.id+'-' + id" :value="user">
+                                <label :for="'follow-'+user.id+'-' + id">
+                                    <username :user="userById(user.id)"></username>
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-if="onlineContributors.length > 0">
+                        <h4>Contributors</h4>
+                        <div class="radio">
+                            <div v-for="user in onlineContributors" :key="user.id">
+                                <input v-model="followedUser" type="radio" :name="'follow-'+user.id+'-' + id"
+                                       :id="'follow-'+user.id+'-' + id" :value="user">
+                                <label :for="'follow-'+user.id+'-' + id">
+                                    <username :user="userById(user.id)"></username>
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
 
@@ -129,11 +167,14 @@
     import Filters from "./Panels/Filters";
     import NavigationImage from "./Panels/NavigationImage";
     import clone from "lodash.clone"
+    import differenceBy from "lodash.differenceby"
+    import Username from "../User/Username";
 
 
     export default {
         name: 'Viewer',
         components: {
+            Username,
             NavigationImage,
             Filters,
             ViewerButtons,
@@ -157,6 +198,7 @@
                 viewerNames: ['View 1', 'View 2', 'View 3', 'View 4'],
                 selectedComponent: '',
                 selectedFilter: "",
+                followedUser: "",
                 linkedToValues: [],
 
                 center: [0, 0],
@@ -230,6 +272,9 @@
             hasMultiViews() {
                 return this.viewers.length > 1
             },
+            hasOnlineUsers() {
+                return this.onlineUsers.length > 0
+            },
             hasAnnotationProperties() {
                 return this.availableAnnotationProperties.length > 0
             },
@@ -298,6 +343,13 @@
                 }
                 return idealZoom
             },
+            onlineAdmins() {
+                return this.onlineUsers.filter(user => this.project.admins.find(u => u.id == user.id))
+            },
+            onlineContributors() {
+                return differenceBy(this.onlineUsers.filter(user => this.project.users.find(u => u.id == user.id)),
+                this.onlineAdmins)
+            }
         },
         watch: {
             linkedTo() {
@@ -382,7 +434,9 @@
 
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
                     this.annotationProperties = data.data.collection;
-                })
+                });
+
+                this.getOnlineUsers();
             },
             setUserLayers(selectDefaultLayers = true) {
                 api.get(`/api/project/${this.image.project}/userlayer.json?image=${this.image.id}`).then(response => {
@@ -456,6 +510,14 @@
                     this.visibleNoTerm = false;
                 }
             },
+            getOnlineUsers() {
+                api.get(`/api/project/${this.image.project}/online/user.json?image=${this.image.id}`).then(response => {
+                    this.onlineUsers = response.data.collection;
+                })
+            },
+            userById(userId, list = this.project.users) {
+                return list.find(user => user.id === userId);
+            },
             // // Sends view infos
             // sendView(e) {
             //     let payload = {
@@ -485,11 +547,7 @@
             //     };
             //     api.post(`/api/imageinstance/${this.imageId}/position.json`, payload);
             // },
-            // getOnlineUsers() {
-            //     api.get(`/api/project/${this.image.project}/online/user.json`).then(response => {
-            //         this.onlineUsers = response.data.collection;
-            //     })
-            // },
+
             // centerOnFeature(id) {
             //     if (id == 0 || id == '') {
             //         return;
@@ -615,6 +673,8 @@
                 this.$set(this.sizeTerms, term, 0)
             });
 
+            setInterval(this.getOnlineUsers, 5000);
+
             // Init map
             // this.$openlayers.init({
             //     element: this.id,
@@ -666,7 +726,7 @@
             //         child.classList.add('btn-default');
             //     });
             //     setInterval(this.postPosition, 5000);
-            //     setInterval(this.getOnlineUsers, 5000);
+            //
             //     if (this.isReviewing) {
             //         api.put(`/api/imageinstance/${this.imageId}/review.json`, {
             //             id: this.imageId,

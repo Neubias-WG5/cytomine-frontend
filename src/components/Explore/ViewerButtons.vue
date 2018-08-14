@@ -45,13 +45,16 @@
         </button>
         <button v-if="isReviewing" @click="setSelected('review')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'review' }]" title="Review">
-            <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
             <i class="fas fa-check-circle"></i>
         </button>
         <button v-if="hasAnnotationProperties && mustBeShown('project-explore-property')" @click="setSelected('properties')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'properties' }]"
                 title="Annotation properties">
             <i class="fas fa-tags"></i>
+        </button>
+        <button v-if="hasOnlineUsers" @click="setSelected('follow')"
+                :class="['btn', 'btn-default', {active: selectedComponent == 'follow' }]" title="Follow user">
+            <i class="fas fa-chess-rook"></i>
         </button>
         <button v-if="hasMultiViews" class="btn btn-danger" @click="$emit('deleteViewer')"
                 title="Remove this view from the explorer">
@@ -72,7 +75,8 @@
             'hasImageGroups',
             'isReviewing',
             'projectConfig',
-            'hasAnnotationProperties'
+            'hasAnnotationProperties',
+            'hasOnlineUsers'
         ],
         data() {
             return {
