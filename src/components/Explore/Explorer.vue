@@ -156,7 +156,24 @@
                 });
 
                 api.get(`api/project/${this.projectId}/imagegroup.json`).then(response => {
-                    this.imageGroups = response.data.collection;
+                    let groups = response.data.collection;
+                    groups.forEach(group => {
+                        api.get(`/api/imagegroup/${group.id}/characteristics.json`).then(response => {
+                            if (response.data.channel) {
+                                group.channels = response.data.channel;
+                                group.zStacks = response.data.zStack;
+                                group.times =  response.data.time;
+                            }
+
+                            api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
+                                this.hdf5 = response.data;
+                                this.imageGroups.push(group);
+                            }).catch(errors => {
+                                this.hdf5 = undefined;
+                                this.imageGroups.push(group);
+                            })
+                        });
+                    });
                 });
 
                 api.get(`/api/project/${this.projectId}/online/user.json`).then(response => {

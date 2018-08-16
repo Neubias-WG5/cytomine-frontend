@@ -38,7 +38,7 @@
                 title="User annotations list">
             <i class="fas fa-shapes"></i>
         </button>
-        <button v-if="hasImageGroups" @click="setSelected('multidimension')"
+        <button v-if="hasImageSequences" @click="setSelected('multidimension')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'multidimension' }]"
                 title="Multidimension">
             <i class="fas fa-images"></i>
@@ -72,7 +72,7 @@
             'selectedComponent',
             'hasMultiViews',
             'hasFilters',
-            'hasImageGroups',
+            'hasImageSequences',
             'isReviewing',
             'projectConfig',
             'hasAnnotationProperties',

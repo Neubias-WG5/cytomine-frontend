@@ -1,90 +1,123 @@
 <template>
     <div>
-        <h3>Multidimension</h3>
+        <h4>
+            <i class="fas fa-images"></i> Multidimension
+        </h4>
         <div class="input-group">
             <span class="input-group-addon">Current image group</span>
             <select class="btn btn-default" style="width: 100%"
-                    @change="setImageGroup(currentMap.imageId, imageGroupSelectedId)"
-                    v-model="imageGroupSelectedId" name="imageGroupSelect" id="imageGroupSelect">
-                <option :value="undefined">Select an image group</option>
-                <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence.imageGroup">
-                    {{getImageGroupName(sequence.imageGroup)}}
+
+                    v-model="selected" name="imageGroupSelect" id="imageGroupSelect">
+                <option :value="{}">Select an image group</option>
+                <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence">
+                    {{getImageGroupById(sequence.imageGroup).name}}
                 </option>
             </select>
         </div>
-        <template v-if="imageGroupSelected">
+        <template v-if="selected !== {} && selectedImageGroup">
             <div>
                 <dl>
-                    <template v-if="imageGroupSelected.channel && imageGroupSelected.channel.length > 1">
+                    <template v-if="selectedImageGroup.channels && selectedImageGroup.channels.length > 1">
                         <dt>Channel (c)
-                            {{prettyPrintDimensions(imageGroupSelected.channel)}} </dt>
+                            {{prettyPrintDimensions(selectedImageGroup.channels)}} </dt>
                         <dd>
                             <div style="width: 100px;" class="pull-left">
-                                <span class="label label-default">{{currentSequence.channel}}</span>
+                                <span class="label label-default">{{currentChannel}}</span>
                                 <div class="pull-right">
-                                    <button class="btn btn-xs btn-default" @click="addToCurrentChannel(1)" :disabled="currentSequence.channel === imageGroupSelected.channel.length - 1">+</button>
-                                    <button class="btn btn-xs btn-default" @click="addToCurrentChannel(-1)" :disabled="currentSequence.channel === 0">-</button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentChannel(-1)"
+                                            :disabled="currentChannel === 0">
+                                        <i class="fas fa-angle-left"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentChannel(1)"
+                                            :disabled="currentChannel === selectedImageGroup.channels.length - 1">
+                                        <i class="fas fa-angle-right"></i>
+                                    </button>
                                 </div>
                             </div>
-                            <div style="width: calc(100% - 110px);" class="pull-right">
-                                <vue-slider v-model="sequenceSelected.channel" :piecewise="imageGroupSelected.channel.length < 300" :piecewiseLabel="imageGroupSelected.channel.length < 300"
-                                            tooltip="hover" tooltip-dir="left" :lazy="true"
-                                            :data="imageGroupSelected.channel" ref="channelslider">
-                                    <template slot="label" slot-scope="{ label, index, active }">
-                              <span :class="['vue-slider-piecewise-label', { active }]"
-                                    v-if="showLabel(index, imageGroupSelected.channel)">
-                                {{ label }}
-                              </span>
-                                    </template>
-                                </vue-slider>
+                            <div>
+                                <div style="width: calc(100% - 110px);" class="pull-right">
+                                    <vue-slider v-model="currentChannel"
+                                                :piecewise="selectedImageGroup.channels.length < 300"
+                                                :piecewiseLabel="selectedImageGroup.channels.length < 300"
+                                                tooltip="hover" tooltip-dir="left" :lazy="true"
+                                                :data="selectedImageGroup.channels" ref="channelslider">
+                                        <template slot="label" slot-scope="{ label, index, active, first, last }">
+                                        <span :class="['vue-slider-piecewise-label', { active }]"
+                                              v-if="showLabel(index, currentChannel) || first || last">
+                                            {{ label }}
+                                        </span>
+                                        </template>
+                                    </vue-slider>
+
+                                </div>
+
                             </div>
+
                         </dd>
                     </template>
-                    <template v-if="imageGroupSelected.zStack && imageGroupSelected.zStack.length > 1">
+
+                    <template v-if="selectedImageGroup.zStacks && selectedImageGroup.zStacks.length > 1">
                         <dt>Slice (z)
-                            {{prettyPrintDimensions(imageGroupSelected.zStack)}}</dt>
+                            {{prettyPrintDimensions(selectedImageGroup.zStacks)}} </dt>
                         <dd>
                             <div style="width: 100px;" class="pull-left">
-                                <span class="label label-default">{{currentSequence.zStack}}</span>
+                                <span class="label label-default">{{currentZStack}}</span>
                                 <div class="pull-right">
-                                    <button class="btn btn-xs btn-default" @click="addToCurrentZstack(1)" :disabled="currentSequence.zStack === imageGroupSelected.zStack.length - 1">+</button>
-                                    <button class="btn btn-xs btn-default" @click="addToCurrentZstack(-1)" :disabled="currentSequence.zStack === 0">-</button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentZstack(-1)"
+                                            :disabled="currentZStack === 0">
+                                        <i class="fas fa-angle-left"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentZstack(1)"
+                                            :disabled="currentZStack === selectedImageGroup.zStacks.length - 1">
+                                        <i class="fas fa-angle-right"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div style="width: calc(100% - 110px);" class="pull-right">
-                                <vue-slider v-model="sequenceSelected.zStack" :piecewise="imageGroupSelected.zStack.length < 300" :piecewiseLabel="imageGroupSelected.zStack.length < 300"
+                                <vue-slider v-model="currentZStack"
+                                            :piecewise="selectedImageGroup.zStacks.length < 300"
+                                            :piecewiseLabel="selectedImageGroup.zStacks.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
-                                            :data="imageGroupSelected.zStack" ref="zstackslider">
-                                    <template slot="label" slot-scope="{ label, index, active }">
-                              <span :class="['vue-slider-piecewise-label', { active }]"
-                                    v-if="showLabel(index, imageGroupSelected.zStack)">
-                                {{ label }}
-                              </span>
+                                            :data="selectedImageGroup.zStacks" ref="zstackslider">
+                                    <template slot="label" slot-scope="{ label, index, active, first, last }">
+                                        <span :class="['vue-slider-piecewise-label', { active }]"
+                                              v-if="showLabel(index, currentZStack) || first || last">
+                                            {{ label }}
+                                        </span>
                                     </template>
                                 </vue-slider>
                             </div>
                         </dd>
                     </template>
-                    <template v-if="imageGroupSelected.time && imageGroupSelected.time.length > 1">
+
+                    <template v-if="selectedImageGroup.times && selectedImageGroup.times.length > 1">
                         <dt>Time (t)
-                            {{prettyPrintDimensions(imageGroupSelected.time)}}</dt>
+                            {{prettyPrintDimensions(selectedImageGroup.times)}} </dt>
                         <dd>
                             <div style="width: 100px;" class="pull-left">
-                                <span class="label label-default">{{currentSequence.time}}</span>
+                                <span class="label label-default">{{currentTime}}</span>
                                 <div class="pull-right">
-                                    <button class="btn btn-xs btn-default" @click="addToCurrentTime(1)" :disabled="currentSequence.time === imageGroupSelected.time.length - 1">+</button>
-                                    <button class="btn btn-xs btn-default" @click="addToCurrentTime(-1)" :disabled="currentSequence.time === 0">-</button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentTime(-1)"
+                                            :disabled="currentTime === 0">
+                                        <i class="fas fa-angle-left"></i>
+                                    </button>
+                                    <button class="btn btn-xs btn-default" @click="addToCurrentTime(1)"
+                                            :disabled="currentTime === selectedImageGroup.times.length - 1">
+                                        <i class="fas fa-angle-right"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div style="width: calc(100% - 110px);" class="pull-right">
-                                <vue-slider v-model="sequenceSelected.time" :piecewise="imageGroupSelected.time.length < 300" :piecewiseLabel="imageGroupSelected.time.length < 300"
+                                <vue-slider v-model="currentTime"
+                                            :piecewise="selectedImageGroup.times.length < 300"
+                                            :piecewiseLabel="selectedImageGroup.times.length < 300"
                                             tooltip="hover" tooltip-dir="left" :lazy="true"
-                                            :data="imageGroupSelected.time" ref="timeslider">
-                                    <template slot="label" slot-scope="{ label, index, active }">
-                              <span :class="['vue-slider-piecewise-label', { active }]"
-                                    v-if="showLabel(index, imageGroupSelected.time)">
-                                {{ label }}
-                              </span>
+                                            :data="selectedImageGroup.times" ref="timeslider">
+                                    <template slot="label" slot-scope="{ label, index, active, first, last }">
+                                        <span :class="['vue-slider-piecewise-label', { active }]"
+                                              v-if="showLabel(index, currentTime) || first || last">
+                                            {{ label }}
+                                        </span>
                                     </template>
                                 </vue-slider>
                             </div>
@@ -92,11 +125,11 @@
                     </template>
                 </dl>
             </div>
-            <div style="clear: both;"></div>
-            <!--<overlay :imageSequence="currentSequence" :imageGroup="imageGroup" :currentMap="currentMap"-->
+            <div class="clearfix"></div>
+            <!--<overlay :imageSequence="selectedSequence" :imageGroup="imageGroup" :selectedMap="selectedMap"-->
                      <!--:imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>-->
-            <spectra :imageSequence="currentSequence" :imageGroup="imageGroupSelected" :mousePosition="mousePosition"
-                     :currentMap="currentMap"></spectra>
+            <!--<spectra :imageSequence="selectedSequence" :imageGroup="selected" :mousePosition="mousePosition"-->
+                     <!--:selectedMap="selectedMap"></spectra>-->
         </template>
 
     </div>
@@ -115,69 +148,57 @@
             vueSlider,
         },
         props: [
-            'currentMap',
-            'imsBaseUrl',
-            'filterUrl',
+            'viewerId',
             'imageGroups',
-            'mousePosition',
+            'imageSequences',
+            'selectedSequence',
         ],
         data() {
             return {
-                imageSequences: [],
-                imageGroup: [], //TODO: delete
-                sequenceSelected: undefined,
-                imageGroupSelected: undefined,
-                imageGroupSelectedId: undefined,
-                currentSequence: {},
             }
         },
-        watch: {
-            sequenceSelected: {
-                handler(newSequence, oldSequence) {
-                    api.get(`/api/imagegroup/${newSequence.imageGroup}/${newSequence.channel}/${newSequence.zStack}/0/${newSequence.time}/imagesequence.json`).then(response => {
-                        this.currentSequence = response.data;
-                        this.$emit('changeImage', this.currentSequence.model);
-
-                        api.get(`/api/imageinstance/${this.currentMap.imageId}/imagesequence.json`).then(data => {
-                            this.imageSequences = data.data.collection;
-                        });
-                    })
+        computed: {
+            selected: {
+                get: function() {
+                    return this.selectedSequence;
                 },
-                deep: true
+                set: function(newValue) {
+                    this.$emit('update:selectedSequence', newValue)
+                }
+            },
+            selectedImageGroup() {
+                return  this.getImageGroupById(this.selectedSequence.imageGroup)
+            },
+            currentChannel: {
+                get: function() {
+                    return this.selected.channel;
+                },
+                set: function(newValue) {
+                    this.$emit('changeSequence', {c: newValue, z: this.currentZStack, t: this.currentTime})
+                }
+            },
+            currentZStack: {
+                get: function() {
+                    return this.selected.zStack;
+                },
+                set: function(newValue) {
+                    this.$emit('changeSequence', {c: this.currentChannel, z: newValue, t: this.currentTime})
+                }
+            },
+            currentTime: {
+                get: function() {
+                    return this.selected.time;
+                },
+                set: function(newValue) {
+                    this.$emit('changeSequence', {c: this.currentChannel, z: this.currentZStack, t: newValue})
+                }
             },
         },
         methods: {
-            getImageGroupName(imageGroupId) {
-                let index = this.imageGroups.findIndex(group => {
+            getImageGroupById(imageGroupId) {
+                return this.imageGroups.find(group => {
                     return group.id === imageGroupId;
                 });
-
-                return this.imageGroups[index].name;
-            },
-            setImageGroup(imageId, imageGroupId) {
-                this.imageGroupSelected = this.imageGroups.find(group => {
-                    return group.id === imageGroupId;
-                });
-                this.imageGroupSelectedId = (this.imageGroupSelected) ? this.imageGroupSelected.id : undefined;
-
-                if (this.imageGroupSelected) {
-                    api.get(`/api/imagegroup/${imageGroupId}/characteristics.json`).then(response => {
-                        if (response.data.channel) {
-                            this.$set(this.imageGroupSelected, 'channel', response.data.channel);
-                            this.$set(this.imageGroupSelected, 'zStack', response.data.zStack);
-                            this.$set(this.imageGroupSelected, 'time', response.data.time);
-                            this.$set(this.imageGroupSelected, 'slice', response.data.slice);
-                        }
-                    });
-
-                    let index = this.imageSequences.findIndex(sequence => {
-                        return sequence.imageGroup === imageGroupId;
-                    });
-                    this.currentSequence = this.imageSequences[index];
-                    this.sequenceSelected = this.currentSequence;
-                }
-
-                this.$emit('imageGroupHasChanged', imageGroupId);
             },
             prettyPrintDimensions(array) {
                 if (array.length === 0) {
@@ -218,27 +239,20 @@
             },
             addToCurrentChannel(value) {
                 let index = this.$refs.channelslider.getIndex();
-                this.currentSequence.channel = this.imageGroupSelected.channel[index + value];
-                this.$refs.channelslider.setValue(this.currentSequence.channel)
+                this.currentChannel = this.selectedImageGroup.channels[index + value];
+                this.$refs.channelslider.setValue(this.currentChannel)
             },
             addToCurrentZstack(value) {
                 let index = this.$refs.zstackslider.getIndex();
-                this.currentSequence.zStack = this.imageGroupSelected.zStack[index + value];
-                this.$refs.zstackslider.setValue(this.currentSequence.zStack)
+                this.currentZStack = this.selectedImageGroup.zStacks[index + value];
+                this.$refs.zstackslider.setValue(this.currentZStack)
             },
             addToCurrentTime(value) {
                 let index = this.$refs.timeslider.getIndex();
-                this.currentSequence.time = this.imageGroupSelected.time[index + value];
-                this.$refs.timeslider.setValue(this.currentSequence.time)
+                this.currentTime = this.selectedImageGroup.times[index + value];
+                this.$refs.timeslider.setValue(this.currentTime)
             },
         },
-        created() {
-            api.get(`/api/imageinstance/${this.currentMap.imageId}/imagesequence.json`).then(data => {
-                this.imageSequences = data.data.collection;
-            });
-
-            this.setImageGroup(this.currentMap.imageId, this.currentMap.imageGroup)
-        }
     }
 </script>
 

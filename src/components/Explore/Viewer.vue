@@ -16,7 +16,7 @@
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
-                            :has-image-groups="hasImageGroups" :has-annotation-properties="hasAnnotationProperties"
+                            :has-image-sequences="hasImageSequences" :has-annotation-properties="hasAnnotationProperties"
                             :project-config="projectConfig" :has-online-users="hasOnlineUsers"></viewer-buttons>
 
             <div class="scale-line-panel">
@@ -83,10 +83,10 @@
                         <!--:featureSelectedData="featureSelectedData" :featureSelected="featureSelected"-->
                         <!--:userLayers="userLayers"></review>-->
 
-                <!--<multidimension v-if="imageGroups[0]" v-show="selectedComponent == 'multidimension'"-->
-                                <!--@imageGroupHasChanged="setImageGroup" :imageGroups="imageGroups"-->
-                                <!--:filterUrl="filterUrl" :imsBaseUrl="imsBaseUrl" @changeImage="changeImage"-->
-                                <!--:currentMap="currentMap"  :mousePosition="mousePosition"></multidimension>-->
+                <multidimension v-show="selectedComponent == 'multidimension' && hasImageSequences"
+                                :image-groups="imageGroups" :image-sequences="imageSequences"
+                                :selected-sequence.sync="selectedSequence" :viewer-id="id"
+                                @changeSequence="changeSequence"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties" :properties="availableAnnotationProperties"></properties>
@@ -199,14 +199,8 @@
                 selectedComponent: '',
                 selectedFilter: "",
                 followedUser: "",
+                selectedSequence: {},
                 linkedToValues: [],
-
-                center: [0, 0],
-                zoom: 0,
-                maxZoom: 0,
-                rotation: 0,
-                clickCoordinate: undefined,
-                selectedFeatures: [],
 
                 userLayers: [],
                 visibleTerms: [],
@@ -215,24 +209,29 @@
                 visibleNoTerm: false,
                 allTerms: [],
                 annotationProperties: [],
+                onlineUsers: [],
+                imageSequences: [],
+
+                center: [0, 0],
+                zoom: 0,
+                maxZoom: 0,
+                rotation: 0,
+                clickCoordinate: undefined,
+                selectedFeatures: [],
 
                 imsBaseUrl: '',
                 extent: [],
                 mousePosition: [0, 0],
                 termsToShow: [],
                 showWithNoTerm: true,
-
                 featureSelected: undefined,
                 featureSelectedData: {},
                 layersSelected: [],
                 vectorLayersOpacity: 0.5,
                 updateLayers: false,
                 updateAnnotationsIndex: false,
-                onlineUsers: [],
-
                 showPanel: true,
                 addLayer: '',
-
                 innerWidth: 0,
                 innerHeight: 0,
             }
@@ -266,8 +265,8 @@
             hasFilters() {
                 return this.filters.length > 0
             },
-            hasImageGroups() {
-                return this.imageGroups.length > 0
+            hasImageSequences() {
+                return this.imageSequences.length > 0
             },
             hasMultiViews() {
                 return this.viewers.length > 1
@@ -356,9 +355,13 @@
                 // Sets the local value to the value sent by the parent
                 this.linkedToValues = this.linkedTo;
             },
-            image(oldImage, newImage) {
+            image(newImage, oldImage) {
                 this.setNewImage(oldImage, newImage)
             },
+            selectedSequence(newValue) {
+                if (newValue !== {})
+                    this.changeImage(newValue.model.id);
+            }
             // mapView: {
             //     handler() {
             //         let {mapCenter, mapResolution, mapRotation} = this.mapView;
@@ -437,6 +440,11 @@
                 });
 
                 this.getOnlineUsers();
+
+                api.get(`/api/imageinstance/${newImage.id}/imagesequence.json`).then(data => {
+                    this.imageSequences = data.data.collection;
+                });
+                // If current sequence no more in imagesequence: deselect it
             },
             setUserLayers(selectDefaultLayers = true) {
                 api.get(`/api/project/${this.image.project}/userlayer.json?image=${this.image.id}`).then(response => {
@@ -511,12 +519,17 @@
                 }
             },
             getOnlineUsers() {
-                api.get(`/api/project/${this.image.project}/online/user.json?image=${this.image.id}`).then(response => {
+                api.get(`/api/project/${this.project.id}/online/user.json?image=${this.image.id}`).then(response => {
                     this.onlineUsers = response.data.collection;
                 })
             },
             userById(userId, list = this.project.users) {
                 return list.find(user => user.id === userId);
+            },
+            changeSequence(payload) {
+                api.get(`/api/imagegroup/${this.selectedSequence.imageGroup}/${payload.c}/${payload.z}/0/${payload.t}/imagesequence.json`).then(response => {
+                    this.selectedSequence = response.data;
+                })
             },
             // // Sends view infos
             // sendView(e) {
@@ -673,7 +686,7 @@
                 this.$set(this.sizeTerms, term, 0)
             });
 
-            setInterval(this.getOnlineUsers, 5000);
+            setInterval(this.getOnlineUsers.bind(this), 5000);
 
             // Init map
             // this.$openlayers.init({
