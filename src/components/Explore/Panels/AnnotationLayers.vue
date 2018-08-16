@@ -67,7 +67,8 @@
             // 'isReviewing',
             'project',
             'userLayers',
-            'currentUser'
+            'currentUser',
+            'showReview'
         ],
         data() {
             return {
@@ -82,7 +83,10 @@
         },
         computed: {
             layers() {
-                return this.userLayers
+                if (this.showReview)
+                    return this.userLayers;
+                else
+                    return this.userLayers.filter(item => !item.review)
             },
             selectedLayers() {
                 return this.layers.filter(item => item.selected)
@@ -91,15 +95,17 @@
                 return this.layers.filter(item => !item.selected)
             },
             notSelectedLayersSorted() {
-                let users = this.notSelectedLayers.filter(item => !item.algo).sort((a, b) => {
+                let users = this.notSelectedLayers.filter(item => !item.algo && !item.review).sort((a, b) => {
                     return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())
                 });
 
-                let algos = this.notSelectedLayers.filter(item => item.algo).sort((a, b) => {
+                let algos = this.notSelectedLayers.filter(item => item.algo && !item.review).sort((a, b) => {
                     return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())
                 });
 
-                return users.concat(algos)
+                let review = this.notSelectedLayers.filter(item => item.review);
+
+                return review.concat(users.concat(algos))
             }
         },
         watch: {},
@@ -154,7 +160,9 @@
                         || (this.currentUser.id == layer.id && this.project.isRestricted));
             },
             userDisplayName(layer) {
-                if (layer.algo) {
+                if (layer.review) {
+                    return `Review layer (${layer.size == undefined ? '0' : layer.size})`;
+                } else if (layer.algo) {
                     return `${layer.softwareName} (${layer.username}) (${layer.size == undefined ? '0' : layer.size})`;
                 } else if (layer.lastname == undefined && layer.firstname == undefined) {
                     return `(${layer.username}) (${layer.size == undefined ? '0' : layer.size})`;

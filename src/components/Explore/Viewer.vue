@@ -17,7 +17,7 @@
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
                             :has-image-sequences="hasImageSequences" :has-annotation-properties="hasAnnotationProperties"
-                            :project-config="projectConfig" :has-online-users="hasOnlineUsers"></viewer-buttons>
+                            :project-config="projectConfig" :has-online-users="hasOnlineUsers" :review-mode="reviewMode"></viewer-buttons>
 
             <div class="scale-line-panel">
                 <scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"
@@ -26,7 +26,8 @@
         </div>
         <div v-show="(isCurrentViewer && selectedComponent != '')"
              class="panel component-panel component-panel-bottom"
-             :style="`max-height:75%; ${selectedComponent == 'multidimension' ? 'width:33%;' :  ''}`">
+             :style="`max-height:75%; ${selectedComponent == 'multidimension' ? 'width:33%;' :  ''}
+             ${selectedComponent == 'review' ? 'width:25%;' :  ''}`">
             <div class="panel-body">
                 <div v-show="selectedComponent == 'informations'">
                     <informations :image="image" :project="project"></informations>
@@ -64,7 +65,8 @@
 
                 <annotation-layers v-show="selectedComponent == 'annotationLayers'"
                                    @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"
-                                   :user-layers="userLayers" :viewer-id="id" :current-user="currentUser">
+                                   :user-layers="userLayers" :viewer-id="id" :current-user="currentUser"
+                                   :show-review="reviewMode || image.reviewed">
                 </annotation-layers>
 
                 <ontology v-show="selectedComponent == 'ontology'" :project="project" :ontology="ontology"
@@ -76,12 +78,9 @@
                              :users="userLayers" :terms="allTerms" :image="image" :visible-term-ids="visibleTerms"
                              :visible-user-ids="visibleUserLayerIds" :size-terms="sizeTerms"></annotations>
 
-                <!--<review v-if="isReviewing" v-show="selectedComponent == 'review'"-->
-                        <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex" @updateLayers="setUpdateLayers"-->
-                        <!--@featureSelectedData="setFeatureSelectedData" @changeImage="changeImage"-->
-                        <!--:layersSelected="layersSelected" :currentMap="currentMap"-->
-                        <!--:featureSelectedData="featureSelectedData" :featureSelected="featureSelected"-->
-                        <!--:userLayers="userLayers"></review>-->
+                <review v-show="selectedComponent == 'review'" @changeReviewStatus="changeReviewStatus"
+                        :image="image" :current-user="currentUser" :review-user="userById(image.reviewUser)"
+                        :review-mode.sync="reviewMode" :nb-visible-annotations="0"></review>
 
                 <multidimension v-show="selectedComponent == 'multidimension' && hasImageSequences"
                                 :image-groups="imageGroups" :image-sequences="imageSequences"
@@ -168,6 +167,7 @@
     import NavigationImage from "./Panels/NavigationImage";
     import clone from "lodash.clone"
     import differenceBy from "lodash.differenceby"
+    import sample from "lodash.sample";
     import Username from "../User/Username";
 
 
@@ -201,6 +201,7 @@
                 followedUser: "",
                 selectedSequence: {},
                 linkedToValues: [],
+                reviewMode: false,
 
                 userLayers: [],
                 visibleTerms: [],
@@ -211,6 +212,7 @@
                 annotationProperties: [],
                 onlineUsers: [],
                 imageSequences: [],
+                imsServers: [],
 
                 center: [0, 0],
                 zoom: 0,
@@ -257,7 +259,7 @@
         ],
         computed: {
             isReviewing() {
-                return false;
+                return this.image.inReview;
             },
             isCurrentViewer() {
                 return this.lastEventMapId == this.id;
@@ -361,7 +363,10 @@
             selectedSequence(newValue) {
                 if (newValue !== {})
                     this.changeImage(newValue.model.id);
-            }
+            },
+            reviewMode() {
+                this.updateReviewLayer()
+            },
             // mapView: {
             //     handler() {
             //         let {mapCenter, mapResolution, mapRotation} = this.mapView;
@@ -427,12 +432,19 @@
             },
             setNewImage(oldImage, newImage) {
                 // Get available IMS servers for that image
+                api.get(`/api/abstractimage/${newImage.baseImage}/imageservers.json`).then(response => {
+                    this.imsServers = response.data.imageServersURLs;
+                });
+
                 // Change base layer
                 // Reset position & zoom if necessary
                 // Change extent and maxZoom
                 // Update feature layers
                 // Update annotation indexes
                 // Remove selected features
+                this.reviewMode = (this.reviewMode && this.image.inReview
+                    && this.image.reviewUser == this.currentUser.id);
+
                 this.setUserLayers(!oldImage);
 
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
@@ -447,6 +459,8 @@
                 // If current sequence no more in imagesequence: deselect it
             },
             setUserLayers(selectDefaultLayers = true) {
+                this.updateReviewLayer();
+
                 api.get(`/api/project/${this.image.project}/userlayer.json?image=${this.image.id}`).then(response => {
                     let layers = response.data.collection;
                     layers.forEach(userLayer => {
@@ -494,6 +508,29 @@
             updateLayer(payload) {
                 this.userLayers.splice(payload.index, 1, payload.layer);
             },
+            updateReviewLayer() {
+                let reviewIndex = this.userLayers.findIndex(l => l.id == -100);
+                if (reviewIndex == -1) {
+                    let reviewLayer = {
+                        id: -100,
+                        size: 0,
+                        selected: this.reviewMode || this.image.reviewed,
+                        visible: this.reviewMode,
+                        drawable: this.reviewMode,
+                        opacity: 0.3,
+                        review: true,
+                    };
+                    this.userLayers.push(reviewLayer);
+                }
+                else {
+                    let reviewLayer = this.userLayers[reviewIndex];
+                    reviewLayer.size = 0;
+                    reviewLayer.selected = this.reviewMode || this.image.reviewed;
+                    reviewLayer.visible = this.reviewMode;
+                    reviewLayer.drawable = this.reviewMode;
+                    this.userLayers.splice(reviewIndex, 1, reviewLayer);
+                }
+            },
             toggleVisibilityTerm(termId) {
                 let index = this.visibleTerms.findIndex(t => t == termId);
                 if (index == -1)
@@ -530,6 +567,30 @@
                 api.get(`/api/imagegroup/${this.selectedSequence.imageGroup}/${payload.c}/${payload.z}/0/${payload.t}/imagesequence.json`).then(response => {
                     this.selectedSequence = response.data;
                 })
+            },
+            changeReviewStatus(payload) {
+                if (payload == 'start') {
+                    api.post(`/api/imageinstance/${this.image.id}/review.json`).then(response => {
+                        this.reviewMode = true;
+                        this.$emit('updateImage', response.data.imageinstance);
+                    });
+                }
+                else if (payload == 'cancel' || payload == 'unvalidate') {
+                    api.delete(`/api/imageinstance/${this.image.id}/review.json?cancel=true`).then(response => {
+                        if (payload == 'cancel') this.reviewMode = false;
+                        if (payload == 'unvalidate') this.reviewMode = true;
+                        this.$emit('updateImage', response.data.imageinstance);
+                    })
+                }
+                else if (payload == 'validate') {
+                    api.delete(`/api/imageinstance/${this.image.id}/review.json?cancel=false`).then(response => {
+                        this.reviewMode = false;
+                        this.$emit('updateImage', response.data.imageinstance);
+                    })
+                }
+            },
+            randomImsServer() {
+                return sample(this.imsServers);
             },
             // // Sends view infos
             // sendView(e) {

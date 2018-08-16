@@ -10,7 +10,7 @@
                     :project="project" :project-config="projectConfig" :filters="filters" :image-groups="imageGroups"
                     :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
                     :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
-                    @changeImage="changeImage" @dragged="setMap" @current-map="viewer"
+                    @changeImage="changeImage" @dragged="setMap" @current-map="viewer" @updateImage="updateImage"
                     :mapView="mapView" :lastEventMapId="lastEventMapId"></viewer>
         </div>
     </div>
@@ -74,14 +74,20 @@
             },
             addViewer(imageId, id = uuid()) {
                 if (this.viewers.length < this.nbMaxViewers && imageId !== "") {
-                    this.viewers.push({
-                        id,
-                        imageId,
-                        linkedTo: [],
-                        image: this.images[this.imageIndex(imageId)],
+                    api.get(`api/imageinstance/${imageId}.json`).then(response => {
+                        this.lastEventMapId = id;
+                        this.viewers.push({
+                            id,
+                            imageId,
+                            linkedTo: [],
+                            image: response.data,
+                        })
+
                     })
+
+
                 }
-                this.updateOpenLayersMapsSize();
+                // this.updateOpenLayersMapsSize();
             },
             deleteViewer(viewerId) {
                 let index = this.viewerIndex(viewerId);
@@ -93,7 +99,7 @@
                        return v != viewerId;
                    })
                 });
-                this.updateOpenLayersMapsSize();
+                // this.updateOpenLayersMapsSize();
             },
             linkViewers(payload) {
                 let viewerIndex = this.viewerIndex(payload.sender);
@@ -111,6 +117,12 @@
             changeImage(payload) {
                 let index = this.viewerIndex(payload.viewerId);
                 this.viewers[index].image = this.images[this.imageIndex(payload.newImageId)];
+            },
+            updateImage(newImage) {
+                this.viewers.forEach(viewer => {
+                    if (viewer.imageId == newImage.id)
+                        viewer.image = newImage;
+                })
             },
 
 

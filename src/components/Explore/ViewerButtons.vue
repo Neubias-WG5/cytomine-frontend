@@ -43,8 +43,9 @@
                 title="Multidimension">
             <i class="fas fa-images"></i>
         </button>
-        <button v-if="isReviewing" @click="setSelected('review')"
-                :class="['btn', 'btn-default', {active: selectedComponent == 'review' }]" title="Review">
+        <button @click="setSelected('review')"
+                :class="['btn', 'btn-default', {active: selectedComponent == 'review' },
+                {'text-primary': reviewMode}]" title="Review">
             <i class="fas fa-check-circle"></i>
         </button>
         <button v-if="hasAnnotationProperties && mustBeShown('project-explore-property')" @click="setSelected('properties')"
@@ -76,7 +77,8 @@
             'isReviewing',
             'projectConfig',
             'hasAnnotationProperties',
-            'hasOnlineUsers'
+            'hasOnlineUsers',
+            'reviewMode'
         ],
         data() {
             return {
