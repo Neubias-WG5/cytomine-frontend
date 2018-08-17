@@ -114,7 +114,7 @@
                 if (layer.id == undefined)
                     return;
 
-                let index = this.layers.findIndex(l => l.id == layer.id);
+                let index = this.userLayers.findIndex(l => l.id == layer.id);
                 layer.selected = true;
                 layer.visible = true;
                 this.$emit('updateLayer', {
