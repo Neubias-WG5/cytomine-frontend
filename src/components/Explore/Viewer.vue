@@ -2,26 +2,38 @@
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
         <!--<div  @mousemove="sendView" @mousewheel="sendView" :id="id" ref="exploreMap">-->
         <div>
-            {{userLayers}}
+            <vl-map ref="map" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
+                    @singleclick="clickCoordinate = $event.coordinate" data-projection="CYTO:FLAT">
+
+                <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :extent="extent" :max-zoom="maxZoom"
+                         :rotation.sync="rotation" projection="CYTO:FLAT"></vl-view>
+
+                <vl-layer-tile id="zoomify" :extent="extent">
+                    <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
+                                       :extent="extent"></vl-source-zoomify>
+                </vl-layer-tile>
+            </vl-map>
         </div>
         <!--<div class="controls" :id="'controls-'+id"></div>-->
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
-                      <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
-                      <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity"-->
-                      <!--:currentUser="currentUser" :project="project">-->
+        <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
+        <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity"-->
+        <!--:currentUser="currentUser" :project="project">-->
         <!--</interactions>-->
 
         <!--<overview-map :viewer-id="id" :image="image" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>-->
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
-                            :has-image-sequences="hasImageSequences" :has-annotation-properties="hasAnnotationProperties"
-                            :project-config="projectConfig" :has-online-users="hasOnlineUsers" :review-mode="reviewMode"></viewer-buttons>
+                            :has-image-sequences="hasImageSequences"
+                            :has-annotation-properties="hasAnnotationProperties"
+                            :project-config="projectConfig" :has-online-users="hasOnlineUsers"
+                            :review-mode="reviewMode"></viewer-buttons>
 
             <div class="scale-line-panel">
-                <scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"
-                            :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
+                <!--<scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"-->
+                <!--:currentZoom="zoom" :maxZoom="maxZoom"></scale-line>-->
             </div>
         </div>
         <div v-show="(isCurrentViewer && selectedComponent != '')"
@@ -41,8 +53,8 @@
                     <label>Link this view with </label>
                     <div v-for="(viewer, index) in viewers" :key="'link-div-' + viewer.id">
                         <template v-if="index !== viewerIndex">
-                            <input v-model="linkedToValues" :value="viewer.id" @change="linkViewers(viewer.id)" type="checkbox"
-                                   :name="id + viewer.id" :id="id + viewer.id">
+                            <input v-model="linkedToValues" :value="viewer.id" @change="linkViewers(viewer.id)"
+                                   type="checkbox" :name="id + viewer.id" :id="id + viewer.id">
                             <label :for="id + viewer.id">
                                 {{ viewerNames[index] }}
                                 <span v-if="!project.blindMode">({{viewer.image.instanceFilename}})</span>
@@ -55,8 +67,9 @@
                 <digital-zoom v-show="selectedComponent == 'digitalZoom' && mustBeShown('project-explore-digital-zoom')"
                               :viewer-id="id" @incrementMaxZoom="incrementMaxZoom"></digital-zoom>
 
-                <filters v-show="selectedComponent == 'filter' && mustBeShown('project-explore-image-layers') && hasFilters"
-                         :viewer-id="id" :filters="filters" :selectedFilter.sync="selectedFilter">
+                <filters
+                    v-show="selectedComponent == 'filter' && mustBeShown('project-explore-image-layers') && hasFilters"
+                    :viewer-id="id" :filters="filters" :selectedFilter.sync="selectedFilter">
                 </filters>
 
                 <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
@@ -131,9 +144,9 @@
         </div>
 
         <!--<annotation-details v-show="featureSelected != undefined" @featureSelectedData="setFeatureSelectedData"-->
-                            <!--:users="userLayers" :terms="allTerms"-->
-                            <!--:featureSelected="featureSelected" :project-config="projectConfig" :currentUser="currentUser"-->
-                            <!--:project="project" :element-height="elementHeight" :element-width="elementWidth">-->
+        <!--:users="userLayers" :terms="allTerms"-->
+        <!--:featureSelected="featureSelected" :project-config="projectConfig" :currentUser="currentUser"-->
+        <!--:project="project" :element-height="elementHeight" :element-width="elementWidth">-->
         <!--</annotation-details>-->
     </div>
 </template>
@@ -154,12 +167,6 @@
     import ColorMaps from './Colormaps'
     import OverviewMap from './OverviewMap'
 
-    import OlTile from 'ol/layer/tile';
-    import Zoomify from 'ol/source/zoomify';
-    import Group from 'ol/layer/group';
-    import ZoomControls from 'ol/control/zoom';
-    import RotateControls from 'ol/control/rotate';
-    import WKT from 'ol/format/wkt';
     import ViewerButtons from "./ViewerButtons";
 
     import mustBeShown from '../../helpers/mustBeShown';
@@ -169,7 +176,7 @@
     import differenceBy from "lodash.differenceby"
     import sample from "lodash.sample";
     import Username from "../User/Username";
-
+    import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
 
     export default {
         name: 'Viewer',
@@ -222,7 +229,6 @@
                 selectedFeatures: [],
 
                 imsBaseUrl: '',
-                extent: [],
                 mousePosition: [0, 0],
                 termsToShow: [],
                 showWithNoTerm: true,
@@ -305,6 +311,9 @@
             imageHeight() {
                 return parseInt(this.image.height)
             },
+            imageSize() {
+                return [this.imageWidth, this.imageHeight]
+            },
             fullHeight() {
                 return this.innerHeight - this.paddingTop
             },
@@ -344,12 +353,15 @@
                 }
                 return idealZoom
             },
+            extent() {
+                return [0, 0, this.imageWidth, this.imageHeight];
+            },
             onlineAdmins() {
                 return this.onlineUsers.filter(user => this.project.admins.find(u => u.id == user.id))
             },
             onlineContributors() {
                 return differenceBy(this.onlineUsers.filter(user => this.project.users.find(u => u.id == user.id)),
-                this.onlineAdmins)
+                    this.onlineAdmins)
             }
         },
         watch: {
@@ -437,8 +449,10 @@
                 });
 
                 // Change base layer
+
                 // Reset position & zoom if necessary
-                // Change extent and maxZoom
+                // Change maxZoom
+                this.maxZoom = (oldImage) ? (this.maxZoom - oldImage.depth + newImage.depth) : newImage.depth;
                 // Update feature layers
                 // Update annotation indexes
                 // Remove selected features
@@ -592,6 +606,9 @@
             randomImsServer() {
                 return sample(this.imsServers);
             },
+            baseLayerUrl() {
+                return `${this.randomImsServer()}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`
+            },
             // // Sends view infos
             // sendView(e) {
             //     let payload = {
@@ -731,15 +748,33 @@
         created() {
             this.getWindowWidth();
             this.getWindowHeight();
+
+            let cytomineProjection = createProj({
+                code: 'CYTO:FLAT',
+                units: 'pixels',
+                extent: this.extent,
+            });
+            addProj(cytomineProjection);
+
+            this.setNewImage(null, this.image);
         },
         mounted() {
-            this.$nextTick(function() {
+            this.$nextTick(function () {
                 window.addEventListener('resize', this.getWindowHeight);
                 window.addEventListener('resize', this.getWindowWidth);
             });
 
-            this.extent = [0, 0, this.imageWidth, this.imageHeight];
-            this.setNewImage(null, this.image);
+            this.$refs.map.$createPromise.then(() => {
+                // this.$refs.map.$map.addControl(new ScaleLine())
+                this.$refs.map.$map.getControls().getArray()[0].element.childNodes.forEach(child => {
+                    child.classList.add('btn');
+                    child.classList.add('btn-default');
+                });
+                this.$refs.map.$map.getControls().getArray()[1].element.childNodes.forEach(child => {
+                    child.classList.add('btn');
+                    child.classList.add('btn-default');
+                });
+            });
 
             this.allTerms = this.getTerms(this.ontology.children);
             this.visibleTerms = clone(this.allTermIds);
@@ -791,14 +826,7 @@
             //     this.$openlayers.getMap(this.id).on('moveend', () => {
             //         this.postPosition();
             //     });
-            //     this.$openlayers.getMap(this.id).getControls().getArray()[0].element.childNodes.forEach(child => {
-            //         child.classList.add('btn');
-            //         child.classList.add('btn-default');
-            //     });
-            //     this.$openlayers.getMap(this.id).getControls().getArray()[1].element.childNodes.forEach(child => {
-            //         child.classList.add('btn');
-            //         child.classList.add('btn-default');
-            //     });
+            //
             //     setInterval(this.postPosition, 5000);
             //
             //     if (this.isReviewing) {
@@ -822,13 +850,7 @@
 </script>
 
 <style scoped>
-    .controls {
-        position: absolute;
-        top: 1em;
-        left: 1em;
-        display: flex;
-        flex-direction: column;
-    }
+
 </style>
 
 <style>
@@ -837,7 +859,70 @@
         overflow: hidden;
     }
 
+    .ol-mouse-position {
+        top: 8px;
+        right: 8px;
+        position: absolute;
+    }
+
+    .ol-unsupported {
+        display: none;
+    }
+
+    .ol-viewport, .ol-unselectable {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .ol-selectable {
+        -webkit-touch-callout: default;
+        -webkit-user-select: auto;
+        -moz-user-select: auto;
+        -ms-user-select: auto;
+        user-select: auto;
+    }
+
+    .ol-grabbing {
+        cursor: -webkit-grabbing;
+        cursor: grabbing;
+    }
+
+    .ol-grab {
+        cursor: move;
+        cursor: -webkit-grab;
+        cursor: grab;
+    }
+
+    .ol-control {
+        position: absolute;
+    }
+
+    .ol-rotate {
+        top: 1em;
+        right: 1em;
+        -webkit-transition: opacity .25s linear, visibility 0s linear;
+        transition: opacity .25s linear, visibility 0s linear;
+    }
+
+    .ol-rotate.ol-hidden {
+        opacity: 0;
+        visibility: hidden;
+        -webkit-transition: opacity .25s linear, visibility 0s linear .25s;
+        transition: opacity .25s linear, visibility 0s linear .25s;
+    }
+
+    .vl-map {
+        width: 100%;
+        height: 100%;
+    }
+
     .ol-zoom {
+        top: 1em;
+        left: 1em;
         margin-bottom: 1em;
         display: flex;
         flex-direction: column;
