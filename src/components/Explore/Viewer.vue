@@ -5,12 +5,12 @@
             <vl-map ref="map" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
                     @singleclick="clickCoordinate = $event.coordinate" data-projection="CYTO:FLAT">
 
-                <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :extent="extent" :max-zoom="maxZoom"
+                <vl-view :center.sync="center" :zoom.sync="zoom" :extent="extent" :max-zoom="maxZoom"
                          :rotation.sync="rotation" projection="CYTO:FLAT"></vl-view>
 
-                <vl-layer-tile id="zoomify" :extent="extent">
+                <vl-layer-tile :extent="extent">
                     <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
-                                       :extent="extent"></vl-source-zoomify>
+                                       :extent="extent" :key="baseLayerUrl()"></vl-source-zoomify>
                 </vl-layer-tile>
             </vl-map>
         </div>
@@ -362,7 +362,7 @@
             onlineContributors() {
                 return differenceBy(this.onlineUsers.filter(user => this.project.users.find(u => u.id == user.id)),
                     this.onlineAdmins)
-            }
+            },
         },
         watch: {
             linkedTo() {
@@ -607,7 +607,7 @@
                 return sample(this.imsServers);
             },
             baseLayerUrl() {
-                return `${this.randomImsServer()}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`
+                return `${this.filterUrl}${this.randomImsServer()}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&mimeType=${this.image.mime}`
             },
             // // Sends view infos
             // sendView(e) {

@@ -40,7 +40,6 @@
             const tierSizeInTiles = [];
             const tileSize = this.tileSize || 256;
             let tileSizeForTierSizeCalculation = tileSize;
-            console.log(tileSizeForTierSizeCalculation);
             while (imageWidth > tileSizeForTierSizeCalculation || imageHeight > tileSizeForTierSizeCalculation) {
                 tierSizeInTiles.push([
                     Math.ceil(imageWidth / tileSizeForTierSizeCalculation),
