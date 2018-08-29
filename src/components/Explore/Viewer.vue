@@ -172,6 +172,7 @@
     import clone from "lodash.clone"
     import differenceBy from "lodash.differenceby"
     import sample from "lodash.sample";
+    import debounce from "lodash.debounce";
     import Username from "../User/Username";
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
 
@@ -405,6 +406,7 @@
                     this.$emit('setCurrentViewer', this.id);
             },
             viewState(newValue) {
+                this.debouncedSavePosition();
                 if (this.linkedTo.length > 0)
                     this.linkedViewersBus.$emit('updateViewState', newValue);
             },
@@ -648,7 +650,24 @@
                     mode: (this.reviewMode) ? "review" : "view"
                 })
             },
-
+            savePosition() {
+                this.$refs.olview.$createPromise.then(() => {
+                    let extent = this.$refs.olview.$view.calculateExtent();
+                    api.post(`api/imageinstance/${this.image.id}/position.json`, {
+                        image: this.image.id,
+                        zoom: this.zoom,
+                        rotation: this.rotation,
+                        bottomLeftX: Math.round(extent[0]),
+                        bottomLeftY: Math.round(extent[1]),
+                        bottomRightX: Math.round(extent[2]),
+                        bottomRightY: Math.round(extent[1]),
+                        topLeftX: Math.round(extent[0]),
+                        topLeftY: Math.round(extent[3]),
+                        topRightX: Math.round(extent[2]),
+                        topRightY: Math.round(extent[3]),
+                    })
+                })
+            },
             // // Sends view infos
             // sendView(e) {
             //     let payload = {
@@ -804,7 +823,9 @@
                     this.zoom = payload.zoom;
                     this.rotation = payload.rotation;
                 }
-            })
+            });
+
+            this.debouncedSavePosition = debounce(this.savePosition, 500);
         },
         mounted() {
             this.$nextTick(function () {
@@ -831,6 +852,7 @@
             });
 
             setInterval(this.getOnlineUsers.bind(this), 5000);
+            setInterval(this.savePosition.bind(this), 5000);
 
             // Init map
             // this.$openlayers.init({
