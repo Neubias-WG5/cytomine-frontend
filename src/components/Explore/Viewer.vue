@@ -1,20 +1,17 @@
 <template>
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
         <!--<div  @mousemove="sendView" @mousewheel="sendView" :id="id" ref="exploreMap">-->
-        <div>
-            <vl-map ref="map" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
-                    @singleclick="clickCoordinate = $event.coordinate" data-projection="CYTO:FLAT">
+        <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
+                @pointermove="mousePosition = $event.coordinate" data-projection="CYTO:FLAT">
 
-                <vl-view :center.sync="center" :zoom.sync="zoom" :extent="extent" :max-zoom="maxZoom"
-                         :rotation.sync="rotation" projection="CYTO:FLAT"></vl-view>
+            <vl-view :center.sync="center" :zoom.sync="zoom"  :max-zoom="maxZoom"
+                     :rotation.sync="rotation" projection="CYTO:FLAT"></vl-view>
 
-                <vl-layer-tile :extent="extent">
-                    <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
-                                       :extent="extent" :key="baseLayerUrl()"></vl-source-zoomify>
-                </vl-layer-tile>
-            </vl-map>
-        </div>
-        <!--<div class="controls" :id="'controls-'+id"></div>-->
+            <vl-layer-tile :extent="imageExtent">
+                <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
+                                   :extent="imageExtent" :key="baseLayerUrl()" v-if="imsServers.length > 0"></vl-source-zoomify>
+            </vl-layer-tile>
+        </vl-map>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
         <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
@@ -353,8 +350,11 @@
                 }
                 return idealZoom
             },
-            extent() {
+            imageExtent() {
                 return [0, 0, this.imageWidth, this.imageHeight];
+            },
+            viewExtent() {
+                return [-this.imageWidth/2, -this.imageHeight/2, this.imageWidth/2, this.imageHeight/2];
             },
             onlineAdmins() {
                 return this.onlineUsers.filter(user => this.project.admins.find(u => u.id == user.id))
@@ -378,6 +378,12 @@
             },
             reviewMode() {
                 this.updateReviewLayer()
+            },
+            elementWidth(newValue) {
+                this.$refs.olmap.$map.setSize([newValue, this.elementHeight])
+            },
+            elementHeight(newValue) {
+                this.$refs.olmap.$map.setSize([this.elementWidth, newValue])
             },
             // mapView: {
             //     handler() {
@@ -410,13 +416,6 @@
             //     if (newValue != this.image.project) {
             //         this.centerOnFeature(newValue);
             //     }
-            // },
-            // elementWidth(newValue) {
-            //     this.$openlayers.getMap(this.id).setSize([newValue, this.elementHeight])
-            // },
-            // elementHeight(newValue) {
-            //     this.$openlayers.getMap(this.id).setSize([this.elementWidth, newValue])
-            // },
         },
         methods: {
             deleteViewer() {
@@ -449,8 +448,13 @@
                 });
 
                 // Change base layer
-
                 // Reset position & zoom if necessary
+                let reset = !oldImage || newImage.width != oldImage.width || newImage.height != oldImage.height;
+                if (reset) {
+                    this.center = [this.imageWidth/2, this.imageHeight/2];
+                    this.zoom = this.initialZoom;
+                }
+
                 // Change maxZoom
                 this.maxZoom = (oldImage) ? (this.maxZoom - oldImage.depth + newImage.depth) : newImage.depth;
                 // Update feature layers
@@ -752,7 +756,7 @@
             let cytomineProjection = createProj({
                 code: 'CYTO:FLAT',
                 units: 'pixels',
-                extent: this.extent,
+                extent: this.viewExtent,
             });
             addProj(cytomineProjection);
 
@@ -764,13 +768,13 @@
                 window.addEventListener('resize', this.getWindowWidth);
             });
 
-            this.$refs.map.$createPromise.then(() => {
-                // this.$refs.map.$map.addControl(new ScaleLine())
-                this.$refs.map.$map.getControls().getArray()[0].element.childNodes.forEach(child => {
+            this.$refs.olmap.$createPromise.then(() => {
+                // this.$refs.olmap.$map.addControl(new ScaleLine())
+                this.$refs.olmap.$map.getControls().getArray()[0].element.childNodes.forEach(child => {
                     child.classList.add('btn');
                     child.classList.add('btn-default');
                 });
-                this.$refs.map.$map.getControls().getArray()[1].element.childNodes.forEach(child => {
+                this.$refs.olmap.$map.getControls().getArray()[1].element.childNodes.forEach(child => {
                     child.classList.add('btn');
                     child.classList.add('btn-default');
                 });
@@ -897,13 +901,7 @@
         cursor: grab;
     }
 
-    .ol-control {
-        position: absolute;
-    }
-
     .ol-rotate {
-        top: 1em;
-        right: 1em;
         -webkit-transition: opacity .25s linear, visibility 0s linear;
         transition: opacity .25s linear, visibility 0s linear;
     }
@@ -920,16 +918,26 @@
         height: 100%;
     }
 
-    .ol-zoom {
+    .ol-overlaycontainer-stopevent {
         top: 1em;
         left: 1em;
         margin-bottom: 1em;
         display: flex;
         flex-direction: column;
+        position: absolute;
     }
 
-    .ol-zoom-in {
+    .ol-zoom {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ol-zoom-in, .ol-zoom-out {
         margin-bottom: 1em;
+    }
+
+    .ol-attribution {
+        display: none;
     }
 
     .bottom-panel {
