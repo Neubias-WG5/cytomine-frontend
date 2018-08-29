@@ -380,11 +380,19 @@
                 this.updateReviewLayer()
             },
             elementWidth(newValue) {
-                this.$refs.olmap.$map.setSize([newValue, this.elementHeight])
+                this.$refs.olmap.$createPromise.then(() => {
+                    this.$refs.olmap.$map.setSize([newValue, this.elementHeight])
+                });
             },
             elementHeight(newValue) {
-                this.$refs.olmap.$map.setSize([this.elementWidth, newValue])
+                this.$refs.olmap.$createPromise.then(() => {
+                    this.$refs.olmap.$map.setSize([this.elementWidth, newValue])
+                });
             },
+            mousePosition() {
+                if (!this.isCurrentViewer)
+                    this.$emit('setCurrentViewer', this.id);
+            }
             // mapView: {
             //     handler() {
             //         let {mapCenter, mapResolution, mapRotation} = this.mapView;

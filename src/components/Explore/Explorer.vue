@@ -10,8 +10,8 @@
                     :project="project" :project-config="projectConfig" :filters="filters" :image-groups="imageGroups"
                     :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
                     :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
-                    @changeImage="changeImage" @dragged="setMap" @current-map="viewer" @updateImage="updateImage"
-                    :mapView="mapView" :lastEventMapId="lastEventMapId"></viewer>
+                    @changeImage="changeImage" @current-map="viewer" @updateImage="updateImage"
+                    :mapView="mapView" :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"></viewer>
         </div>
     </div>
 </template>
@@ -82,12 +82,8 @@
                             linkedTo: [],
                             image: response.data,
                         })
-
-                    })
-
-
+                    });
                 }
-                // this.updateOpenLayersMapsSize();
             },
             deleteViewer(viewerId) {
                 let index = this.viewerIndex(viewerId);
@@ -99,7 +95,8 @@
                        return v != viewerId;
                    })
                 });
-                // this.updateOpenLayersMapsSize();
+                let newIndex = (index == this.viewers.length) ? index - 1 : index;
+                this.lastEventMapId = this.viewers[newIndex].id
             },
             linkViewers(payload) {
                 let viewerIndex = this.viewerIndex(payload.sender);
@@ -124,25 +121,28 @@
                         viewer.image = newImage;
                 })
             },
-
-
-            updateOpenLayersMapsSize() {
-                this.viewers.forEach(map => {
-                    this.$openlayers.getMap(map.id).updateSize();
-                })
+            setCurrentViewer(viewerId) {
+                this.lastEventMapId = viewerId;
             },
 
 
-
-            setMap(payload) {
-                this.mapView = {
-                    mapCenter: payload.view.getCenter(),
-                    mapResolution: payload.view.getResolution(),
-                    mapRotation: payload.view.getRotation(),
-                };
-                this.lastEventMapId = payload.mapId;
-                this.$openlayers.getMap(payload.mapId).updateSize();
-            },
+            // updateOpenLayersMapsSize() {
+            //     this.viewers.forEach(map => {
+            //         this.$openlayers.getMap(map.id).updateSize();
+            //     })
+            // },
+            //
+            //
+            //
+            // setMap(payload) {
+            //     this.mapView = {
+            //         mapCenter: payload.view.getCenter(),
+            //         mapResolution: payload.view.getResolution(),
+            //         mapRotation: payload.view.getRotation(),
+            //     };
+            //     this.lastEventMapId = payload.mapId;
+            //     this.$openlayers.getMap(payload.mapId).updateSize();
+            // },
 
 
 
@@ -154,6 +154,10 @@
             },
         },
         created() {
+            api.get(`api/user/current.json`).then(response => {
+                this.currentUser = response.data;
+            });
+
             api.get(`api/project/${this.projectId}.json`).then(response => {
                 this.project = response.data;
                 api.get(`api/project/${this.projectId}/user.json`).then(response => {
@@ -188,6 +192,15 @@
                     });
                 });
 
+                api.get(`/custom-ui/config.json?project=${this.projectId}`).then(response => {
+                    this.projectConfig = response.data;
+                });
+
+                api.get(`api/project/${this.projectId}/imageinstance.json`).then(response => {
+                    this.images = response.data.collection;
+                    this.addViewer(this.baseImage);
+                });
+
                 api.get(`/api/project/${this.projectId}/online/user.json`).then(response => {
                     this.onlineUsers = response.data.collection;
                 });
@@ -196,20 +209,6 @@
                     this.ontology = response.data;
                 })
             });
-
-            api.get(`/custom-ui/config.json?project=${this.projectId}`).then(response => {
-                this.projectConfig = response.data;
-                api.get(`api/project/${this.projectId}/imageinstance.json`).then(response => {
-                    let id = uuid();
-                    this.lastEventMapId = id;
-                    this.images = response.data.collection;
-                    api.get(`api/user/current.json`).then(response => {
-                        this.currentUser = response.data;
-                        this.addViewer(this.baseImage, id); //TODO
-                    })
-                })
-            });
-
 
 
             // DEPENDS ON [BACKBONE]
