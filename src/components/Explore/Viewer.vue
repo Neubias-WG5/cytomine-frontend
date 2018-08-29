@@ -4,7 +4,7 @@
         <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
                 @pointermove="mousePosition = $event.coordinate" data-projection="CYTO:FLAT">
 
-            <vl-view :center.sync="center" :zoom.sync="zoom"  :max-zoom="maxZoom"
+            <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom"  :max-zoom="maxZoom"
                      :rotation.sync="rotation" projection="CYTO:FLAT"></vl-view>
 
             <vl-layer-tile :extent="imageExtent">
@@ -387,7 +387,8 @@
                     this.changeImage(newValue.model.id);
             },
             reviewMode() {
-                this.updateReviewLayer()
+                this.updateReviewLayer();
+                this.saveImageConsultation();
             },
             elementWidth(newValue) {
                 this.$refs.olmap.$createPromise.then(() => {
@@ -489,14 +490,18 @@
 
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
                     this.annotationProperties = data.data.collection;
-                });
-
-                this.getOnlineUsers();
+                })
 
                 api.get(`/api/imageinstance/${newImage.id}/imagesequence.json`).then(data => {
                     this.imageSequences = data.data.collection;
                 });
-                // If current sequence no more in imagesequence: deselect it
+
+                // TODO: If current sequence no more in imagesequence: deselect it
+
+                this.getOnlineUsers();
+
+                // Add new image consultation
+                this.saveImageConsultation()
             },
             setUserLayers(selectDefaultLayers = true) {
                 this.updateReviewLayer();
@@ -637,6 +642,13 @@
             baseLayerUrl() {
                 return `${this.filterUrl}${this.randomImsServer()}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&mimeType=${this.image.mime}`
             },
+            saveImageConsultation() {
+                api.post(`api/imageinstance/${this.image.id}/consultation.json`, {
+                    image: this.image.id,
+                    mode: (this.reviewMode) ? "review" : "view"
+                })
+            },
+
             // // Sends view infos
             // sendView(e) {
             //     let payload = {
