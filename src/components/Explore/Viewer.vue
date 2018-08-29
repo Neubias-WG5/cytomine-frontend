@@ -596,9 +596,11 @@
                 }
             },
             getOnlineUsers() {
-                api.get(`/api/project/${this.project.id}/online/user.json?image=${this.image.id}`).then(response => {
-                    this.onlineUsers = response.data.collection;
-                })
+                if (this.isCurrentViewer) {
+                    api.get(`/api/project/${this.project.id}/online/user.json?image=${this.image.id}`).then(response => {
+                        this.onlineUsers = response.data.collection;
+                    })
+                }
             },
             userById(userId, list = this.project.users) {
                 return list.find(user => user.id === userId);
