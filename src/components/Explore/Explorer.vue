@@ -11,13 +11,15 @@
                     :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
                     :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
                     @changeImage="changeImage" @current-map="viewer" @updateImage="updateImage"
-                    :mapView="mapView" :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"></viewer>
+                    :mapView="mapView" :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"
+                    :linked-viewers-bus="linkedViewersBus"></viewer>
         </div>
     </div>
 </template>
 
 <script>
     import Viewer from './Viewer'
+    import Vue from 'vue'
 
     import uuid from 'uuid'
     import ViewerSelector from "./ViewerSelector";
@@ -40,15 +42,16 @@
                 onlineUsers: [],
                 currentUser: {},
                 ontology: {},
+                paddingTop: 50 + 42 + 40,
+                lastEventMapId: null,
+                linkedViewersBus: new Vue(),
 
                 mapView: {
                     mapCenter: [0, 0],
                     mapZoom: 2,
                     mapRotation: 0,
                 },
-                lastEventMapId: null,
                 currentRoute: '',
-                paddingTop: 50 + 42 + 40,
             }
         },
         computed: {

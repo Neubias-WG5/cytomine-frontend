@@ -255,10 +255,12 @@
             'id',
             'linkedTo',
             'image',
+            'linkedViewersBus',
+            'lastEventMapId',
 
             'mapView',
             'currentMap',
-            'lastEventMapId',
+
         ],
         computed: {
             isReviewing() {
@@ -363,6 +365,14 @@
                 return differenceBy(this.onlineUsers.filter(user => this.project.users.find(u => u.id == user.id)),
                     this.onlineAdmins)
             },
+            viewState() {
+                return {
+                    'id': this.id,
+                    'center': this.center,
+                    'zoom': this.zoom,
+                    'rotation': this.rotation
+                }
+            }
         },
         watch: {
             linkedTo() {
@@ -392,7 +402,11 @@
             mousePosition() {
                 if (!this.isCurrentViewer)
                     this.$emit('setCurrentViewer', this.id);
-            }
+            },
+            viewState(newValue) {
+                if (this.linkedTo.length > 0)
+                    this.linkedViewersBus.$emit('updateViewState', newValue);
+            },
             // mapView: {
             //     handler() {
             //         let {mapCenter, mapResolution, mapRotation} = this.mapView;
@@ -769,6 +783,14 @@
             addProj(cytomineProjection);
 
             this.setNewImage(null, this.image);
+
+            this.linkedViewersBus.$on('updateViewState', (payload) => {
+                if (this.linkedTo.includes(payload.id)) {
+                    this.center = payload.center;
+                    this.zoom = payload.zoom;
+                    this.rotation = payload.rotation;
+                }
+            })
         },
         mounted() {
             this.$nextTick(function () {
