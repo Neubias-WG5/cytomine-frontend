@@ -5,7 +5,7 @@
                 @pointermove="mousePosition = $event.coordinate" data-projection="CYTO:FLAT">
 
             <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom"  :max-zoom="maxZoom"
-                     :rotation.sync="rotation" projection="CYTO:FLAT"></vl-view>
+                     :rotation.sync="rotation" :resolution.sync="resolution" projection="CYTO:FLAT"></vl-view>
 
             <vl-layer-tile :extent="imageExtent">
                 <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
@@ -29,8 +29,8 @@
                             :review-mode="reviewMode"></viewer-buttons>
 
             <div class="scale-line-panel">
-                <!--<scale-line :viewer-id="id" :image="image" :mousePosition="mousePosition"-->
-                <!--:currentZoom="zoom" :maxZoom="maxZoom"></scale-line>-->
+                <scale-line :image="image" :mousePosition="mousePosition"
+                            :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
             </div>
         </div>
         <div v-show="(isCurrentViewer && selectedComponent != '')"
@@ -152,7 +152,6 @@
     import AnnotationLayers from './Panels/AnnotationLayers'
     import Interactions from './Interactions';
     import Informations from './Panels/Informations';
-    import Position from './Position';
     import Ontology from './Ontology';
     import AnnotationDetails from './AnnotationDetails';
     import Annotations from './Annotations';
@@ -186,7 +185,6 @@
             AnnotationLayers,
             Interactions,
             Informations,
-            Position,
             Ontology,
             AnnotationDetails,
             Annotations,
@@ -223,6 +221,7 @@
                 zoom: 0,
                 maxZoom: 0,
                 rotation: 0,
+                resolution: undefined,
                 clickCoordinate: undefined,
                 selectedFeatures: [],
 
@@ -373,7 +372,7 @@
                     'zoom': this.zoom,
                     'rotation': this.rotation
                 }
-            }
+            },
         },
         watch: {
             linkedTo() {
@@ -706,6 +705,7 @@
 
                 this.followedUser = "";
             },
+            // Proj.getPointResolution,
             // // Sends view infos
             // sendView(e) {
             //     let payload = {

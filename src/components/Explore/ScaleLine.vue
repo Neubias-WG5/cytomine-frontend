@@ -7,7 +7,10 @@
              <span v-show="magnification != 0">Magnification: {{magnification}}X</span>
         </div>
         <div class="scale-line-position">
-            <position :mousePosition="mousePosition" :currentMapId="viewerId"></position>
+            <div>
+                <div style="float: left;">x: {{currentX}}</div>
+                <div style="float: right;">y: {{currentY}}</div>
+            </div>
         </div>
 
     </div>
@@ -16,15 +19,9 @@
 </template>
 
 <script>
-    import Position from './Position';
-
     export default {
         name: 'ScaleLine',
-        components: {
-            Position
-        },
         props: [
-            'viewerId',
             'image',
             'mousePosition',
             'currentZoom',
@@ -36,12 +33,19 @@
             }
         },
         computed: {
+            currentX() {
+                return Math.round(this.mousePosition[0] * 10) / 10
+            },
+            currentY() {
+                return Math.round(this.mousePosition[1] * 10) / 10
+            },
             magnification() {
                 let magnification = Math.pow(2, this.currentZoom - this.image.depth) * this.image.magnification;
                 return Math.round(magnification * 100) / 100;
             },
             resolution() {
-                return Math.pow(2, this.currentZoom - this.image.depth) * this.image.resolution;
+                let res = (this.image.resolution) ? this.image.resolution : 1;
+                return Math.pow(2, this.image.depth - this.currentZoom) * this.image.resolution;
             },
             scaleLength() {
                 let length = this.scaleLineLength;
