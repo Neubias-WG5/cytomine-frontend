@@ -108,18 +108,18 @@
 
                     <div class="radio">
                         <input v-model="followedUser" type="radio" :name="'follow-no-' + id"
-                               :id="'follow-no-' + id" value="">
+                               :id="'follow-no-' + id" value="" @change="stopUserTracking()">
                         <label :for="'follow-no-' + id">No tracking</label>
                     </div>
                     <template v-if="onlineAdmins.length > 0">
                         <h4>Managers</h4>
                         <div class="radio">
 
-                            <div v-for="user in onlineAdmins" :key="user.id">
-                                <input v-model="followedUser" type="radio" :name="'follow-'+user.id+'-' + id"
-                                       :id="'follow-'+user.id+'-' + id" :value="user">
-                                <label :for="'follow-'+user.id+'-' + id">
-                                    <username :user="userById(user.id)"></username>
+                            <div v-for="userId in onlineAdmins" :key="userId">
+                                <input v-model="followedUser" type="radio" :name="'follow-'+userId+'-' + id"
+                                       :id="'follow-'+userId+'-' + id" :value="userId" @change="startUserTracking()">
+                                <label :for="'follow-'+userId+'-' + id">
+                                    <username :user="userById(userId)"></username>
                                 </label>
                             </div>
                         </div>
@@ -127,11 +127,11 @@
                     <template v-if="onlineContributors.length > 0">
                         <h4>Contributors</h4>
                         <div class="radio">
-                            <div v-for="user in onlineContributors" :key="user.id">
-                                <input v-model="followedUser" type="radio" :name="'follow-'+user.id+'-' + id"
-                                       :id="'follow-'+user.id+'-' + id" :value="user">
-                                <label :for="'follow-'+user.id+'-' + id">
-                                    <username :user="userById(user.id)"></username>
+                            <div v-for="userId in onlineContributors" :key="userId">
+                                <input v-model="followedUser" type="radio" :name="'follow-'+userId+'-' + id"
+                                       :id="'follow-'+userId+'-' + id" :value="userId" @change="startUserTracking()">
+                                <label :for="'follow-'+userId+'-' + id">
+                                    <username :user="userById(userId)"></username>
                                 </label>
                             </div>
                         </div>
@@ -360,10 +360,10 @@
                 return [-this.imageWidth/2, -this.imageHeight/2, this.imageWidth/2, this.imageHeight/2];
             },
             onlineAdmins() {
-                return this.onlineUsers.filter(user => this.project.admins.find(u => u.id == user.id))
+                return this.onlineUsers.filter(id => this.project.admins.find(u => u.id == id))
             },
             onlineContributors() {
-                return differenceBy(this.onlineUsers.filter(user => this.project.users.find(u => u.id == user.id)),
+                return differenceBy(this.onlineUsers.filter(id => this.project.users.find(u => u.id == id)),
                     this.onlineAdmins)
             },
             viewState() {
@@ -409,6 +409,13 @@
                 this.debouncedSavePosition();
                 if (this.linkedTo.length > 0)
                     this.linkedViewersBus.$emit('updateViewState', newValue);
+            },
+            onlineUsers(newValue) {
+                if (this.followedUser !== "") {
+                    if (newValue.find(u => u.id == this.followedUser.id) == -1) {
+                        this.stopUserTracking()
+                    }
+                }
             },
             // mapView: {
             //     handler() {
@@ -604,8 +611,8 @@
             },
             getOnlineUsers() {
                 if (this.isCurrentViewer) {
-                    api.get(`/api/project/${this.project.id}/online/user.json?image=${this.image.id}`).then(response => {
-                        this.onlineUsers = response.data.collection;
+                    api.get(`/api/imageinstance/${this.image.id}/online.json`).then(response => {
+                        this.onlineUsers = response.data.users.filter(id => id != this.currentUser.id);
                     })
                 }
             },
@@ -651,22 +658,53 @@
                 })
             },
             savePosition() {
-                this.$refs.olview.$createPromise.then(() => {
-                    let extent = this.$refs.olview.$view.calculateExtent();
-                    api.post(`api/imageinstance/${this.image.id}/position.json`, {
-                        image: this.image.id,
-                        zoom: this.zoom,
-                        rotation: this.rotation,
-                        bottomLeftX: Math.round(extent[0]),
-                        bottomLeftY: Math.round(extent[1]),
-                        bottomRightX: Math.round(extent[2]),
-                        bottomRightY: Math.round(extent[1]),
-                        topLeftX: Math.round(extent[0]),
-                        topLeftY: Math.round(extent[3]),
-                        topRightX: Math.round(extent[2]),
-                        topRightY: Math.round(extent[3]),
+                if (this.$refs.olview)
+                    this.$refs.olview.$createPromise.then(() => {
+                        let extent = this.$refs.olview.$view.calculateExtent();
+                        api.post(`api/imageinstance/${this.image.id}/position.json`, {
+                            image: this.image.id,
+                            zoom: this.zoom,
+                            rotation: this.rotation,
+                            bottomLeftX: Math.round(extent[0]),
+                            bottomLeftY: Math.round(extent[1]),
+                            bottomRightX: Math.round(extent[2]),
+                            bottomRightY: Math.round(extent[1]),
+                            topLeftX: Math.round(extent[0]),
+                            topLeftY: Math.round(extent[3]),
+                            topRightX: Math.round(extent[2]),
+                            topRightY: Math.round(extent[3]),
+                        })
                     })
+            },
+            trackUser() {
+                if (this.followedUser != "" && this.$refs.olview) {
+                    api.get(`api/imageinstance/${this.image.id}/position/${this.followedUser}.json`).then(response => {
+                        this.$refs.olview.$createPromise.then(() => {
+                            this.$refs.olview.animate({
+                                center: [response.data.x, response.data.y],
+                                zoom: response.data.zoom,
+                                rotation: response.data.rotation,
+                            })
+                        })
+                    })
+                }
+            },
+            startUserTracking() {
+                let user = this.userById(this.followedUser);
+                this.$notify({
+                    placement: 'bottom-right',
+                    type: 'success',
+                    content: `You started following ${user.firstname} ${user.lastname} (${user.username}).`
                 })
+            },
+            stopUserTracking() {
+                this.$notify({
+                    placement: 'bottom-right',
+                    type: 'info',
+                    content: `Stopped following an online user.`
+                });
+
+                this.followedUser = "";
             },
             // // Sends view infos
             // sendView(e) {
@@ -853,6 +891,7 @@
 
             setInterval(this.getOnlineUsers.bind(this), 5000);
             setInterval(this.savePosition.bind(this), 5000);
+            setInterval(this.trackUser.bind(this), 1000);
 
             // Init map
             // this.$openlayers.init({
