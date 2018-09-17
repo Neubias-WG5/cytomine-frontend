@@ -2,14 +2,15 @@
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
         <!--<div  @mousemove="sendView" @mousewheel="sendView" :id="id" ref="exploreMap">-->
         <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
-                @pointermove="mousePosition = $event.coordinate" data-projection="CYTO:FLAT">
+                @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" data-projection="CYTO:FLAT">
 
-            <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom"  :max-zoom="maxZoom"
+            <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :max-zoom="maxZoom"
                      :rotation.sync="rotation" :resolution.sync="resolution" projection="CYTO:FLAT"></vl-view>
 
             <vl-layer-tile :extent="imageExtent">
                 <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
-                                   :extent="imageExtent" :key="baseLayerUrl()" v-if="imsServers.length > 0"></vl-source-zoomify>
+                                   :extent="imageExtent" :key="baseLayerUrl()"
+                                   v-if="imsServers.length > 0"></vl-source-zoomify>
             </vl-layer-tile>
         </vl-map>
 
@@ -20,6 +21,7 @@
         <!--</interactions>-->
 
         <!--<overview-map :viewer-id="id" :image="image" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>-->
+        <div :id="'overviewmap-'+id" class="overview-container"></div>
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
                             :has-multi-views="hasMultiViews" :is-reviewing="isReviewing" :has-filters="hasFilters"
@@ -98,7 +100,8 @@
                                 @changeSequence="changeSequence"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
-                                    && hasAnnotationProperties" :properties="availableAnnotationProperties"></properties>
+                                    && hasAnnotationProperties"
+                            :properties="availableAnnotationProperties"></properties>
 
                 <div v-show="selectedComponent == 'follow' && mustBeShown('project-explore-follow') && hasOnlineUsers">
                     <h4>
@@ -161,7 +164,7 @@
     import Review from './Review'
     import ScaleLine from './ScaleLine'
     import ColorMaps from './Colormaps'
-    import OverviewMap from './OverviewMap'
+    import OverviewMap from 'ol/control/overviewmap'
 
     import ViewerButtons from "./ViewerButtons";
 
@@ -356,7 +359,7 @@
                 return [0, 0, this.imageWidth, this.imageHeight];
             },
             viewExtent() {
-                return [-this.imageWidth/2, -this.imageHeight/2, this.imageWidth/2, this.imageHeight/2];
+                return [-this.imageWidth / 2, -this.imageHeight / 2, this.imageWidth / 2, this.imageHeight / 2];
             },
             onlineAdmins() {
                 return this.onlineUsers.filter(id => this.project.admins.find(u => u.id == id))
@@ -482,7 +485,7 @@
                 // Reset position & zoom if necessary
                 let reset = !oldImage || newImage.width != oldImage.width || newImage.height != oldImage.height;
                 if (reset) {
-                    this.center = [this.imageWidth/2, this.imageHeight/2];
+                    this.center = [this.imageWidth / 2, this.imageHeight / 2];
                     this.zoom = this.initialZoom;
                 }
 
@@ -705,6 +708,18 @@
 
                 this.followedUser = "";
             },
+            onMapMounted() {
+                this.$refs.olmap.$createPromise.then(() => {
+                    this.$refs.olmap.$map.addControl(new OverviewMap({
+                        label: '«',
+                        collapseLabel: '»',
+                        collapsed: false,
+                    }));
+
+                    this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
+                    this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
+                });
+            },
             // Proj.getPointResolution,
             // // Sends view infos
             // sendView(e) {
@@ -872,7 +887,6 @@
             });
 
             this.$refs.olmap.$createPromise.then(() => {
-                // this.$refs.olmap.$map.addControl(new ScaleLine())
                 this.$refs.olmap.$map.getControls().getArray()[0].element.childNodes.forEach(child => {
                     child.classList.add('btn');
                     child.classList.add('btn-default');
@@ -974,6 +988,10 @@
         position: absolute;
     }
 
+    .ol-overlay-container {
+        will-change: left, right, top, bottom;
+    }
+
     .ol-unsupported {
         display: none;
     }
@@ -1006,7 +1024,20 @@
         cursor: grab;
     }
 
+    .ol-control {
+        position: absolute;
+    }
+
+    .ol-zoom {
+        top: 1em;
+        left: 1em;
+        display: flex;
+        flex-direction: column;
+    }
+
     .ol-rotate {
+        top: 8em;
+        left: 1em;
         -webkit-transition: opacity .25s linear, visibility 0s linear;
         transition: opacity .25s linear, visibility 0s linear;
     }
@@ -1018,27 +1049,62 @@
         transition: opacity .25s linear, visibility 0s linear .25s;
     }
 
-    .vl-map {
-        width: 100%;
-        height: 100%;
-    }
-
-    .ol-overlaycontainer-stopevent {
-        top: 1em;
-        left: 1em;
-        margin-bottom: 1em;
-        display: flex;
-        flex-direction: column;
-        position: absolute;
-    }
-
-    .ol-zoom {
-        display: flex;
-        flex-direction: column;
+    .ol-zoom-in, .ol-zoom-out, .ol-rotate-reset {
+        height: 2.5em;
     }
 
     .ol-zoom-in, .ol-zoom-out {
         margin-bottom: 1em;
+    }
+
+    .ol-overviewmap {
+        top: 1em;
+        right: 1em;
+    }
+
+    .ol-overviewmap.ol-uncollapsible {
+        right: 0;
+        top: 0;
+        border-radius: 0 4px 0 0;
+    }
+
+    .ol-overviewmap .ol-overviewmap-map,
+    .ol-overviewmap button {
+        display: inline-block;
+    }
+
+    .ol-overviewmap .ol-overviewmap-map {
+        height: 150px;
+        width: 150px;
+    }
+
+    .ol-overviewmap:not(.ol-collapsed) button {
+        top: 1px;
+        right: 2px;
+        position: absolute;
+    }
+
+    .ol-overviewmap.ol-collapsed .ol-overviewmap-map,
+    .ol-overviewmap.ol-uncollapsible button {
+        display: none;
+    }
+
+    .ol-overviewmap:not(.ol-collapsed) {
+        border: 3px solid black;
+        background: grey;
+    }
+
+    .ol-overviewmap-box {
+        border: 2px dotted red;
+    }
+
+    .ol-overviewmap .ol-overviewmap-box:hover {
+        cursor: move;
+    }
+
+    .vl-map {
+        width: 100%;
+        height: 100%;
     }
 
     .ol-attribution {
