@@ -130,7 +130,7 @@
               })
             },
             toggleVisibility(layer) {
-                let index = this.layers.findIndex(l => l.id == layer.id);
+                let index = this.userLayers.findIndex(l => l.id == layer.id);
                 layer.visible = !layer.visible;
                 this.$emit('updateLayer', {
                     'index': index,
@@ -138,7 +138,7 @@
                 })
             },
             toggleDrawability(layer) {
-                let index = this.layers.findIndex(l => l.id == layer.id);
+                let index = this.userLayers.findIndex(l => l.id == layer.id);
                 layer.drawable = !layer.drawable;
                 this.$emit('updateLayer', {
                     'index': index,
@@ -146,7 +146,7 @@
                 })
             },
             toggleSelection(layer) {
-                let index = this.layers.findIndex(l => l.id == layer.id);
+                let index = this.userLayers.findIndex(l => l.id == layer.id);
                 layer.selected = !layer.selected;
                 this.$emit('updateLayer', {
                     'index': index,
