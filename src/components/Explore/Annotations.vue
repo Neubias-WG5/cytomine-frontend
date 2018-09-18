@@ -159,7 +159,6 @@
                 return this.users.find(user => user.id === userId);
             },
             termById(termId) {
-                console.log(termId);
                 let term = this.terms.find(term => term.id == termId);
                 // term.size = this.sizeTerms[termId];
                 return term;

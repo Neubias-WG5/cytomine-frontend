@@ -50,11 +50,17 @@
                 </div>
             </li>
         </ul>
-        <!--<div>-->
-        <!--<label for="layers-opacity">Layers opacity</label>-->
-        <!--<input v-model.number="vectorLayersOpacity" min="0" max="1" step="0.01" type="range" name="layers-opacity"-->
-        <!--id="layers-opacity">-->
-        <!--</div>-->
+
+        <div class="flex">
+            <div class="input-group" style="margin-right: 5px;">
+                <span class="input-group-addon">Layer opacity</span>
+                <input class="form-control" :value="parseInt(layerOpacity * 100)" @input="$emit('update:layerOpacity', parseFloat($event.target.value / 100))"
+                       type="number" step="1" :max="100" :min="0" name="layers-opacity" id="layers-opacity">
+                <span class="input-group-addon">%</span>
+            </div>
+            <input class="range" :value="layerOpacity" @input="$emit('update:layerOpacity', parseFloat($event.target.value))"
+                   type="range" step="0.01" :max="1" :min="0">
+        </div>
     </section>
 </template>
 
@@ -68,7 +74,8 @@
             'project',
             'userLayers',
             'currentUser',
-            'showReview'
+            'showReview',
+            'layerOpacity'
         ],
         data() {
             return {
@@ -257,5 +264,16 @@
 <style scoped>
     .display-inline-block {
         display: inline-block;
+    }
+    .flex {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .input-group {
+        max-width: 250px;
+    }
+    .range {
+        width: auto;
     }
 </style>

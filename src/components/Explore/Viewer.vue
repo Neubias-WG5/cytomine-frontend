@@ -17,7 +17,8 @@
             <annotation-source-vector v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
                                       :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
                                       :visible-no-term="visibleNoTerm" :annotation-properties="annotationProperties"
-                                      :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent" :terms="allTerms"></annotation-source-vector>
+                                      :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
+                                      :terms="allTerms" :layer-opacity="layersOpacity"></annotation-source-vector>
         </vl-map>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
@@ -84,7 +85,7 @@
                 <annotation-layers v-show="selectedComponent == 'annotationLayers'"
                                    @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"
                                    :user-layers="userLayers" :viewer-id="id" :current-user="currentUser"
-                                   :show-review="reviewMode || image.reviewed">
+                                   :show-review="reviewMode || image.reviewed" :layer-opacity.sync="layersOpacity">
                 </annotation-layers>
 
                 <ontology v-show="selectedComponent == 'ontology'" :project="project" :ontology="ontology"
@@ -216,6 +217,7 @@
                 selectedSequence: {},
                 linkedToValues: [],
                 reviewMode: false,
+                layersOpacity: 0.3,
 
                 userLayers: [],
                 visibleTerms: [],
@@ -244,7 +246,7 @@
                 featureSelected: undefined,
                 featureSelectedData: {},
                 layersSelected: [],
-                vectorLayersOpacity: 0.5,
+
                 updateLayers: false,
                 updateAnnotationsIndex: false,
                 showPanel: true,

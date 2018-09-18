@@ -1,5 +1,5 @@
 <template>
-    <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity="userLayer.opacity">
+    <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity">
         <vl-source-vector :features.sync="features"></vl-source-vector>
         <vl-style-func :factory="styleFuncFactoryProp"></vl-style-func>
     </vl-layer-vector>
@@ -38,7 +38,8 @@
             'annotationProperties',
             'isReviewing',
             'extent',
-            'imageExtent'
+            'imageExtent',
+            'layerOpacity'
         ],
         computed: {
             styleFuncFactoryProp() {
