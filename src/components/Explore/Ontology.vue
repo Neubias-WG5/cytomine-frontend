@@ -9,7 +9,8 @@
 
         <div class="checkbox">
             <label>
-                <input v-model="visibleNoTerm" type="checkbox" name="showNoTermAnnotation" id="showNoTermAnnotation">
+                <input :checked="visibleNoTerm" @input="$emit('update:visibleNoTerm', !visibleNoTerm)"
+                       type="checkbox" name="showNoTermAnnotation" id="showNoTermAnnotation">
                 <label for="showNoTermAnnotation">Show annotations without terms</label>
             </label>
         </div>
