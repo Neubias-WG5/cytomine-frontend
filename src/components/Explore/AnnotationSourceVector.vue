@@ -1,6 +1,7 @@
 <template>
     <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity="userLayer.opacity">
         <vl-source-vector :features.sync="features"></vl-source-vector>
+        <vl-style-func :factory="styleFuncFactoryProp"></vl-style-func>
     </vl-layer-vector>
 
 </template>
@@ -9,18 +10,29 @@
     import { parse } from 'wellknown'
     import uniqby from 'lodash.uniqby'
     import uuid from 'uuid'
+    import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
+
+    const AnnotationStatus = {
+        NO_TERM: 'NO_TERM',
+        MULTIPLE_TERMS: 'MULTIPLE_TERMS',
+        CLUSTER: 'CLUSTER',
+        REVIEW: 'REVIEW',
+        HIDDEN: 'HIDDEN'
+    };
 
     export default {
         name: "AnnotationSourceVector",
         data() {
             return {
                 features: [],
-                localExtent: [0, 0, 0, 0]
+                localExtent: [0, 0, 0, 0],
+                styles: {}
             }
         },
         props: [
             'image',
             'userLayer',
+            'terms',
             'visibleTerms',
             'visibleNoTerm',
             'annotationProperties',
@@ -28,6 +40,51 @@
             'extent',
             'imageExtent'
         ],
+        computed: {
+            styleFuncFactoryProp() {
+                // Kind of hack to force computed property update.
+                // See https://github.com/ghettovoice/vuelayers/issues/68#issuecomment-404223423
+                let _ = this.visibleTerms;
+                _ = this.visibleNoTerm;
+                let func = function() {
+                    const clusterCache = {};
+                    return (feature, resolution) => {
+                        if (feature.get('clusterSize') > 1) {
+                            const size = feature.get('clusterSize');
+                            let style = clusterCache[size];
+
+                            if (!style) {
+                                style = createStyle({
+                                    strokeColor: '#111111',
+                                    strokeWidth: 1.25,
+                                    strokeDash: [2, 2],
+                                    fillColor: '#FFFFFF',
+                                    text: size.toString(),
+                                    textFillColor: '#3399CC',
+                                    textFont: '36px Arial, sans-serif',
+                                    textStrokeDash: [],
+                                    // textBackgroundFillColor: '#FFFFFF',
+                                });
+                                clusterCache[size] = style
+                            }
+                            return [style]
+                        }
+                        else {
+                            let terms = feature.get('terms');
+                            if (terms.length > 1) // && intersect(this.visibleTerms, terms) > 0
+                                return [this.styles[AnnotationStatus.MULTIPLE_TERMS]];
+                            else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
+                                return [this.styles[terms[0]]];
+                            else if (terms.length == 0 && this.visibleNoTerm)
+                                return [this.styles[AnnotationStatus.NO_TERM]];
+                            else
+                                return [this.styles[AnnotationStatus.HIDDEN]]
+                        }
+                    }
+                };
+                return func.bind(this);
+            }
+        },
         watch: {
             userLayer: {
                 handler: function(newValue, oldValue) {
@@ -77,7 +134,7 @@
                                 id: annotation.count ? uuid() : annotation.id,
                                 geometry: parse(annotation.location),
                                 properties: {
-                                    terms: annotation.term,
+                                    terms: annotation.term ? annotation.term : [],
                                     user: this.userLayer.id,
                                     clusterSize: annotation.count ? annotation.count : 0
                                 }
@@ -85,7 +142,74 @@
                     });
                     // this.features = uniqby(this.features.concat(newFeatures), 'id')
                 })
+            },
+            styleFuncFactory() {
+                const clusterCache = {};
+
+                return (feature, resolution) => {
+                    if (feature.get('clusterSize') > 1) {
+                        const size = feature.get('clusterSize');
+                        let style = clusterCache[size];
+
+                        if (!style) {
+                            style = createStyle({
+                                strokeColor: '#111111',
+                                strokeWidth: 1.25,
+                                strokeDash: [2, 2],
+                                fillColor: '#FFFFFF',
+                                text: size.toString(),
+                                textFillColor: '#3399CC',
+                                textFont: '36px Arial, sans-serif',
+                                textStrokeDash: [],
+                                // textBackgroundFillColor: '#FFFFFF',
+                            });
+                            clusterCache[size] = style
+                        }
+
+                        return [style]
+                    }
+                    else {
+                        let terms = feature.get('terms');
+                        if (terms.length > 1) // && intersect(this.visibleTerms, terms) > 0
+                            return [this.styles[AnnotationStatus.MULTIPLE_TERMS]];
+                        else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
+                            return [this.styles[terms[0]]];
+                        else if (terms.length == 0 && this.visibleNoTerm)
+                            return [this.styles[AnnotationStatus.NO_TERM]];
+                        else
+                            return [this.styles[AnnotationStatus.HIDDEN]]
+                    }
+                }
             }
+        },
+        created() {
+            let pointRadius = 7;
+            this.styles[AnnotationStatus.NO_TERM] = createStyle({
+                strokeColor: '#111111',
+                strokeWidth: 2,
+                fillColor: '#EEEEEE',
+                imageRadius: pointRadius,
+            });
+            this.styles[AnnotationStatus.MULTIPLE_TERMS] = createStyle({
+                strokeColor: '#111111',
+                strokeWidth: 2,
+                fillColor: '#CCCCCCC',
+                imageRadius: pointRadius,
+            });
+            this.styles[AnnotationStatus.HIDDEN] = createStyle({
+                strokeColor: 'rgba(0,0,0,0)',
+                strokeWidth: 0,
+                fillColor: 'rgba(0,0,0,0)'
+            });
+
+            this.terms.forEach(term => {
+                this.styles[term.id] = createStyle({
+                    strokeColor: '#111111',
+                    strokeWidth: 2,
+                    fillColor: term.color,
+                    imageRadius: pointRadius,
+                })
+            })
         },
         mounted() {
             this.computeLocalExtent(this.extent)

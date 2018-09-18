@@ -17,7 +17,7 @@
             <annotation-source-vector v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
                                       :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
                                       :visible-no-term="visibleNoTerm" :annotation-properties="annotationProperties"
-                                      :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"></annotation-source-vector>
+                                      :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent" :terms="allTerms"></annotation-source-vector>
         </vl-map>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
@@ -89,7 +89,7 @@
 
                 <ontology v-show="selectedComponent == 'ontology'" :project="project" :ontology="ontology"
                           :visible-terms="visibleTerms" :associable-terms="associableTerms" :size-terms="sizeTerms"
-                          :visible-no-term="visibleNoTerm" @toggleAssociateTerm="toggleAssociateTerm"
+                          :visible-no-term.sync="visibleNoTerm" @toggleAssociateTerm="toggleAssociateTerm"
                           @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms"></ontology>
 
                 <annotations v-show="selectedComponent == 'annotationList'" :isReviewing="isReviewing"
