@@ -35,7 +35,8 @@
     "vue-popperjs": "^1.5.0",
     "vue-slider-component": "^2.7.6",
     "vue2-datatable-component": "^2.3.1",
-    "vuelayers": "^0.10.13"
+    "vuelayers": "^0.10.13",
+    "wellknown": "^0.5.0"
   },
   "browserslist": [
     "> 1%",

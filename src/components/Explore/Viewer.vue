@@ -2,7 +2,8 @@
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
         <!--<div  @mousemove="sendView" @mousewheel="sendView" :id="id" ref="exploreMap">-->
         <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
-                @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" data-projection="CYTO:FLAT">
+                @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" @moveend="calculateViewExtent"
+                data-projection="CYTO:FLAT">
 
             <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :max-zoom="maxZoom"
                      :rotation.sync="rotation" :resolution.sync="resolution" projection="CYTO:FLAT"></vl-view>
@@ -12,6 +13,11 @@
                                    :extent="imageExtent" :key="baseLayerUrl()"
                                    v-if="imsServers.length > 0"></vl-source-zoomify>
             </vl-layer-tile>
+
+            <annotation-source-vector v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
+                                      :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
+                                      :visible-no-term="visibleNoTerm" :annotation-properties="annotationProperties"
+                                      :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"></annotation-source-vector>
         </vl-map>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
@@ -177,10 +183,12 @@
     import debounce from "lodash.debounce";
     import Username from "../User/Username";
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
+    import AnnotationSourceVector from "./AnnotationSourceVector";
 
     export default {
         name: 'Viewer',
         components: {
+            AnnotationSourceVector,
             Username,
             NavigationImage,
             Filters,
@@ -227,6 +235,7 @@
                 resolution: undefined,
                 clickCoordinate: undefined,
                 selectedFeatures: [],
+                viewExtent: [0, 0, 0, 0],
 
                 imsBaseUrl: '',
                 mousePosition: [0, 0],
@@ -358,7 +367,7 @@
             imageExtent() {
                 return [0, 0, this.imageWidth, this.imageHeight];
             },
-            viewExtent() {
+            projectionExtent() {
                 return [-this.imageWidth / 2, -this.imageHeight / 2, this.imageWidth / 2, this.imageHeight / 2];
             },
             onlineAdmins() {
@@ -720,6 +729,14 @@
                     this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
                 });
             },
+            calculateViewExtent() {
+                if (!this.$refs.olview)
+                    return;
+
+                this.$refs.olview.$createPromise.then(() => {
+                    this.viewExtent = this.$refs.olview.$view.calculateExtent();
+                })
+            },
             // Proj.getPointResolution,
             // // Sends view infos
             // sendView(e) {
@@ -864,7 +881,7 @@
             let cytomineProjection = createProj({
                 code: 'CYTO:FLAT',
                 units: 'pixels',
-                extent: this.viewExtent,
+                extent: this.projectionExtent,
             });
             addProj(cytomineProjection);
 
