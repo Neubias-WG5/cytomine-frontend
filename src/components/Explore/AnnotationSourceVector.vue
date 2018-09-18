@@ -72,7 +72,7 @@
                         }
                         else {
                             let terms = feature.get('terms');
-                            if (terms.length > 1) // && intersect(this.visibleTerms, terms) > 0
+                            if (terms.length > 1 && this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)
                                 return [this.styles[AnnotationStatus.MULTIPLE_TERMS]];
                             else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
                                 return [this.styles[terms[0]]];
