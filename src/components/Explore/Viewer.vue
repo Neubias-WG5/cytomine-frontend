@@ -26,8 +26,7 @@
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
-                        :project-config="projectConfig" :selected-feature="selectedFeature"
-                        :selected-annotation="selectedAnnotation"></viewer-toolbar>
+                        :project-config="projectConfig" :selected-feature="selectedFeature"></viewer-toolbar>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
         <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
@@ -158,11 +157,10 @@
             </div>
         </div>
 
-        <!--<annotation-details v-show="featureSelected != undefined" @featureSelectedData="setFeatureSelectedData"-->
-        <!--:users="userLayers" :terms="allTerms"-->
-        <!--:featureSelected="featureSelected" :project-config="projectConfig" :currentUser="currentUser"-->
-        <!--:project="project" :element-height="elementHeight" :element-width="elementWidth">-->
-        <!--</annotation-details>-->
+        <annotation-details v-show="selectedFeature" :users="userLayers" :terms="allTerms" :selected-feature="selectedFeature"
+                            :project-config="projectConfig" :currentUser="currentUser" :project="project"
+                            :element-height="elementHeight" :element-width="elementWidth">
+        </annotation-details>
     </div>
 </template>
 
@@ -231,7 +229,6 @@
                 reviewMode: false,
                 layersOpacity: 0.3,
                 selectedFeature: undefined,
-                selectedAnnotation: undefined,
                 activeTool: 'Select',
 
                 userLayers: [],
@@ -529,7 +526,6 @@
                 this.setUserLayers(!oldImage);
 
                 this.selectedFeature = undefined;
-                this.selectedAnnotation = undefined;
 
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
                     this.annotationProperties = data.data.collection;
