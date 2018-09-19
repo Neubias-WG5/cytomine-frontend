@@ -21,6 +21,9 @@
                                       :terms="allTerms" :layer-opacity="layersOpacity"></annotation-source-vector>
         </vl-map>
 
+        <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
+                        :project-config="projectConfig" :selected-annotation="selectedAnnotation"></viewer-toolbar>
+
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
         <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
         <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity"-->
@@ -185,10 +188,12 @@
     import Username from "../User/Username";
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
     import AnnotationSourceVector from "./AnnotationSourceVector";
+    import ViewerToolbar from "./ViewerToolbar";
 
     export default {
         name: 'Viewer',
         components: {
+            ViewerToolbar,
             AnnotationSourceVector,
             Username,
             NavigationImage,
@@ -218,6 +223,8 @@
                 linkedToValues: [],
                 reviewMode: false,
                 layersOpacity: 0.3,
+                selectedAnnotation: undefined,
+                activeTool: 'Select',
 
                 userLayers: [],
                 visibleTerms: [],
