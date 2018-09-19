@@ -177,6 +177,7 @@
             'projectConfig',
             'currentUser',
             'activeTool',
+            'selectedFeature',
             'selectedAnnotation',
         ],
         data() {

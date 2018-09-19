@@ -18,11 +18,16 @@
                                       :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
                                       :visible-no-term="visibleNoTerm" :annotation-properties="annotationProperties"
                                       :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
-                                      :terms="allTerms" :layer-opacity="layersOpacity"></annotation-source-vector>
+                                      :terms="allTerms" :layer-opacity="layersOpacity" :styles="styles"></annotation-source-vector>
+
+            <select-interaction v-if="activeTool == 'Select'" :selected-feature.sync="selectedFeature" :styles="styles"
+                                :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
+                                :visible-no-term="visibleNoTerm"></select-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
-                        :project-config="projectConfig" :selected-annotation="selectedAnnotation"></viewer-toolbar>
+                        :project-config="projectConfig" :selected-feature="selectedFeature"
+                        :selected-annotation="selectedAnnotation"></viewer-toolbar>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
         <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
@@ -189,10 +194,12 @@
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
     import AnnotationSourceVector from "./AnnotationSourceVector";
     import ViewerToolbar from "./ViewerToolbar";
+    import SelectInteraction from "./Interactions/SelectInteraction";
 
     export default {
         name: 'Viewer',
         components: {
+            SelectInteraction,
             ViewerToolbar,
             AnnotationSourceVector,
             Username,
@@ -223,6 +230,7 @@
                 linkedToValues: [],
                 reviewMode: false,
                 layersOpacity: 0.3,
+                selectedFeature: undefined,
                 selectedAnnotation: undefined,
                 activeTool: 'Select',
 
@@ -231,7 +239,6 @@
                 associableTerms: [],
                 sizeTerms: {},
                 visibleNoTerm: false,
-                allTerms: [],
                 annotationProperties: [],
                 onlineUsers: [],
                 imageSequences: [],
@@ -272,6 +279,7 @@
             'viewers',
             'paddingTop',
             'ontology',
+            'styles',
 
             'id',
             'linkedTo',
@@ -307,6 +315,9 @@
             },
             availableAnnotationProperties() {
                 return this.annotationProperties.filter(item => this.selectedUserLayerIds.includes(parseInt(item.userId)))
+            },
+            allTerms() {
+                return this.ontology.allTerms;
             },
             allTermIds() {
                 return this.allTerms.map(term => term.id);
@@ -517,9 +528,12 @@
 
                 this.setUserLayers(!oldImage);
 
+                this.selectedFeature = undefined;
+                this.selectedAnnotation = undefined;
+
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
                     this.annotationProperties = data.data.collection;
-                })
+                });
 
                 api.get(`/api/imageinstance/${newImage.id}/imagesequence.json`).then(data => {
                     this.imageSequences = data.data.collection;
@@ -874,14 +888,7 @@
             mustBeShown(key) {
                 return mustBeShown(key, this.projectConfig);
             },
-            getTerms(children) {
-                let terms = [];
-                children.forEach(child => {
-                    terms.push(child);
-                    terms = terms.concat(this.getTerms(child.children))
-                });
-                return terms;
-            },
+
         },
         created() {
             this.getWindowWidth();
@@ -923,7 +930,6 @@
                 });
             });
 
-            this.allTerms = this.getTerms(this.ontology.children);
             this.visibleTerms = clone(this.allTermIds);
             this.allTermIds.forEach(term => {
                 this.$set(this.sizeTerms, term, 0)

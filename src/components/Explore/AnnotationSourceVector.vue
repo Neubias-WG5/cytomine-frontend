@@ -11,14 +11,7 @@
     import uniqby from 'lodash.uniqby'
     import uuid from 'uuid'
     import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
-
-    const AnnotationStatus = {
-        NO_TERM: 'NO_TERM',
-        MULTIPLE_TERMS: 'MULTIPLE_TERMS',
-        CLUSTER: 'CLUSTER',
-        REVIEW: 'REVIEW',
-        HIDDEN: 'HIDDEN'
-    };
+    import AnnotationStatus from '../../helpers/annotationStatus'
 
     export default {
         name: "AnnotationSourceVector",
@@ -26,7 +19,6 @@
             return {
                 features: [],
                 localExtent: [0, 0, 0, 0],
-                styles: {}
             }
         },
         props: [
@@ -39,7 +31,8 @@
             'isReviewing',
             'extent',
             'imageExtent',
-            'layerOpacity'
+            'layerOpacity',
+            'styles'
         ],
         computed: {
             styleFuncFactoryProp() {
@@ -144,73 +137,9 @@
                     // this.features = uniqby(this.features.concat(newFeatures), 'id')
                 })
             },
-            styleFuncFactory() {
-                const clusterCache = {};
-
-                return (feature, resolution) => {
-                    if (feature.get('clusterSize') > 1) {
-                        const size = feature.get('clusterSize');
-                        let style = clusterCache[size];
-
-                        if (!style) {
-                            style = createStyle({
-                                strokeColor: '#111111',
-                                strokeWidth: 1.25,
-                                strokeDash: [2, 2],
-                                fillColor: '#FFFFFF',
-                                text: size.toString(),
-                                textFillColor: '#3399CC',
-                                textFont: '36px Arial, sans-serif',
-                                textStrokeDash: [],
-                                // textBackgroundFillColor: '#FFFFFF',
-                            });
-                            clusterCache[size] = style
-                        }
-
-                        return [style]
-                    }
-                    else {
-                        let terms = feature.get('terms');
-                        if (terms.length > 1) // && intersect(this.visibleTerms, terms) > 0
-                            return [this.styles[AnnotationStatus.MULTIPLE_TERMS]];
-                        else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
-                            return [this.styles[terms[0]]];
-                        else if (terms.length == 0 && this.visibleNoTerm)
-                            return [this.styles[AnnotationStatus.NO_TERM]];
-                        else
-                            return [this.styles[AnnotationStatus.HIDDEN]]
-                    }
-                }
-            }
         },
         created() {
-            let pointRadius = 7;
-            this.styles[AnnotationStatus.NO_TERM] = createStyle({
-                strokeColor: '#111111',
-                strokeWidth: 2,
-                fillColor: '#EEEEEE',
-                imageRadius: pointRadius,
-            });
-            this.styles[AnnotationStatus.MULTIPLE_TERMS] = createStyle({
-                strokeColor: '#111111',
-                strokeWidth: 2,
-                fillColor: '#CCCCCCC',
-                imageRadius: pointRadius,
-            });
-            this.styles[AnnotationStatus.HIDDEN] = createStyle({
-                strokeColor: 'rgba(0,0,0,0)',
-                strokeWidth: 0,
-                fillColor: 'rgba(0,0,0,0)'
-            });
 
-            this.terms.forEach(term => {
-                this.styles[term.id] = createStyle({
-                    strokeColor: '#111111',
-                    strokeWidth: 2,
-                    fillColor: term.color,
-                    imageRadius: pointRadius,
-                })
-            })
         },
         mounted() {
             this.computeLocalExtent(this.extent)

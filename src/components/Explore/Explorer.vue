@@ -12,7 +12,7 @@
                     :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
                     @changeImage="changeImage" @current-map="viewer" @updateImage="updateImage"
                     :mapView="mapView" :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"
-                    :linked-viewers-bus="linkedViewersBus"></viewer>
+                    :linked-viewers-bus="linkedViewersBus" :styles="styles"></viewer>
         </div>
     </div>
 </template>
@@ -23,6 +23,9 @@
 
     import uuid from 'uuid'
     import ViewerSelector from "./ViewerSelector";
+    import hexToRgb from "../../helpers/hexToRgb";
+    import AnnotationStatus from "../../helpers/annotationStatus";
+    import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
 
     export default {
         name: 'app',
@@ -45,6 +48,7 @@
                 paddingTop: 50 + 42 + 40,
                 lastEventMapId: null,
                 linkedViewersBus: new Vue(),
+                styles: {},
 
                 mapView: {
                     mapCenter: [0, 0],
@@ -210,6 +214,45 @@
 
                 api.get(`api/ontology/${this.project.ontology}.json`).then(response => {
                     this.ontology = response.data;
+
+                    let getTerms = (children) => {
+                        let terms = [];
+                        children.forEach(child => {
+                            child.colorRGB = hexToRgb(child.color);
+                            terms.push(child);
+                            terms = terms.concat(getTerms(child.children))
+                        });
+                        return terms;
+                    };
+                    this.ontology.allTerms = getTerms(this.ontology.children);
+
+                    let pointRadius = 7;
+                    this.styles[AnnotationStatus.NO_TERM] = createStyle({
+                        strokeColor: [17, 17, 17, 1],
+                        strokeWidth: 2,
+                        fillColor: [238, 238, 238, 1],
+                        imageRadius: pointRadius,
+                    });
+                    this.styles[AnnotationStatus.MULTIPLE_TERMS] = createStyle({
+                        strokeColor: [17, 17, 17, 1],
+                        strokeWidth: 2,
+                        fillColor: [204, 204, 204, 1],
+                        imageRadius: pointRadius,
+                    });
+                    this.styles[AnnotationStatus.HIDDEN] = createStyle({
+                        strokeColor: [0, 0, 0, 0],
+                        strokeWidth: 0,
+                        fillColor: [0, 0, 0, 0]
+                    });
+
+                    this.ontology.allTerms.forEach(term => {
+                        this.styles[term.id] = createStyle({
+                            strokeColor: [17, 17, 17, 1],
+                            strokeWidth: 2,
+                            fillColor: term.colorRGB,
+                            imageRadius: pointRadius,
+                        })
+                    })
                 })
             });
 
