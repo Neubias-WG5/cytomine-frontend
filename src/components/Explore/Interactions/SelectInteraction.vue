@@ -66,6 +66,9 @@
                 if (newValue && newValue.length > 0 && newValue != oldValue) {
                     this.$emit('update:selectedFeature', newValue[0])
                 }
+                else {
+                    this.$emit('update:selectedFeature', null);
+                }
             },
             visibleTerms(newValue) {
                 if (!this.selectedFeature || this.selectedFeature == {})

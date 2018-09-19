@@ -116,30 +116,31 @@
             </div>
         </div>
 
-        <template v-if="selectedAnnotation && isAnnotationEditable(selectedAnnotation)">
+        <template v-if="selectedFeature && selectedFeature != {} &&  isAnnotationEditable(selectedFeature)">
             <div class="btn-group" role="group">
-                <template v-if="mustBeShown('project-tools-fill') && selectedAnnotation.type != 'Point'
-                    && selectedAnnotation.type != 'LineString' ">
+                <template v-if="mustBeShown('project-tools-fill') && selectedFeature.geometry.type != 'Point'
+                    && selectedFeature.geometry.type != 'LineString' ">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Fill'}]"
                             @click="setInteraction('Fill')" title="Fill holes in the selected annotation">
+                        <i class="fas fa-fill"></i>
                         Fill
                     </button>
                 </template>
-                <template v-if="mustBeShown('project-tools-edit') && selectedAnnotation.type != 'Point'">
+                <template v-if="mustBeShown('project-tools-edit') && selectedFeature.geometry.type != 'Point'">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Edit'}]"
                             @click="setInteraction('Edit')" title="Edit geometry of the selected annotation">
                         <i class="fas fa-edit"></i>
                         Edit
                     </button>
                 </template>
-                <template v-if="mustBeShown('project-tools-rotate') && selectedAnnotation.type != 'Point'">
+                <template v-if="mustBeShown('project-tools-rotate') && selectedFeature.geometry.type != 'Point'">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Rotate'}]"
                             @click="setInteraction('Rotate')" title="Rotate the selected annotation">
-                        <i class="fas fa-redo-alt"></i>dr
+                        <i class="fas fa-redo-alt"></i>
                         Rotate
                     </button>
                 </template>
-                <!-- <template v-if="mustBeShown('project-tools-resize') && selectedAnnotation.type != 'Point'"> TODO RESIZE
+                <!-- <template v-if="mustBeShown('project-tools-resize') && selectedFeature.geometry.type != 'Point'"> TODO RESIZE
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Resize'}]" @click="setInteraction('Resize')" title="Resize the selected annotation">
                         <span class="glyphicon glyphicon-resize-full"></span>
                         Resize
@@ -178,7 +179,6 @@
             'currentUser',
             'activeTool',
             'selectedFeature',
-            'selectedAnnotation',
         ],
         data() {
             return {
@@ -198,10 +198,10 @@
                 return mustBeShown(key, this.projectConfig);
             },
             isAnnotationEditable(feature) {
-                return feature.get('class') != "be.cytomine.ontology.AlgoAnnotation"
+                return feature.properties.class != "be.cytomine.ontology.AlgoAnnotation"
                     && (this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1
                         || (!this.project.isReadOnly && !this.project.isRestricted)
-                        || (this.currentUser.id == feature.get('user') && this.project.isRestricted));
+                        || (this.currentUser.id == feature.properties.user && this.project.isRestricted));
             },
         }
     }

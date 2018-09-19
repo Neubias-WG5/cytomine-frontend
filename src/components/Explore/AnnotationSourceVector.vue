@@ -128,6 +128,7 @@
                                 id: annotation.count ? uuid() : annotation.id,
                                 geometry: parse(annotation.location),
                                 properties: {
+                                    class: annotation.class ? annotation.class : 'Cluster',
                                     terms: annotation.term ? annotation.term : [],
                                     user: this.userLayer.id,
                                     clusterSize: annotation.count ? annotation.count : 0
