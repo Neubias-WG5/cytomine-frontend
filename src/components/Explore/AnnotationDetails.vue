@@ -59,18 +59,39 @@
                         <section v-if="mustBeShown('project-explore-annotation-similarities')">
                             <h5><i class="fas fa-magic"></i> Similarities</h5>
                             <template v-if="isRetrievalActive">
-                                <ol v-if="suggestedTerms && suggestedTerms.length > 0">
-                                    <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id">
-                                        <term v-bind="termById(term.id)"></term> ({{term.percentage}} %)
-                                        <!--<div class="btn-group">-->
-                                        <!--<button class="btn btn-default btn-xs">Add</button>-->
-                                        <!--<button class="btn btn-default btn-xs">Replace</button>-->
-                                        <!--</div>-->
-                                    </li>
-                                </ol>
-                                <div class="text-center">
-                                    <button class="btn btn-default">See similar annotations</button>
-                                </div>
+                                <template v-if="suggestedTerms === -1">
+                                    <div class="text-center">
+                                        Retrieval server unavailable.
+                                    </div>
+                                </template>
+                                <template v-else-if="suggestedTerms && suggestedTerms.length > 0">
+                                    <ol>
+                                        <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id" v-if="term.percentage > 15">
+                                            <term v-bind="termById(term.id)"></term>
+                                            ({{Math.round(term.percentage * 100) / 100}} %)
+                                            <div class="btn-group">
+                                            <!--<button class="btn btn-default btn-xs">Add</button>-->
+                                                <button class="btn btn-default btn-xs">
+                                                    <i class="fas fa-exchange-alt" @click="replaceTermBySuggested(term.id)"></i> Replace
+                                                </button>
+                                            </div>
+                                        </li>
+                                    </ol>
+                                    <div class="text-center">
+                                        <button class="btn btn-default" @click="openSimilaritiesModal = true">See similar annotations</button>
+                                    </div>
+                                </template>
+                                <template v-else-if="suggestedTerms && suggestedTerms.length == 0">
+                                    <div class="text-center">
+                                        No similarities found.
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class="text-center">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                                    </div>
+                                </template>
+
                             </template>
                             <template v-else>
                                 Retrieval is disabled.
@@ -98,6 +119,10 @@
                                    :project="project" :current-user="currentUser" :users="users"
                                    @updateNbComments="updateNbComments">
         </annotation-comments-modal>
+
+        <annotation-similarities-modal v-if="annotation" :open.sync="openSimilaritiesModal" :annotation="annotation">
+
+        </annotation-similarities-modal>
     </div>
 
 </template>
@@ -109,10 +134,12 @@
     import Username from "../User/Username";
     import DateItem from "../Datatable/DateItem";
     import AnnotationCommentsModal from "./AnnotationCommentsModal";
+    import AnnotationSimilaritiesModal from "./AnnotationSimilaritiesModal";
 
     export default {
         name: 'AnnotationDetails',
         components: {
+            AnnotationSimilaritiesModal,
             AnnotationCommentsModal,
             VueDragResize,
             Term,
@@ -123,7 +150,9 @@
             return {
                 annotation: null,
                 focus: false,
-                openCommentModal: false
+                openCommentModal: false,
+                openSimilaritiesModal: false,
+                similarAnnotations: null,
             }
         },
         props: [
@@ -144,15 +173,16 @@
                         || (this.currentUser.id == this.annotation.user && this.project.isRestricted));
             },
             isRetrievalActive() {
-                return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer;
+                return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer
+                    && this.selectedFeature.geometry.type != 'Point' && this.selectedFeature.geometry.type != 'LineString';
             },
         },
         asyncComputed: {
             suggestedTerms() {
                 if (!this.annotation || !this.isRetrievalActive)
-                    return [];
+                    return undefined;
 
-                api.get(`/api/annotation/${this.annotation.id}/retrieval.json`).then(response => {
+                return api.get(`/api/annotation/${this.annotation.id}/retrieval.json`).then(response => {
                     let sum = 0;
                     let toReturn = [];
                     response.data.term.forEach(term => {
@@ -165,7 +195,11 @@
                         }
                     });
 
+                    this.similarAnnotations = response.data.annotation;
+
                     return toReturn;
+                }).catch(errors => {
+                    return -1
                 })
             }
         },
@@ -176,8 +210,10 @@
         },
         methods: {
             getAnnotation(newFeature) {
-                if (!newFeature || newFeature == {})
+                if (!newFeature || newFeature == {}) {
                     this.annotation = null;
+                    this.similarAnnotations = null;
+                }
                 else {
                     api.get(`api/annotation/${newFeature.id}.json`).then(response => {
                         this.annotation = response.data;
@@ -201,6 +237,14 @@
             },
             updateNbComments(value) {
                 this.annotation.nbComments = value;
+            },
+            replaceTermBySuggested(termId) {
+                api.post(`api/annotation/${this.annotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
+                    //notify
+                    this.getAnnotation(this.selectedFeature)
+                }).catch(errors => {
+                    //notify
+                })
             }
         },
         mounted() {
