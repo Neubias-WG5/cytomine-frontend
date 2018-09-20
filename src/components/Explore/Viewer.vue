@@ -16,7 +16,7 @@
 
             <annotation-source-vector v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
                                       :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
-                                      :visible-no-term="visibleNoTerm" :annotation-properties="annotationProperties"
+                                      :visible-no-term="visibleNoTerm" :selected-property="selectedProperty"
                                       :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
                                       :terms="allTerms" :layer-opacity="layersOpacity" :styles="styles"></annotation-source-vector>
 
@@ -115,7 +115,8 @@
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties"
-                            :properties="availableAnnotationProperties"></properties>
+                            :properties="availableAnnotationProperties" :selected-property.sync="selectedProperty">
+                </properties>
 
                 <div v-show="selectedComponent == 'follow' && mustBeShown('project-explore-follow') && hasOnlineUsers">
                     <h4>
@@ -231,6 +232,10 @@
                 layersOpacity: 0.3,
                 selectedFeature: undefined,
                 activeTool: 'Select',
+                selectedProperty: {
+                    key: "",
+                    color: '#000000'
+                },
 
                 userLayers: [],
                 visibleTerms: [],
@@ -535,6 +540,8 @@
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
                     this.annotationProperties = data.data.collection;
                 });
+
+                // TODO: if selected property no more in annotation properties: remove it
 
                 api.get(`/api/imageinstance/${newImage.id}/imagesequence.json`).then(data => {
                     this.imageSequences = data.data.collection;

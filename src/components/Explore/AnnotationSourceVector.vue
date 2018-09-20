@@ -8,10 +8,13 @@
 
 <script>
     import { parse } from 'wellknown'
-    import uniqby from 'lodash.uniqby'
+    import clone from 'lodash.clone'
     import uuid from 'uuid'
     import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
     import AnnotationStatus from '../../helpers/annotationStatus'
+    import Text from 'ol/style/text';
+    import Fill from 'ol/style/fill';
+    import Stroke from 'ol/style/stroke';
 
     export default {
         name: "AnnotationSourceVector",
@@ -19,6 +22,8 @@
             return {
                 features: [],
                 localExtent: [0, 0, 0, 0],
+                properties: {},
+                revisionProperties: 0,
             }
         },
         props: [
@@ -27,7 +32,7 @@
             'terms',
             'visibleTerms',
             'visibleNoTerm',
-            'annotationProperties',
+            'selectedProperty',
             'isReviewing',
             'extent',
             'imageExtent',
@@ -36,16 +41,25 @@
         ],
         computed: {
             styleFuncFactoryProp() {
+                if (!this.userLayer.visible)
+                    return function() { return (a,b) => {}};
+
                 // Kind of hack to force computed property update.
                 // See https://github.com/ghettovoice/vuelayers/issues/68#issuecomment-404223423
                 let _ = this.visibleTerms;
                 _ = this.visibleNoTerm;
+                _ = this.revisionProperties;
+                /////
+
+                console.log("update");
+
                 let func = function() {
-                    const clusterCache = {};
+                    const cache = {};
+                    const strokeProperty = new Stroke({color: '#000000', width: 1.25});
                     return (feature, resolution) => {
                         if (feature.get('clusterSize') > 1) {
                             const size = feature.get('clusterSize');
-                            let style = clusterCache[size];
+                            let style = cache[size];
 
                             if (!style) {
                                 style = createStyle({
@@ -59,20 +73,38 @@
                                     textStrokeDash: [],
                                     // textBackgroundFillColor: '#FFFFFF',
                                 });
-                                clusterCache[size] = style
+                                cache[size] = style
                             }
                             return [style]
                         }
                         else {
                             let terms = feature.get('terms');
+                            let style;
                             if (terms.length > 1 && this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)
-                                return [this.styles[AnnotationStatus.MULTIPLE_TERMS]];
+                                style = this.styles[AnnotationStatus.MULTIPLE_TERMS];
                             else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
-                                return [this.styles[terms[0]]];
+                                style = this.styles[terms[0]];
                             else if (terms.length == 0 && this.visibleNoTerm)
-                                return [this.styles[AnnotationStatus.NO_TERM]];
+                                style = this.styles[AnnotationStatus.NO_TERM];
                             else
-                                return [this.styles[AnnotationStatus.HIDDEN]]
+                                return [this.styles[AnnotationStatus.HIDDEN]];
+
+                            if (!this.properties || this.properties == {})
+                                return [style];
+                            else {
+                                style = clone(style);
+                                let text = new Text({
+                                    font: 'bold 36px sans-serif',
+                                    fill: new Fill({
+                                        color: this.selectedProperty.color,
+                                    }),
+                                    text: this.properties[feature.getId()],
+                                    overflow: true,
+                                    stroke: strokeProperty
+                                });
+                                style.setText(text);
+                                return [style];
+                            }
                         }
                     }
                 };
@@ -101,6 +133,9 @@
             localExtent() {
                 if (this.userLayer.selected && this.userLayer.visible)
                     this.loadAnnotations();
+            },
+            selectedProperty() {
+                this.loadProperties(true);
             }
         },
         methods:{
@@ -136,8 +171,28 @@
                             }
                     });
                     // this.features = uniqby(this.features.concat(newFeatures), 'id')
+
+                    this.loadProperties()
                 })
             },
+            loadProperties(incrementCounter = false) {
+                if (this.selectedProperty.key == "") {
+                    this.properties = {};
+                    if (incrementCounter)
+                        this.revisionProperties += 1;
+                }
+
+                if (!this.selectedProperty.key || parseInt(this.userLayer.id) < 0)
+                    return;
+
+                api.get(`api/user/${this.userLayer.id}/imageinstance/${this.image.id}/annotationposition.json?key=${this.selectedProperty.key}`).then(response => {
+                    response.data.collection.forEach(item => {
+                        this.$set(this.properties, item.idAnnotation, item.value);
+                        if (incrementCounter)
+                            this.revisionProperties += 1;
+                    })
+                });
+            }
         },
         created() {
 
