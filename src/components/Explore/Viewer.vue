@@ -157,7 +157,8 @@
             </div>
         </div>
 
-        <annotation-details v-show="selectedFeature" :users="userLayers" :terms="allTerms" :selected-feature="selectedFeature"
+        <annotation-details v-if="activeTool == 'Select'" v-show="selectedFeature" :users="userLayers"
+                            :terms="allTerms" :selected-feature="selectedFeature"
                             :project-config="projectConfig" :currentUser="currentUser" :project="project"
                             :element-height="elementHeight" :element-width="elementWidth">
         </annotation-details>
@@ -444,6 +445,10 @@
                         this.stopUserTracking()
                     }
                 }
+            },
+            activeTool(newValue) {
+                if (newValue != 'Select')
+                    this.selectedFeature = null;
             },
             // mapView: {
             //     handler() {
