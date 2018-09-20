@@ -52,8 +52,13 @@
 
                 <textarea placeholder="Comment" v-model="sendText"></textarea>
                 <div style="text-align: right">
-                    <button type="submit" class="btn btn-success" @click="sendComment"><i class="fas fa-share"></i>
-                        Share
+                    <button type="submit" class="btn btn-success" @click="sendComment" :disabled="sendingSpinner">
+                        <template v-if="sendingSpinner">
+                            <i class="fas fa-spinner fa-spin"></i> Sending ...
+                        </template>
+                        <template v-else>
+                            <i class="fas fa-share"></i> Share
+                        </template>
                     </button>
                 </div>
 
@@ -86,6 +91,7 @@
                 sendEmails: [],
                 sendUsers: [],
                 sendText: '',
+                sendingSpinner: false,
             }
         },
         props: ['open', 'annotation', 'project', 'currentUser', 'users'],
@@ -113,6 +119,8 @@
                 })
             },
             sendComment() {
+                this.sendingSpinner = true;
+
                 if (this.sendType == 'all') {
                     this.sendUsers = Object.keys(this.typeaheadUsers)
                 }
@@ -134,7 +142,9 @@
                     this.sendEmails = [];
                     this.sendUsers = [];
                     this.sendText = '';
+                    this.sendingSpinner = false;
                     this.loadComments();
+
                 }).catch(error => {
                     console.log(error.response.data.errors);
                     // this.$notify({
@@ -142,6 +152,7 @@
                     //     type: 'danger',
                     //     content: error.response.data.errors
                     // })
+                    this.sendingSpinner = false;
                 })
             },
             userById(userId) {
