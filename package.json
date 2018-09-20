@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.2.0",
+    "@voerro/vue-tagsinput": "^1.9.1",
     "axios": "^0.17.1",
     "chart.js": "^2.7.2",
     "lodash.clone": "^4.5.0",

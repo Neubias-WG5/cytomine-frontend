@@ -1,97 +1,105 @@
 <template>
-    <vue-drag-resize :parentLimitation="true" :isResizable="false"
-                     :w="300" :h="300" :x="2 * this.elementWidth / 3" :y="150"
-                     :isActive="this.focus" :parentW="this.elementWidth" :parentH="this.elementHeight"
-                     @dragstop="setFocus(false)" @clicked="setFocus(true)">
-        <div class="panel component-panel" :style="`width: 300px; height:300px;`">
-            <div class="panel-body">
-                <section v-if="this.annotation && mustBeShown('project-explore-annotation-main')">
-                    <h4><i class="fas fa-mouse-pointer"></i> Current selection</h4>
-                    <section v-if="mustBeShown('project-explore-annotation-info')">
-                        <h5><i class="fas fa-info-circle"></i> General information</h5>
-                        <dl class="dl-horizontal">
-                            <dt>Area</dt>
-                            <dd>{{Math.round(annotation.area)}} {{annotation.areaUnit}}</dd>
-                            <dt>Perimeter</dt>
-                            <dd>{{Math.round(annotation.perimeter)}} {{annotation.perimeterUnit}}</dd>
-                            <dt>Term(s)</dt>
-                            <template v-if="annotation.term.length > 0">
-                                <dd v-for="term in annotation.term" :key="'term-'+term">
-                                    <term v-bind="termById(term)"></term>
-                                </dd>
-                            </template>
-                            <dd v-else><span class="label label-default">No term</span></dd>
-                            <dt>User</dt>
-                            <dd><username :user="userById(annotation.user)"></username></dd>
-                            <dt>Created</dt>
-                            <dd><date-item :value="annotation.created"></date-item></dd>
-                            <dt>Editable</dt>
-                            <dd v-if="editable">
+    <div>
+        <vue-drag-resize :parentLimitation="true" :isResizable="false"
+                         :w="300" :h="300" :x="2 * this.elementWidth / 3" :y="150"
+                         :isActive="this.focus" :parentW="this.elementWidth" :parentH="this.elementHeight"
+                         @dragstop="setFocus(false)" @clicked="setFocus(true)">
+            <div class="panel component-panel" :style="`width: 300px; height:300px;`">
+                <div class="panel-body">
+                    <section v-if="this.annotation && mustBeShown('project-explore-annotation-main')">
+                        <h4><i class="fas fa-mouse-pointer"></i> Current selection</h4>
+                        <section v-if="mustBeShown('project-explore-annotation-info')">
+                            <h5><i class="fas fa-info-circle"></i> General information</h5>
+                            <dl class="dl-horizontal">
+                                <dt>Area</dt>
+                                <dd>{{Math.round(annotation.area)}} {{annotation.areaUnit}}</dd>
+                                <dt>Perimeter</dt>
+                                <dd>{{Math.round(annotation.perimeter)}} {{annotation.perimeterUnit}}</dd>
+                                <dt>Term(s)</dt>
+                                <template v-if="annotation.term.length > 0">
+                                    <dd v-for="term in annotation.term" :key="'term-'+term">
+                                        <term v-bind="termById(term)"></term>
+                                    </dd>
+                                </template>
+                                <dd v-else><span class="label label-default">No term</span></dd>
+                                <dt>User</dt>
+                                <dd><username :user="userById(annotation.user)"></username></dd>
+                                <dt>Created</dt>
+                                <dd><date-item :value="annotation.created"></date-item></dd>
+                                <dt>Editable</dt>
+                                <dd v-if="editable">
                                 <span class="label label-success">
                                     <i class="fas fa-check-circle"></i>
                                     Yes
                                 </span>
-                            </dd>
-                            <dd v-else>
+                                </dd>
+                                <dd v-else>
                                 <span class="label label-danger">
                                     <i class="fas fa-times-circle"></i>
                                     Read-only
                                 </span>
-                            </dd>
-                        </dl>
-                    </section>
-                    <section v-if="mustBeShown('project-explore-annotation-preview')">
-                        <h5><i class="fas fa-crop-alt"></i> Annotation preview</h5>
-                        <img class="thumbnail" :src="annotation.smallCropURL+'&alphaMask=true'"
-                             alt="A crop of the annotation area">
-                    </section>
-                    <section v-if="mustBeShown('project-explore-annotation-comments')">
-                        <h5>
-                            <i class="fas fa-comments"></i>
-                            Comments <span class="label label-info">{{annotation.nbComments}}</span>
-                        </h5>
-                        <div class="text-center">
-                            <button class="btn btn-default">Add a comment</button>
-                            <!-- @click="showCommentModal(annotation.id)" -->
-                        </div>
-                    </section>
-                    <section v-if="mustBeShown('project-explore-annotation-similarities')">
-                        <h5><i class="fas fa-magic"></i> Similarities</h5>
-                        <template v-if="isRetrievalActive">
-                            <ol v-if="suggestedTerms && suggestedTerms.length > 0">
-                                <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id">
-                                    <term v-bind="termById(term.id)"></term> ({{term.percentage}} %)
-                                    <!--<div class="btn-group">-->
-                                    <!--<button class="btn btn-default btn-xs">Add</button>-->
-                                    <!--<button class="btn btn-default btn-xs">Replace</button>-->
-                                    <!--</div>-->
-                                </li>
-                            </ol>
+                                </dd>
+                            </dl>
+                        </section>
+                        <section v-if="mustBeShown('project-explore-annotation-preview')">
+                            <h5><i class="fas fa-crop-alt"></i> Annotation preview</h5>
+                            <img class="thumbnail" :src="annotation.smallCropURL+'&alphaMask=true'"
+                                 alt="A crop of the annotation area">
+                        </section>
+                        <section v-if="mustBeShown('project-explore-annotation-comments')">
+                            <h5>
+                                <i class="fas fa-comments"></i>
+                                Comments <span class="label label-info">{{annotation.nbComments}}</span>
+                            </h5>
                             <div class="text-center">
-                                <button class="btn btn-default">See similar annotations</button>
+                                <button class="btn btn-default" @click="openCommentModal = true">Add a comment</button>
+                                <!-- @click="showCommentModal(annotation.id)" -->
                             </div>
-                        </template>
-                        <template v-else>
-                            Retrieval is disabled.
-                        </template>
-                    </section>
-                    <!--<section v-if="mustBeShown('project-explore-annotation-properties')">-->
+                        </section>
+                        <section v-if="mustBeShown('project-explore-annotation-similarities')">
+                            <h5><i class="fas fa-magic"></i> Similarities</h5>
+                            <template v-if="isRetrievalActive">
+                                <ol v-if="suggestedTerms && suggestedTerms.length > 0">
+                                    <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id">
+                                        <term v-bind="termById(term.id)"></term> ({{term.percentage}} %)
+                                        <!--<div class="btn-group">-->
+                                        <!--<button class="btn btn-default btn-xs">Add</button>-->
+                                        <!--<button class="btn btn-default btn-xs">Replace</button>-->
+                                        <!--</div>-->
+                                    </li>
+                                </ol>
+                                <div class="text-center">
+                                    <button class="btn btn-default">See similar annotations</button>
+                                </div>
+                            </template>
+                            <template v-else>
+                                Retrieval is disabled.
+                            </template>
+                        </section>
+                        <!--<section v-if="mustBeShown('project-explore-annotation-properties')">-->
                         <!--<h5>Properties</h5>-->
                         <!--<div class="text-center">-->
-                            <!--<a :href="'#tabs-annotationproperties-'+ annotation.image +'-'+annotation.id"-->
-                               <!--class="btn btn-default">Add a property</a>-->
+                        <!--<a :href="'#tabs-annotationproperties-'+ annotation.image +'-'+annotation.id"-->
+                        <!--class="btn btn-default">Add a property</a>-->
                         <!--</div>-->
-                    <!--</section>-->
-                    <!--<section v-if="mustBeShown('project-explore-annotation-description')">-->
+                        <!--</section>-->
+                        <!--<section v-if="mustBeShown('project-explore-annotation-description')">-->
                         <!--<h5>Description</h5>-->
                         <!--<div class="text-center">-->
-                            <!--<a :href="'#descriptionModal'+annotation.id" class="btn btn-default">Add description</a>-->
+                        <!--<a :href="'#descriptionModal'+annotation.id" class="btn btn-default">Add description</a>-->
                         <!--</div>-->
-                    <!--</section>-->
-                </section>
+                        <!--</section>-->
+                    </section>
+                </div>
             </div>
-        </div>
-    </vue-drag-resize>
+        </vue-drag-resize>
+
+        <annotation-comments-modal v-if="annotation" :open.sync="openCommentModal" :annotation="annotation"
+                                   :project="project" :current-user="currentUser" :users="users"
+                                   @updateNbComments="updateNbComments">
+        </annotation-comments-modal>
+    </div>
+
 </template>
 
 <script>
@@ -100,10 +108,12 @@
     import Term from "../Ontology/Term";
     import Username from "../User/Username";
     import DateItem from "../Datatable/DateItem";
+    import AnnotationCommentsModal from "./AnnotationCommentsModal";
 
     export default {
         name: 'AnnotationDetails',
         components: {
+            AnnotationCommentsModal,
             VueDragResize,
             Term,
             Username,
@@ -113,6 +123,7 @@
             return {
                 annotation: null,
                 focus: false,
+                openCommentModal: false
             }
         },
         props: [
@@ -187,6 +198,9 @@
             },
             setFocus(focus) {
                 this.focus = focus;
+            },
+            updateNbComments(value) {
+                this.annotation.nbComments = value;
             }
         },
         mounted() {
