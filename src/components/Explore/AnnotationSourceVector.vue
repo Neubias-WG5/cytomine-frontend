@@ -198,7 +198,8 @@
 
         },
         mounted() {
-            this.computeLocalExtent(this.extent)
+            this.computeLocalExtent(this.extent);
+            this.revisionProperties++;
         }
     }
 </script>

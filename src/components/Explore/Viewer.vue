@@ -20,15 +20,21 @@
                                       :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
                                       :terms="allTerms" :layer-opacity="layersOpacity" :styles="styles"></annotation-source-vector>
 
-            <select-interaction v-if="activeTool == 'Select'" :selected-feature.sync="selectedFeature" :styles="styles"
+            <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
                                 :visible-no-term="visibleNoTerm"></select-interaction>
 
             <measure-interaction :image="image" :active-tool="activeTool"></measure-interaction>
+
+            <draw-interaction :active-tool="activeTool" :user-layers="userLayers" :associable-terms="associableTerms"
+                              :drawable-layer-ids="drawableUserLayerIds" :image="image"
+                              :selected-feature.sync="selectedFeature"
+                              @updateAnnotationIndexes="updateAnnotationIndexes"></draw-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
-                        :project-config="projectConfig" :selected-feature="selectedFeature"></viewer-toolbar>
+                        :project-config="projectConfig" :selected-feature="selectedFeature"
+                        :drawable-layer-ids="drawableUserLayerIds"></viewer-toolbar>
 
         <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
         <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
@@ -160,7 +166,7 @@
             </div>
         </div>
 
-        <annotation-details v-if="activeTool == 'Select'" v-show="selectedFeature" :users="userLayers"
+        <annotation-details v-if="selectedFeature" :users="userLayers"
                             :terms="allTerms" :selected-feature="selectedFeature"
                             :project-config="projectConfig" :currentUser="currentUser" :project="project"
                             :element-height="elementHeight" :element-width="elementWidth">
@@ -198,10 +204,12 @@
     import ViewerToolbar from "./ViewerToolbar";
     import SelectInteraction from "./Interactions/SelectInteraction";
     import MeasureInteraction from "./Interactions/MeasureInteraction";
+    import DrawInteraction from "./Interactions/DrawInteraction";
 
     export default {
         name: 'Viewer',
         components: {
+            DrawInteraction,
             MeasureInteraction,
             SelectInteraction,
             ViewerToolbar,
@@ -334,6 +342,9 @@
             },
             visibleUserLayerIds() {
                 return this.userLayers.filter(userLayer => userLayer.selected && userLayer.visible).map(userLayer => userLayer.id)
+            },
+            drawableUserLayerIds() {
+                return this.userLayers.filter(userLayer => userLayer.selected && userLayer.drawable).map(userLayer => userLayer.id)
             },
             filterUrl() {
                 if (!this.selectedFilter)
@@ -607,6 +618,16 @@
             },
             updateLayer(payload) {
                 this.userLayers.splice(payload.index, 1, payload.layer);
+            },
+            updateAnnotationIndexes() {
+                api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(response => {
+                    response.data.collection.forEach(item => {
+                        let index = this.userLayers.findIndex(user => item.user == user.id);
+                        let layer = this.userLayers[index];
+                        layer.size = item.countAnnotation;
+                        this.userLayers.splice(index, 1, layer);
+                    });
+                })
             },
             updateReviewLayer() {
                 let reviewIndex = this.userLayers.findIndex(l => l.id == -100);

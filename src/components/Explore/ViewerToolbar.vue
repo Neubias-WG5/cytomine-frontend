@@ -10,48 +10,48 @@
             </template>
             <template v-if="canDraw">
                 <template v-if="mustBeShown('project-tools-point')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Point'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Point'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Point')" title="Add a point as new annotation">
                         <i class="fas fa-map-marker-alt"></i>
                         Point
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-line')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Line'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Line'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Line')" title="Add a line as new annotation">
                         <i class="fas fa-minus"></i>
                         Line
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-arrow')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Arrow'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Arrow'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Arrow')" title="Add an arrow as new annotation">
                         <i class="fas fa-long-arrow-alt-right"></i>
                         Arrow
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-rectangle')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Rectangle'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Rectangle'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Rectangle')" title="Add a rectangle as new annotation">
                         <i class="fas fa-vector-square"></i>
                         Rectangle
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-diamond')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Ellipse'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Ellipse'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Ellipse')" title="Add an ellipse as new annotation">
                         Ellipse
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-circle')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Circle'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Circle'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Circle')" title="Add a circle as new annotation">
                         <i class="far fa-circle"></i>
                         Circle
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-polygon')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Polygon'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Polygon'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Polygon')" title="Add a polygon as new annotation">
                         <i class="fas fa-draw-polygon"></i>
                         Polygon
@@ -64,20 +64,20 @@
                     </button>
                 </template> -->
                 <template v-if="mustBeShown('project-tools-freehand')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Freehand'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Freehand'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Freehand')" title="Add a new annotation with freehand draw">
                         <i class="fas fa-pencil-alt"></i>
                         Freehand
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-union')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Union'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Union'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Union')" title="Correct an annotation by adding a freehand area">
                         <i class="far fa-object-group"></i>
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-difference')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Difference'}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Difference'}, {disabled: !hasAtLeastOnDrawableLayer}]"
                             @click="setInteraction('Difference')" title="Correct an annotation by removing a freehand area">
                         <i class="far fa-object-ungroup"></i>
                     </button>
@@ -179,6 +179,7 @@
             'currentUser',
             'activeTool',
             'selectedFeature',
+            'drawableLayerIds'
         ],
         data() {
             return {
@@ -188,6 +189,9 @@
             canDraw() {
                 return !this.project.isReadOnly
                     || this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1;
+            },
+            hasAtLeastOnDrawableLayer() {
+                return this.drawableLayerIds.length > 0
             }
         },
         methods: {
@@ -217,5 +221,9 @@
         list-style: none;
         padding: 0;
         margin-right: 235px;
+    }
+
+    .btn-group .btn .disabled {
+        background-color: white;
     }
 </style>

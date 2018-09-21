@@ -1,5 +1,5 @@
 <template>
-    <vl-interaction-select :filter="selectFilterFunc" :features.sync="selectedFeatures">
+    <vl-interaction-select :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
         <template slot-scope="select">
             <vl-style-box>
                 <vl-style-stroke :color="[17, 17, 17, 1]" :width="4"></vl-style-stroke>
@@ -17,6 +17,7 @@
     export default {
         name: "SelectInteraction",
         props: [
+            'activeTool',
             'selectedFeature',
             'styles',
             'layerOpacity',
@@ -48,9 +49,11 @@
             selectFilterFunc() {
                 let _ = this.visibleTerms;
                 _ = this.visibleNoTerm;
+                _ = this.activeTool;
                 return (feature, layer) => {
                     let terms = feature.get('terms');
-                    return (feature.get('clusterSize') == 0 && ((terms.length == 0 && this.visibleNoTerm)
+                    return this.activeTool == 'Select'
+                        && (feature.get('clusterSize') == 0 && ((terms.length == 0 && this.visibleNoTerm)
                         || (terms.length > 0 &&  this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)))
                 }
             },
@@ -59,8 +62,9 @@
             selectedFeature(newValue) {
                 if (!newValue)
                     this.selectedFeatures = [];
-                else
+                else {
                     this.selectedFeatures = [newValue];
+                }
             },
             selectedFeatures(newValue, oldValue) {
                 if (newValue && newValue.length > 0 && newValue != oldValue) {

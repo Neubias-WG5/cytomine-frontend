@@ -1,7 +1,7 @@
 <template>
     <span>
         <vl-layer-vector>
-            <vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVector"></vl-source-vector>
+            <vl-source-vector ident="draw-measure-target" :features.sync="features" ref="olSourceVector"></vl-source-vector>
             <vl-style-box>
                 <vl-style-stroke color="#ffcc33" :width="2"></vl-style-stroke>
                 <vl-style-fill color="rgba(255, 255, 255, 0.2)"></vl-style-fill>
@@ -9,7 +9,7 @@
         </vl-layer-vector>
 
         <template v-if="measureToolActive">
-            <vl-interaction-draw v-if="measureToolActive" source="draw-target" :type="drawType"
+            <vl-interaction-draw v-if="measureToolActive" source="draw-measure-target" :type="drawType"
                                  @drawstart="onDrawStart" @drawend="onDrawEnd">
                 <vl-style-box>
                     <vl-style-stroke color="rgba(0, 0, 0, 0.5)" :width="2" :line-dash="[10, 10]"></vl-style-stroke>

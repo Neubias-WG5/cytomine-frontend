@@ -36,7 +36,7 @@
                             Show
                         </button>
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.drawable}]"
-                                :disabled="!isEditable(layer) || layer.id != currentUser.id"
+                                :disabled="!isEditable(layer)"
                                 title="Add new annotations in this layer" @click="toggleDrawability(layer)">
                             <i class="fas fa-drafting-compass"></i>
                             Draw
