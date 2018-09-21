@@ -23,6 +23,8 @@
             <select-interaction v-if="activeTool == 'Select'" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
                                 :visible-no-term="visibleNoTerm"></select-interaction>
+
+            <measure-interaction :image="image" :active-tool="activeTool"></measure-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
@@ -195,10 +197,12 @@
     import AnnotationSourceVector from "./AnnotationSourceVector";
     import ViewerToolbar from "./ViewerToolbar";
     import SelectInteraction from "./Interactions/SelectInteraction";
+    import MeasureInteraction from "./Interactions/MeasureInteraction";
 
     export default {
         name: 'Viewer',
         components: {
+            MeasureInteraction,
             SelectInteraction,
             ViewerToolbar,
             AnnotationSourceVector,
