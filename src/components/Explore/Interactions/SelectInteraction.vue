@@ -52,9 +52,9 @@
                 _ = this.activeTool;
                 return (feature, layer) => {
                     let terms = feature.get('terms');
-                    return this.activeTool == 'Select'
+                    return (this.activeTool == 'Select' || layer.getId() == 'Drawable')
                         && (feature.get('clusterSize') == 0 && ((terms.length == 0 && this.visibleNoTerm)
-                        || (terms.length > 0 &&  this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)))
+                        || (terms.length > 0 &&  this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)));
                 }
             },
         },

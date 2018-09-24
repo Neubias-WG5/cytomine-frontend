@@ -1,5 +1,5 @@
 <template>
-    <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity">
+    <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity" :id="'layer'+userLayer.id">
         <vl-source-vector :features.sync="features"></vl-source-vector>
         <vl-style-func :factory="styleFuncFactoryProp"></vl-style-func>
     </vl-layer-vector>
@@ -164,6 +164,7 @@
                                 geometry: parse(annotation.location),
                                 properties: {
                                     class: annotation.class ? annotation.class : 'Cluster',
+                                    id: annotation.count ? uuid() : annotation.id,
                                     terms: annotation.term ? annotation.term : [],
                                     user: this.userLayer.id,
                                     clusterSize: annotation.count ? annotation.count : 0

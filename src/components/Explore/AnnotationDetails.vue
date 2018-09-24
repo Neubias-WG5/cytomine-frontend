@@ -215,7 +215,7 @@
                     this.similarAnnotations = null;
                 }
                 else {
-                    api.get(`api/annotation/${newFeature.id}.json`).then(response => {
+                    api.get(`api/annotation/${newFeature.properties.id}.json`).then(response => {
                         this.annotation = response.data;
                     })
                 }

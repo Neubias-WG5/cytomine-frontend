@@ -1,7 +1,7 @@
 <template>
     <span v-if="drawToolActive">
         <vl-layer-vector>
-            <vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVector"></vl-source-vector>
+            <vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVector" id="Drawable"></vl-source-vector>
         </vl-layer-vector>
         <vl-interaction-draw ref="olDrawInteraction" source="draw-target" :type="drawType"
                              :freehand="drawFreehand" :freehand-condition="undefined"
@@ -14,7 +14,7 @@
     import Draw from 'ol/interaction/draw';
     import Polygon from 'ol/geom/polygon';
     import WKT from 'ol/format/wkt';
-    import { parse } from 'wellknown'
+    import GeoJSON from 'ol/format/geojson';
 
     export default {
         name: "DrawInteraction",
@@ -142,25 +142,24 @@
                     user: userId,
                 }})).then(response => {
                     // this.notification("Annotation added", data.data.message, "success");
-                    // this.$emit('updateAnnotationsIndex', true);
                     this.$emit('updateAnnotationIndexes');
                     //TODO: HORRIBLE HACK to get id//TODO: HORRIBLE HACK to get id
                     let annotationId = response.data.message.split(" ")[1].split(",")[0];
-                    api.get(`api/annotation/${annotationId}.json`).then(response => {
-                        let annotation = response.data;
-                        this.$emit('update:selectedFeature', {
-                            type: 'Feature',
-                            id: annotation.id,
-                            geometry: parse(annotation.location),
-                            properties: {
-                                class: annotation.class,
-                                terms: annotation.term ? annotation.term : [],
-                                user: annotation.user,
-                                clusterSize: 0
-                            }
-                        });
-                        this.features = [];
-                    })
+                    let feature = evt.feature;
+                    let annotation = {
+                        type: 'Feature',
+                        id: feature.getId(),
+                        geometry: new GeoJSON().writeFeature(feature),
+                        properties: {
+                            class: "be.cytomine.ontology.UserAnnotation",
+                            id: annotationId,
+                            terms: this.associableTerms,
+                            user: this.currentUser.id,
+                            clusterSize: 0
+                        }
+                    };
+                    this.$emit('update:selectedFeature', annotation);
+                    this.features = [];
                 }).catch(error => {
                     // this.notification("Cannot add annotation", error.response.data.errors, "error");
                 });

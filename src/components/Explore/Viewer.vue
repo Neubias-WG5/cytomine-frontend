@@ -27,8 +27,8 @@
             <measure-interaction :image="image" :active-tool="activeTool"></measure-interaction>
 
             <draw-interaction :active-tool="activeTool" :user-layers="userLayers" :associable-terms="associableTerms"
-                              :drawable-layer-ids="drawableUserLayerIds" :image="image"
-                              :selected-feature.sync="selectedFeature"
+                              :drawable-layer-ids="drawableUserLayerIds" :image="image" :current-user="currentUser"
+                              :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                               @updateAnnotationIndexes="updateAnnotationIndexes"></draw-interaction>
         </vl-map>
 
@@ -205,6 +205,7 @@
     import SelectInteraction from "./Interactions/SelectInteraction";
     import MeasureInteraction from "./Interactions/MeasureInteraction";
     import DrawInteraction from "./Interactions/DrawInteraction";
+    import GeoJSON from 'ol/format/geojson';
 
     export default {
         name: 'Viewer',
@@ -467,6 +468,7 @@
                 }
             },
             activeTool(newValue) {
+                console.log("activeTool new Value" + newValue);
                 if (newValue != 'Select')
                     this.selectedFeature = null;
             },
@@ -792,6 +794,25 @@
                 this.$refs.olview.$createPromise.then(() => {
                     this.viewExtent = this.$refs.olview.$view.calculateExtent();
                 })
+            },
+            selectFeature(payload) {
+                // this.$refs.olmap.$createPromise.then(() => {
+                //     let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}`);
+                //     console.log(layer);
+                //     let feature = layer.getSource().getFeatureById(payload.featureId);
+                //     this.selectedFeature = {
+                //         type: 'Feature',
+                //         id: feature.getId(),
+                //         geometry: new GeoJSON().writeFeature(feature),
+                //         properties: {
+                //             class: feature.get('class'),
+                //             id: feature.get('id'),
+                //             terms: feature.get('terms'),
+                //             user: feature.get('user'),
+                //             clusterSize: feature.get('clusterSize')
+                //         }
+                //     }
+                // })
             },
             // Proj.getPointResolution,
             // // Sends view infos
