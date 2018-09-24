@@ -1,7 +1,7 @@
 <template>
     <vl-interaction-select :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
         <template slot-scope="select">
-            <vl-style-box>
+            <vl-style-box :z-index="9999999">
                 <vl-style-stroke :color="[17, 17, 17, 1]" :width="4"></vl-style-stroke>
                 <vl-style-fill :color="featureStyle"></vl-style-fill>
                 <vl-style-circle :radius="5">
@@ -26,7 +26,6 @@
         ],
         data() {
             return {
-                selectedFeatures: []
             }
         },
         computed: {
@@ -51,29 +50,26 @@
                 _ = this.visibleNoTerm;
                 _ = this.activeTool;
                 return (feature, layer) => {
+                    let drawableLayer = (layer) ?  layer.get('id') == 'Drawable' : false;
                     let terms = feature.get('terms');
-                    return (this.activeTool == 'Select' || layer.getId() == 'Drawable')
+                    return (this.activeTool == 'Select' || drawableLayer)
                         && (feature.get('clusterSize') == 0 && ((terms.length == 0 && this.visibleNoTerm)
                         || (terms.length > 0 &&  this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)));
                 }
             },
+            selectedFeatures: {
+                get: function() {
+                    return (this.selectedFeature) ? [this.selectedFeature] : []
+                },
+                set: function(newValue) {
+                    if (!newValue || newValue.length == 0)
+                        this.$emit('update:selectedFeature', null);
+                    else
+                        this.$emit('update:selectedFeature', newValue[0]);
+                }
+            }
         },
         watch: {
-            selectedFeature(newValue) {
-                if (!newValue)
-                    this.selectedFeatures = [];
-                else {
-                    this.selectedFeatures = [newValue];
-                }
-            },
-            selectedFeatures(newValue, oldValue) {
-                if (newValue && newValue.length > 0 && newValue != oldValue) {
-                    this.$emit('update:selectedFeature', newValue[0])
-                }
-                else {
-                    this.$emit('update:selectedFeature', null);
-                }
-            },
             visibleTerms(newValue) {
                 if (!this.selectedFeature || this.selectedFeature == {})
                     return;

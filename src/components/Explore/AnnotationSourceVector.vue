@@ -1,6 +1,6 @@
 <template>
     <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity" :id="'layer'+userLayer.id">
-        <vl-source-vector :features.sync="features"></vl-source-vector>
+        <vl-source-vector :features.sync="features" ref="olSourceVector"></vl-source-vector>
         <vl-style-func :factory="styleFuncFactoryProp"></vl-style-func>
     </vl-layer-vector>
 
@@ -24,6 +24,7 @@
                 localExtent: [0, 0, 0, 0],
                 properties: {},
                 revisionProperties: 0,
+                revisionCounter: 0,
             }
         },
         props: [
@@ -37,7 +38,7 @@
             'extent',
             'imageExtent',
             'layerOpacity',
-            'styles'
+            'styles',
         ],
         computed: {
             styleFuncFactoryProp() {
@@ -120,7 +121,13 @@
                     //     this.loadAnnotations();
                     // }
                     // else
-                    if ((newValue.visible && newValue.selected /*&& (!oldValue.visible || !oldValue.selected)*/)
+
+                    if (newValue.revisionCounter > this.revisionCounter) {
+                        this.features = [];
+                        this.loadAnnotations();
+                        this.revisionCounter = newValue.revisionCounter;
+                    }
+                    else if ((newValue.visible && newValue.selected /*&& (!oldValue.visible || !oldValue.selected)*/)
                         || newValue.size != oldValue.size) {
                         this.loadAnnotations()
                     }

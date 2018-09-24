@@ -28,8 +28,8 @@
 
             <draw-interaction :active-tool="activeTool" :user-layers="userLayers" :associable-terms="associableTerms"
                               :drawable-layer-ids="drawableUserLayerIds" :image="image" :current-user="currentUser"
-                              :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
-                              @updateAnnotationIndexes="updateAnnotationIndexes"></draw-interaction>
+                              :selected-feature.sync="selectedFeature" @selectFeature="selectFeature" :is-reviewing="isReviewing"
+                              @updateAnnotationIndexes="updateAnnotationIndexes" @forceUpdateLayer="forceUpdateLayer"></draw-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
@@ -166,7 +166,7 @@
             </div>
         </div>
 
-        <annotation-details v-if="selectedFeature" :users="userLayers"
+        <annotation-details v-show="selectedFeature" :users="userLayers"
                             :terms="allTerms" :selected-feature="selectedFeature"
                             :project-config="projectConfig" :currentUser="currentUser" :project="project"
                             :element-height="elementHeight" :element-width="elementWidth">
@@ -584,6 +584,7 @@
                             userLayer.visible = false;
                             userLayer.drawable = false;
                             userLayer.opacity = 0.3;
+                            userLayer.revisionCounter = 0;
                             this.userLayers.push(userLayer);
                         }
                     });
@@ -631,6 +632,12 @@
                     });
                 })
             },
+            forceUpdateLayer(layerId) {
+                let index = this.userLayers.findIndex(user => layerId == user.id);
+                let layer = this.userLayers[index];
+                layer.revisionCounter++;
+                this.userLayers.splice(index, 1, layer);
+            },
             updateReviewLayer() {
                 let reviewIndex = this.userLayers.findIndex(l => l.id == -100);
                 if (reviewIndex == -1) {
@@ -642,6 +649,7 @@
                         drawable: this.reviewMode,
                         opacity: 0.3,
                         review: true,
+                        revisionCounter: 0,
                     };
                     this.userLayers.push(reviewLayer);
                 }
@@ -796,23 +804,29 @@
                 })
             },
             selectFeature(payload) {
-                // this.$refs.olmap.$createPromise.then(() => {
-                //     let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}`);
-                //     console.log(layer);
-                //     let feature = layer.getSource().getFeatureById(payload.featureId);
-                //     this.selectedFeature = {
-                //         type: 'Feature',
-                //         id: feature.getId(),
-                //         geometry: new GeoJSON().writeFeature(feature),
-                //         properties: {
-                //             class: feature.get('class'),
-                //             id: feature.get('id'),
-                //             terms: feature.get('terms'),
-                //             user: feature.get('user'),
-                //             clusterSize: feature.get('clusterSize')
-                //         }
-                //     }
-                // })
+                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}`);
+                let retries = 0;
+                let interval = setInterval(() => {
+                    retries++;
+                    let feature = layer.getSource().getFeatureById(payload.featureId);
+                    if (feature != null) {
+                        clearInterval(interval);
+                        this.selectedFeature = {
+                            type: 'Feature',
+                            id: feature.getId(),
+                            geometry: new GeoJSON().writeFeature(feature),
+                            properties: {
+                                class: feature.get('class'),
+                                id: feature.get('id'),
+                                terms: feature.get('terms'),
+                                user: feature.get('user'),
+                                clusterSize: feature.get('clusterSize')
+                            }
+                        }
+                    }
+                    else if (retries == 5)
+                        clearInterval(interval);
+                }, 500);
             },
             // Proj.getPointResolution,
             // // Sends view infos

@@ -1,11 +1,11 @@
 <template>
     <span v-if="drawToolActive">
-        <vl-layer-vector>
-            <vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVector" id="Drawable"></vl-source-vector>
+        <vl-layer-vector id="Drawable">
+            <vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVectorDraw" ></vl-source-vector>
         </vl-layer-vector>
         <vl-interaction-draw ref="olDrawInteraction" source="draw-target" :type="drawType"
                              :freehand="drawFreehand" :freehand-condition="undefined"
-                             :geometry-function="drawGeometryFunc" @drawend="onDrawEnd">
+                             :geometry-function="drawGeometryFunc" @drawend="onDrawEnd" @drawstart="onDrawStart">
         </vl-interaction-draw>
     </span>
 </template>
@@ -14,7 +14,6 @@
     import Draw from 'ol/interaction/draw';
     import Polygon from 'ol/geom/polygon';
     import WKT from 'ol/format/wkt';
-    import GeoJSON from 'ol/format/geojson';
 
     export default {
         name: "DrawInteraction",
@@ -31,7 +30,8 @@
             'drawableLayerIds',
             'image',
             'currentUser',
-            'selectedFeature'
+            'selectedFeature',
+            'isReviewing'
         ],
         computed: {
             drawToolActive() {
@@ -127,42 +127,60 @@
                 if (!this.$refs.olDrawInteraction || !this.drawToolActive)
                     return;
 
-                this.$refs.olDrawInteraction.$createPromise.then(() => {
-                    this.$refs.olDrawInteraction.recreate();
-                });
+                this.$refs.olDrawInteraction.recreate();
             }
         },
         methods: {
+            onDrawStart(evt) {
+                this.features = []
+            },
             onDrawEnd(evt) {
-                api.post(`/api/annotation.json`, this.drawableLayerIds.map(userId => { return {
-                    location: this.format.writeFeature(evt.feature),
-                    image: this.image.id,
-                    roi: false,
-                    term: this.associableTerms,
-                    user: userId,
-                }})).then(response => {
-                    // this.notification("Annotation added", data.data.message, "success");
-                    this.$emit('updateAnnotationIndexes');
-                    //TODO: HORRIBLE HACK to get id//TODO: HORRIBLE HACK to get id
-                    let annotationId = response.data.message.split(" ")[1].split(",")[0];
-                    let feature = evt.feature;
-                    let annotation = {
-                        type: 'Feature',
-                        id: feature.getId(),
-                        geometry: new GeoJSON().writeFeature(feature),
-                        properties: {
-                            class: "be.cytomine.ontology.UserAnnotation",
-                            id: annotationId,
-                            terms: this.associableTerms,
-                            user: this.currentUser.id,
-                            clusterSize: 0
-                        }
-                    };
-                    this.$emit('update:selectedFeature', annotation);
-                    this.features = [];
-                }).catch(error => {
-                    // this.notification("Cannot add annotation", error.response.data.errors, "error");
-                });
+                switch(this.activeTool) {
+                    case 'Union':
+                    case 'Difference':
+                        api.post(`/api/annotationcorrection.json`, {
+                            image: this.image.id,
+                            layers: this.drawableLayerIds,
+                            location: this.format.writeFeature(evt.feature),
+                            remove: this.activeTool == 'Difference',
+                            review: this.isReviewing
+                        }).then(response => {
+                            // TODO: [NOTIFICATION]
+                            this.$emit('updateAnnotationIndexes');
+                            this.$emit('forceUpdateLayer', response.data.annotation.user);
+                            this.$emit('selectFeature', {layerId: response.data.annotation.user, featureId: response.data.annotation.id});
+                            this.features.splice(0, this.features.length);
+                            this.$refs.olSourceVectorDraw.clear();
+                            this.$refs.olDrawInteraction.recreate();
+                        }).catch(error => {
+                            // TODO: [NOTIFICATION]
+                            this.features.splice(0, this.features.length);
+                            this.$refs.olSourceVectorDraw.clear();
+                            this.$refs.olDrawInteraction.recreate();
+                        });
+                        break;
+                    default:
+                        api.post(`/api/annotation.json`, this.drawableLayerIds.map(userId => { return {
+                            location: this.format.writeFeature(evt.feature),
+                            image: this.image.id,
+                            roi: false,
+                            term: this.associableTerms,
+                            user: userId,
+                        }})).then(response => {
+                            // TODO: [NOTIFICATION] this.notification("Annotation added", data.data.message, "success");
+                            let annotationId = response.data.message.split(" ")[1].split(",")[0]; // HORRIBLE HACK to get id
+                            this.$emit('updateAnnotationIndexes');
+                            this.$emit('selectFeature', {layerId: this.currentUser.id, featureId: annotationId});
+                            this.features.splice(0, this.features.length);
+                            this.$refs.olSourceVectorDraw.clear();
+                            this.$refs.olDrawInteraction.recreate();
+                        }).catch(error => {
+                            // TODO: [NOTIFICATION] this.notification("Cannot add annotation", error.response.data.errors, "error");
+                            this.features.splice(0, this.features.length);
+                            this.$refs.olSourceVectorDraw.clear();
+                            this.$refs.olDrawInteraction.recreate();
+                        });
+                }
             }
         }
 
