@@ -30,6 +30,11 @@
                               :drawable-layer-ids="drawableUserLayerIds" :image="image" :current-user="currentUser"
                               :selected-feature.sync="selectedFeature" @selectFeature="selectFeature" :is-reviewing="isReviewing"
                               @updateAnnotationIndexes="updateAnnotationIndexes" @forceUpdateLayer="forceUpdateLayer"></draw-interaction>
+
+            <modify-interaction :active-tool.sync="activeTool" :image="image" :current-user="currentUser"
+                                :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
+                                :is-reviewing="isReviewing" @updateAnnotationIndexes="updateAnnotationIndexes"
+                                @forceUpdateLayer="forceUpdateLayer"></modify-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
@@ -206,10 +211,12 @@
     import MeasureInteraction from "./Interactions/MeasureInteraction";
     import DrawInteraction from "./Interactions/DrawInteraction";
     import GeoJSON from 'ol/format/geojson';
+    import ModifyInteraction from "./Interactions/ModifyInteraction";
 
     export default {
         name: 'Viewer',
         components: {
+            ModifyInteraction,
             DrawInteraction,
             MeasureInteraction,
             SelectInteraction,
@@ -469,7 +476,7 @@
             },
             activeTool(newValue) {
                 console.log("activeTool new Value" + newValue);
-                if (newValue != 'Select')
+                if (!['Select', 'Fill', 'Edit', 'Rotate', 'Drag', 'Resize', 'Remove'].includes(newValue))
                     this.selectedFeature = null;
             },
             // mapView: {
