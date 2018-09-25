@@ -70,7 +70,38 @@
 
             },
             remove() {
-
+                this.$confirm({
+                    title: 'Confirm',
+                    okType: 'danger',
+                    okText: 'Delete',
+                    content: `This annotation #${this.selectedFeature.properties.id} will be permanently deleted. Continue?`
+                })
+                    .then(() => {
+                        api.delete(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
+                            this.$notify({
+                                placement: 'bottom-right',
+                                type: 'success',
+                                content: response.data.message
+                            });
+                            this.$emit('updateAnnotationIndexes');
+                            this.$emit('update:selectedFeature', null);
+                            this.$emit('update:activeTool', 'Select');
+                        }).catch(error => {
+                            this.$notify({
+                                placement: 'bottom-right',
+                                type: 'danger',
+                                content: error.response.data.errors
+                            });
+                            this.$emit('update:activeTool', 'Select');
+                        })
+                    })
+                    .catch(() => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            content: 'Delete operation aborted.'
+                        });
+                        this.$emit('update:activeTool', 'Select');
+                    })
             }
         }
     }
