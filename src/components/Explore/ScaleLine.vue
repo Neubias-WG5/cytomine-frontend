@@ -44,13 +44,12 @@
                 return Math.round(magnification * 100) / 100;
             },
             resolution() {
-                let res = (this.image.resolution) ? this.image.resolution : 1;
-                return Math.pow(2, this.image.depth - this.currentZoom) * this.image.resolution;
+                let resolution = (this.image.resolution) ? this.image.resolution : 1;
+                return Math.pow(2, this.image.depth - this.currentZoom) * resolution;
             },
             scaleLength() {
-                let length = this.scaleLineLength;
-                if (this.resolution != undefined && this.resolution != null && this.resolution != 0) {
-                    length = Math.round(length * this.resolution * 1000) / 1000;
+                let length = Math.round(this.scaleLineLength * this.resolution * 1000) / 1000;
+                if (this.image.resolution) {
                     if (length > 1000) {
                         length /= 1000;
                         length = length.toPrecision(4);
