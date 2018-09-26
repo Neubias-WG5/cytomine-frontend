@@ -71,8 +71,10 @@
                                             ({{Math.round(term.percentage * 100) / 100}} %)
                                             <div class="btn-group">
                                             <!--<button class="btn btn-default btn-xs">Add</button>-->
-                                                <button class="btn btn-default btn-xs">
-                                                    <i class="fas fa-exchange-alt" @click="replaceTermBySuggested(term.id)"></i> Replace
+                                                <button class="btn btn-default btn-xs"
+                                                        v-if="!associableTerms.includes(term.id)"
+                                                        @click="replaceTermBySuggested(term.id)">
+                                                    <i class="fas fa-exchange-alt"></i> Replace
                                                 </button>
                                             </div>
                                         </li>
@@ -135,6 +137,8 @@
     import DateItem from "../Datatable/DateItem";
     import AnnotationCommentsModal from "./AnnotationCommentsModal";
     import AnnotationSimilaritiesModal from "./AnnotationSimilaritiesModal";
+    import difference from "lodash.difference"
+    import clone from "lodash.clone"
 
     export default {
         name: 'AnnotationDetails',
@@ -164,6 +168,7 @@
             'selectedFeature',
             'elementWidth',
             'elementHeight',
+            'associableTerms',
         ],
         computed: {
             editable() {
@@ -207,9 +212,45 @@
             selectedFeature(newFeature) {
                 this.getAnnotation(newFeature);
             },
+            associableTerms(newList) {
+                if (!this.annotation)
+                    return;
+
+                let termsToAdd = difference(newList, this.annotation.term);
+                let termsToRemove = difference(this.annotation.term, newList);
+                termsToAdd.forEach(termId => {
+                    api.post(`api/annotation/${this.annotation.id}/term/${termId}.json`, {
+                        term: termId,
+                        userannotation: this.annotation.id
+                    }).then(response => {
+                        //TODO: [NOTIFICATION]
+                        this.annotation.term.push(termId);
+                        this.$emit('update:selectedFeature', null); // todo: temporary
+                        let feature = this.selectedFeature;
+                        feature.properties.terms = this.annotation.term;
+                        this.$emit('forceUpdateLayer', this.annotation.user);
+                        this.$emit('update:selectedFeature', feature);
+                    }).catch(errors => {
+                        //TODO: [NOTIFICATION]
+                    })
+                });
+                termsToRemove.forEach(termId => {
+                    api.delete(`api/annotation/${this.annotation.id}/term/${termId}.json`).then(response => {
+                        //TODO: [NOTIFICATION]
+                        this.annotation.term = newList;
+                        this.$emit('update:selectedFeature', null); // todo: temporary
+                        let feature = this.selectedFeature;
+                        feature.properties.terms = this.annotation.term;
+                        this.$emit('forceUpdateLayer', this.annotation.user);
+                        this.$emit('update:selectedFeature', feature);
+                    }).catch(errors => {
+                        //TODO: [NOTIFICATION]
+                    })
+                })
+            }
         },
         methods: {
-            getAnnotation(newFeature) {
+            getAnnotation(newFeature, callback = () => {}) {
                 if (!newFeature || newFeature == {}) {
                     this.annotation = null;
                     this.similarAnnotations = null;
@@ -217,6 +258,8 @@
                 else {
                     api.get(`api/annotation/${newFeature.properties.id}.json`).then(response => {
                         this.annotation = response.data;
+                        this.$emit('update:associableTerms', clone(this.annotation.term));
+                        callback()
                     })
                 }
             },
@@ -240,10 +283,17 @@
             },
             replaceTermBySuggested(termId) {
                 api.post(`api/annotation/${this.annotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
-                    //notify
-                    this.getAnnotation(this.selectedFeature)
+                    //TODO: [NOTIFICATION]
+                    let callback = function() {
+                        this.$emit('update:selectedFeature', null); // todo: temporary
+                        let feature = this.selectedFeature;
+                        feature.properties.terms = this.annotation.term;
+                        this.$emit('forceUpdateLayer', this.annotation.user);
+                        this.$emit('update:selectedFeature', feature);
+                    };
+                    this.getAnnotation(this.selectedFeature, callback.bind(this));
                 }).catch(errors => {
-                    //notify
+                    //TODO: [NOTIFICATION]
                 })
             }
         },

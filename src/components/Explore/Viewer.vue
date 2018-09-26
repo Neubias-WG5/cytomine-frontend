@@ -174,7 +174,8 @@
         <annotation-details v-show="selectedFeature" :users="userLayers"
                             :terms="allTerms" :selected-feature="selectedFeature"
                             :project-config="projectConfig" :currentUser="currentUser" :project="project"
-                            :element-height="elementHeight" :element-width="elementWidth">
+                            :element-height="elementHeight" :element-width="elementWidth"
+                            @toogleAssociateTerm="toggleAssociateTerm" :associable-terms.sync="associableTerms">
         </annotation-details>
     </div>
 </template>

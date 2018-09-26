@@ -17,6 +17,7 @@
     "lodash.clone": "^4.5.0",
     "lodash.compact": "^3.0.1",
     "lodash.debounce": "^4.0.8",
+    "lodash.difference": "^4.5.0",
     "lodash.differenceby": "^4.8.0",
     "lodash.intersection": "^4.4.0",
     "lodash.sample": "^4.2.1",
@@ -45,6 +46,7 @@
     "not ie <= 8"
   ],
   "devDependencies": {
+    "@babel/plugin-transform-async-to-generator": "^7.1.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.5",
     "babel-preset-env": "^1.6.0",
