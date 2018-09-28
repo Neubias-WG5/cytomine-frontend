@@ -29,7 +29,7 @@
         <div class="text-center" v-if="!project.blindMode">
             <div class="btn-group">
                 <!--<div class="btn-group" v-if="!project.blindMode">-->
-                    <!--<button class="btn btn-default btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Rename</button>-->
+                <!--<button class="btn btn-default btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Rename</button>-->
                 <!--</div>-->
                 <a :href="`/api/imageinstance/${image.id}/download`" class="btn btn-default btn-xs">
                     <i class="fas fa-download" aria-hidden="true"></i> Download
@@ -47,6 +47,7 @@
 
 <script>
     import ImageInfoModal from "../../ImageInstance/ImageInfoModal";
+
     export default {
         name: 'Informations',
         components: {ImageInfoModal},

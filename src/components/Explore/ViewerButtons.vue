@@ -48,7 +48,8 @@
                 {'text-primary': reviewMode}]" title="Review">
             <i class="fas fa-check-circle"></i>
         </button>
-        <button v-if="hasAnnotationProperties && mustBeShown('project-explore-property')" @click="setSelected('properties')"
+        <button v-if="hasAnnotationProperties && mustBeShown('project-explore-property')"
+                @click="setSelected('properties')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'properties' }]"
                 title="Annotation properties">
             <i class="fas fa-tags"></i>

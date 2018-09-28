@@ -158,8 +158,8 @@
     import Observable from 'ol/observable';
     import Overlay from 'ol/overlay';
 
-    import mustBeShown from '../../helpers/mustBeShown';
-    import pointStyle from '../../helpers/pointStyle';
+    import mustBeShown from '../../../helpers/mustBeShown';
+    import pointStyle from '../../../helpers/pointStyle';
 
     export default {
         name: 'Interactions',

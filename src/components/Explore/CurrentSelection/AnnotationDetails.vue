@@ -23,9 +23,13 @@
                                 </template>
                                 <dd v-else><span class="label label-default">No term</span></dd>
                                 <dt>User</dt>
-                                <dd><username :user="userById(annotation.user)"></username></dd>
+                                <dd>
+                                    <username :user="userById(annotation.user)"></username>
+                                </dd>
                                 <dt>Created</dt>
-                                <dd><date-item :value="annotation.created"></date-item></dd>
+                                <dd>
+                                    <date-item :value="annotation.created"></date-item>
+                                </dd>
                                 <dt>Editable</dt>
                                 <dd v-if="editable">
                                 <span class="label label-success">
@@ -66,11 +70,12 @@
                                 </template>
                                 <template v-else-if="suggestedTerms && suggestedTerms.length > 0">
                                     <ol>
-                                        <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id" v-if="term.percentage > 15">
+                                        <li v-for="term in suggestedTerms" :key="'suggestedTerm-'+term.id"
+                                            v-if="term.percentage > 15">
                                             <term v-bind="termById(term.id)"></term>
                                             ({{Math.round(term.percentage * 100) / 100}} %)
                                             <div class="btn-group">
-                                            <!--<button class="btn btn-default btn-xs">Add</button>-->
+                                                <!--<button class="btn btn-default btn-xs">Add</button>-->
                                                 <button class="btn btn-default btn-xs"
                                                         v-if="!associableTerms.includes(term.id)"
                                                         @click="replaceTermBySuggested(term.id)">
@@ -80,7 +85,9 @@
                                         </li>
                                     </ol>
                                     <div class="text-center">
-                                        <button class="btn btn-default" @click="openSimilaritiesModal = true">See similar annotations</button>
+                                        <button class="btn btn-default" @click="openSimilaritiesModal = true">See
+                                            similar annotations
+                                        </button>
                                     </div>
                                 </template>
                                 <template v-else-if="suggestedTerms && suggestedTerms.length == 0">
@@ -130,11 +137,11 @@
 </template>
 
 <script>
-    import mustBeShown from '../../helpers/mustBeShown'
+    import mustBeShown from '../../../helpers/mustBeShown'
     import VueDragResize from 'vue-drag-resize'
-    import Term from "../Ontology/Term";
-    import Username from "../User/Username";
-    import DateItem from "../Datatable/DateItem";
+    import Term from "../../Ontology/Term";
+    import Username from "../../User/Username";
+    import DateItem from "../../Datatable/DateItem";
     import AnnotationCommentsModal from "./AnnotationCommentsModal";
     import AnnotationSimilaritiesModal from "./AnnotationSimilaritiesModal";
     import difference from "lodash.difference"
@@ -250,7 +257,8 @@
             }
         },
         methods: {
-            getAnnotation(newFeature, callback = () => {}) {
+            getAnnotation(newFeature, callback = () => {
+            }) {
                 if (!newFeature || newFeature == {}) {
                     this.annotation = null;
                     this.similarAnnotations = null;
@@ -284,7 +292,7 @@
             replaceTermBySuggested(termId) {
                 api.post(`api/annotation/${this.annotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
                     //TODO: [NOTIFICATION]
-                    let callback = function() {
+                    let callback = function () {
                         this.$emit('update:selectedFeature', null); // todo: temporary
                         let feature = this.selectedFeature;
                         feature.properties.terms = this.annotation.term;

@@ -4,7 +4,7 @@
             {{scaleLength}}
         </div>
         <div class="scale-line-bottom">
-             <span v-show="magnification != 0">Magnification: {{magnification}}X</span>
+            <span v-show="magnification != 0">Magnification: {{magnification}}X</span>
         </div>
         <div class="scale-line-position">
             <div>
@@ -12,10 +12,7 @@
                 <div style="float: right;">y: {{currentY}}</div>
             </div>
         </div>
-
     </div>
-
-
 </template>
 
 <script>

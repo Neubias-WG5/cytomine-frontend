@@ -11,7 +11,7 @@
                     :current-user="currentUser" :viewers="viewers" v-bind="viewer" :padding-top="paddingTop"
                     :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
                     @changeImage="changeImage" @current-map="viewer" @updateImage="updateImage"
-                    :mapView="mapView" :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"
+                    :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"
                     :linked-viewers-bus="linkedViewersBus" :styles="styles"></viewer>
         </div>
     </div>
@@ -19,10 +19,10 @@
 
 <script>
     import Viewer from './Viewer'
-    import Vue from 'vue'
-
-    import uuid from 'uuid'
     import ViewerSelector from "./ViewerSelector";
+
+    import Vue from 'vue'
+    import uuid from 'uuid'
     import hexToRgb from "../../helpers/hexToRgb";
     import AnnotationStatus from "../../helpers/annotationStatus";
     import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
@@ -49,12 +49,6 @@
                 lastEventMapId: null,
                 linkedViewersBus: new Vue(),
                 styles: {},
-
-                mapView: {
-                    mapCenter: [0, 0],
-                    mapZoom: 2,
-                    mapRotation: 0,
-                },
                 currentRoute: '',
             }
         },
@@ -98,9 +92,9 @@
 
                 // Delete the viewer in other viewers linkedTo lists.
                 this.viewers.forEach(viewer => {
-                   viewer.linkedTo = viewer.linkedTo.filter(v => {
-                       return v != viewerId;
-                   })
+                    viewer.linkedTo = viewer.linkedTo.filter(v => {
+                        return v != viewerId;
+                    })
                 });
                 let newIndex = (index == this.viewers.length) ? index - 1 : index;
                 this.lastEventMapId = this.viewers[newIndex].id
@@ -131,30 +125,6 @@
             setCurrentViewer(viewerId) {
                 this.lastEventMapId = viewerId;
             },
-
-
-            // updateOpenLayersMapsSize() {
-            //     this.viewers.forEach(map => {
-            //         this.$openlayers.getMap(map.id).updateSize();
-            //     })
-            // },
-            //
-            //
-            //
-            // setMap(payload) {
-            //     this.mapView = {
-            //         mapCenter: payload.view.getCenter(),
-            //         mapResolution: payload.view.getResolution(),
-            //         mapRotation: payload.view.getRotation(),
-            //     };
-            //     this.lastEventMapId = payload.mapId;
-            //     this.$openlayers.getMap(payload.mapId).updateSize();
-            // },
-
-
-
-
-
             checkRoute() {
                 // DEPENDS ON [BACKBONE]
                 this.currentRoute = Backbone.history.getFragment();
@@ -185,7 +155,7 @@
                             if (response.data.channel) {
                                 group.channels = response.data.channel;
                                 group.zStacks = response.data.zStack;
-                                group.times =  response.data.time;
+                                group.times = response.data.time;
                             }
 
                             api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
@@ -255,7 +225,6 @@
                     })
                 })
             });
-
 
             // DEPENDS ON [BACKBONE]
             setInterval(this.checkRoute, 1000)

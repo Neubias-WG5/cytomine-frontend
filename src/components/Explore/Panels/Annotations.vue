@@ -36,14 +36,15 @@
                 <popper>
                     <div class="popper" trigger="hover" :options="{placement: 'auto'}">
                         <div class="annotation-detail">
-                            <!--<h4>Annotation details</h4>-->
                             <dl class="dl-horizontal">
                                 <dt>Created by</dt>
                                 <dd v-if="annotation.user !== undefined">
                                     <username :user="userById(annotation.user)"></username>
                                 </dd>
                                 <dt>Date</dt>
-                                <dd><date-item :value="annotation.created"></date-item></dd>
+                                <dd>
+                                    <date-item :value="annotation.created"></date-item>
+                                </dd>
                                 <template v-if="annotation.userByTerm[0]">
                                     <dt>Term(s)</dt>
                                     <dd v-for="term in annotation.userByTerm" :key="term.id + uuid()">
@@ -74,11 +75,12 @@
 
 <script>
     import Popper from 'vue-popperjs';
+
+    import Term from "../../Ontology/Term";
+    import Username from "../../User/Username";
+    import DateItem from "../../Datatable/DateItem";
+
     import uuid from 'uuid'
-    import humanDate from '../../helpers/humanDate'
-    import Term from "../Ontology/Term";
-    import Username from "../User/Username";
-    import DateItem from "../Datatable/DateItem";
 
     export default {
         name: 'Annotations',
@@ -159,16 +161,7 @@
                 return this.users.find(user => user.id === userId);
             },
             termById(termId) {
-                let term = this.terms.find(term => term.id == termId);
-                // term.size = this.sizeTerms[termId];
-                return term;
-            },
-            getTermColor(termId) {
-                let index = this.terms.findIndex(term => term.id === termId);
-                return index < 0 ? null : this.terms[index].color;
-            },
-            humanDate(date) {
-                return humanDate(date);
+                return this.terms.find(term => term.id == termId);
             },
             cropURL(url) {
                 return `${url.substring(0, url.indexOf('?'))}?maxSize=90&alphaMask=true`

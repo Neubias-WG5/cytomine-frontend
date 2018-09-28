@@ -58,7 +58,8 @@
                     </button>
                 </template>
                 <!-- <template v-if="mustBeShown('project-tools-magicwand')"> TODO MAGICWAND
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'MagicWand'}]" @click="setInteraction('MagicWand')" title="Add a new annotation with magic wand">
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'MagicWand'}]"
+                    @click="setInteraction('MagicWand')" title="Add a new annotation with magic wand">
                         <i class="fas fa-magic"></i>
                         MagicWand
                     </button>
@@ -86,7 +87,7 @@
 
             <div class="btn-group" role="group">
                 <dropdown v-if="mustBeShown('project-tools-rule') || mustBeShown('project-tools-area')
-            || mustBeShown('project-tools-screenshot')">
+                || mustBeShown('project-tools-screenshot')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Ruler' || activeTool == 'Area'
                 || activeTool == 'Screenshot'}]"><i class="fas fa-ellipsis-h"></i> <span class="caret"></span></button>
                     <template slot="dropdown">

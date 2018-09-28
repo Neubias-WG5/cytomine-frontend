@@ -19,7 +19,8 @@
                 <dl>
                     <template v-if="selectedImageGroup.channels && selectedImageGroup.channels.length > 1">
                         <dt>Channel (c)
-                            {{prettyPrintDimensions(selectedImageGroup.channels)}} </dt>
+                            {{prettyPrintDimensions(selectedImageGroup.channels)}}
+                        </dt>
                         <dd>
                             <div style="width: 100px;" class="pull-left">
                                 <span class="label label-default">{{currentChannel}}</span>
@@ -58,7 +59,8 @@
 
                     <template v-if="selectedImageGroup.zStacks && selectedImageGroup.zStacks.length > 1">
                         <dt>Slice (z)
-                            {{prettyPrintDimensions(selectedImageGroup.zStacks)}} </dt>
+                            {{prettyPrintDimensions(selectedImageGroup.zStacks)}}
+                        </dt>
                         <dd>
                             <div style="width: 100px;" class="pull-left">
                                 <span class="label label-default">{{currentZStack}}</span>
@@ -92,7 +94,8 @@
 
                     <template v-if="selectedImageGroup.times && selectedImageGroup.times.length > 1">
                         <dt>Time (t)
-                            {{prettyPrintDimensions(selectedImageGroup.times)}} </dt>
+                            {{prettyPrintDimensions(selectedImageGroup.times)}}
+                        </dt>
                         <dd>
                             <div style="width: 100px;" class="pull-left">
                                 <span class="label label-default">{{currentTime}}</span>
@@ -127,18 +130,19 @@
             </div>
             <div class="clearfix"></div>
             <!--<overlay :imageSequence="selectedSequence" :imageGroup="imageGroup" :selectedMap="selectedMap"-->
-                     <!--:imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>-->
+            <!--:imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>-->
             <!--<spectra :imageSequence="selectedSequence" :imageGroup="selected" :mousePosition="mousePosition"-->
-                     <!--:selectedMap="selectedMap"></spectra>-->
+            <!--:selectedMap="selectedMap"></spectra>-->
         </template>
 
     </div>
 </template>
 
 <script>
+    import vueSlider from 'vue-slider-component'
+
     import Spectra from './Multidimension/Spectra'
     import Overlay from './Multidimension/Overlay'
-    import vueSlider from 'vue-slider-component'
 
     export default {
         name: 'Multidimension',
@@ -154,42 +158,41 @@
             'selectedSequence',
         ],
         data() {
-            return {
-            }
+            return {}
         },
         computed: {
             selected: {
-                get: function() {
+                get: function () {
                     return this.selectedSequence;
                 },
-                set: function(newValue) {
+                set: function (newValue) {
                     this.$emit('update:selectedSequence', newValue)
                 }
             },
             selectedImageGroup() {
-                return  this.getImageGroupById(this.selectedSequence.imageGroup)
+                return this.getImageGroupById(this.selectedSequence.imageGroup)
             },
             currentChannel: {
-                get: function() {
+                get: function () {
                     return this.selected.channel;
                 },
-                set: function(newValue) {
+                set: function (newValue) {
                     this.$emit('changeSequence', {c: newValue, z: this.currentZStack, t: this.currentTime})
                 }
             },
             currentZStack: {
-                get: function() {
+                get: function () {
                     return this.selected.zStack;
                 },
-                set: function(newValue) {
+                set: function (newValue) {
                     this.$emit('changeSequence', {c: this.currentChannel, z: newValue, t: this.currentTime})
                 }
             },
             currentTime: {
-                get: function() {
+                get: function () {
                     return this.selected.time;
                 },
-                set: function(newValue) {
+                set: function (newValue) {
                     this.$emit('changeSequence', {c: this.currentChannel, z: this.currentZStack, t: newValue})
                 }
             },

@@ -1,6 +1,5 @@
 <template>
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
-        <!--<div  @mousemove="sendView" @mousewheel="sendView" :id="id" ref="exploreMap">-->
         <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
                 @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" @moveend="calculateViewExtent"
                 data-projection="CYTO:FLAT">
@@ -14,11 +13,12 @@
                                    v-if="imsServers.length > 0"></vl-source-zoomify>
             </vl-layer-tile>
 
-            <annotation-source-vector v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
+            <annotation-layer v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
                                       :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
                                       :visible-no-term="visibleNoTerm" :selected-property="selectedProperty"
                                       :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
-                                      :terms="allTerms" :layer-opacity="layersOpacity" :styles="styles"></annotation-source-vector>
+                                      :terms="allTerms" :layer-opacity="layersOpacity"
+                                      :styles="styles"></annotation-layer>
 
             <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
@@ -28,8 +28,10 @@
 
             <draw-interaction :active-tool="activeTool" :user-layers="userLayers" :associable-terms="associableTerms"
                               :drawable-layer-ids="drawableUserLayerIds" :image="image" :current-user="currentUser"
-                              :selected-feature.sync="selectedFeature" @selectFeature="selectFeature" :is-reviewing="isReviewing"
-                              @updateAnnotationIndexes="updateAnnotationIndexes" @forceUpdateLayer="forceUpdateLayer"></draw-interaction>
+                              :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
+                              :is-reviewing="isReviewing"
+                              @updateAnnotationIndexes="updateAnnotationIndexes"
+                              @forceUpdateLayer="forceUpdateLayer"></draw-interaction>
 
             <modify-interaction :active-tool.sync="activeTool" :image="image" :current-user="currentUser"
                                 :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
@@ -37,17 +39,11 @@
                                 @forceUpdateLayer="forceUpdateLayer"></modify-interaction>
         </vl-map>
 
-        <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser" :project="project"
+        <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
+                        :project="project"
                         :project-config="projectConfig" :selected-feature="selectedFeature"
                         :drawable-layer-ids="drawableUserLayerIds"></viewer-toolbar>
 
-        <!--<interactions v-show="isCurrentViewer" @updateLayers="setUpdateLayers"-->
-        <!--@featureSelected="setFeatureSelected" :currentMap="currentMap" :isReviewing="isReviewing"-->
-        <!--@updateAnnotationsIndex="setUpdateAnnotationsIndex" :vectorLayersOpacity="vectorLayersOpacity"-->
-        <!--:currentUser="currentUser" :project="project">-->
-        <!--</interactions>-->
-
-        <!--<overview-map :viewer-id="id" :image="image" :elementHeight="elementHeight" :elementWidth="elementWidth"></overview-map>-->
         <div :id="'overviewmap-'+id" class="overview-container"></div>
         <div v-show="isCurrentViewer">
             <viewer-buttons :selected-component.sync="selectedComponent" @deleteViewer="deleteViewer"
@@ -100,7 +96,6 @@
 
                 <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
                             :viewer-id="id"></color-maps>
-
 
                 <annotation-layers v-show="selectedComponent == 'annotationLayers'"
                                    @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"
@@ -182,38 +177,40 @@
 
 <script>
     import AnnotationLayers from './Panels/AnnotationLayers'
-    import Interactions from './Interactions';
-    import Informations from './Panels/Informations';
-    import Ontology from './Ontology';
-    import AnnotationDetails from './AnnotationDetails';
-    import Annotations from './Annotations';
-    import Properties from './Properties';
-    import Multidimension from './Multidimension';
+    import Annotations from './Panels/Annotations';
+    import Properties from './Panels/Properties';
+    import Multidimension from './Panels/Multidimension';
     import DigitalZoom from './Panels/DigitalZoom'
-    import Review from './Review'
-    import ScaleLine from './ScaleLine'
-    import ColorMaps from './Colormaps'
-    import OverviewMap from 'ol/control/overviewmap'
-    import View from 'ol/view';
-
-    import ViewerButtons from "./ViewerButtons";
-
-    import mustBeShown from '../../helpers/mustBeShown';
+    import Review from './Panels/Review'
+    import Informations from './Panels/Informations';
+    import Ontology from './Panels/Ontology';
+    import ColorMaps from './Panels/Colormaps'
     import Filters from "./Panels/Filters";
     import NavigationImage from "./Panels/NavigationImage";
+
+    import SelectInteraction from "./Interactions/SelectInteraction";
+    import MeasureInteraction from "./Interactions/MeasureInteraction";
+    import DrawInteraction from "./Interactions/DrawInteraction";
+    import ModifyInteraction from "./Interactions/ModifyInteraction";
+    import Interactions from './Interactions/Interactions';
+
+    import Username from "../User/Username";
+    import ScaleLine from './ScaleLine'
+    import ViewerButtons from "./ViewerButtons";
+    import ViewerToolbar from "./ViewerToolbar";
+    import AnnotationLayer from "./AnnotationLayer";
+    import AnnotationDetails from './CurrentSelection/AnnotationDetails';
+
+    import View from 'ol/view';
+    import GeoJSON from 'ol/format/geojson';
+    import OverviewMap from 'ol/control/overviewmap'
+    import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
+
+    import mustBeShown from '../../helpers/mustBeShown';
     import clone from "lodash.clone";
     import differenceBy from "lodash.differenceby"
     import sample from "lodash.sample";
     import debounce from "lodash.debounce";
-    import Username from "../User/Username";
-    import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
-    import AnnotationSourceVector from "./AnnotationSourceVector";
-    import ViewerToolbar from "./ViewerToolbar";
-    import SelectInteraction from "./Interactions/SelectInteraction";
-    import MeasureInteraction from "./Interactions/MeasureInteraction";
-    import DrawInteraction from "./Interactions/DrawInteraction";
-    import GeoJSON from 'ol/format/geojson';
-    import ModifyInteraction from "./Interactions/ModifyInteraction";
 
     export default {
         name: 'Viewer',
@@ -223,7 +220,7 @@
             MeasureInteraction,
             SelectInteraction,
             ViewerToolbar,
-            AnnotationSourceVector,
+            AnnotationLayer,
             Username,
             NavigationImage,
             Filters,
@@ -240,7 +237,6 @@
             Review,
             ScaleLine,
             ColorMaps,
-            OverviewMap
         },
         data() {
             return {
@@ -312,10 +308,6 @@
             'image',
             'linkedViewersBus',
             'lastEventMapId',
-
-            'mapView',
-            'currentMap',
-
         ],
         computed: {
             isReviewing() {
@@ -482,37 +474,6 @@
                 if (!['Select', 'Fill', 'Edit', 'Rotate', 'Drag', 'Resize', 'Remove'].includes(newValue))
                     this.selectedFeature = null;
             },
-            // mapView: {
-            //     handler() {
-            //         let {mapCenter, mapResolution, mapRotation} = this.mapView;
-            //         let index = this.linkedTo.findIndex(link => link == this.lastEventMapId);
-            //         if (index >= 0) {
-            //             this.$openlayers.getView(this.id).setProperties({
-            //                 center: mapCenter,
-            //                 resolution: mapResolution,
-            //                 rotation: mapRotation,
-            //             })
-            //         }
-            //     },
-            //     deep: true,
-            // },
-            // selectedFilter() {
-            //     //sets filter on change
-            //     let layer = new OlTile({
-            //         source: new Zoomify({
-            //             url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`,
-            //             size: [this.imageWidth, this.imageHeight],
-            //             extent: this.extent,
-            //         }),
-            //         extent: this.extent,
-            //     });
-            //     this.$openlayers.getMap(this.id).getLayers().getArray()[0] = layer;
-            //     this.$openlayers.getMap(this.id).render();
-            // },
-            // centeredFeature(newValue) {
-            //     if (newValue != this.image.project) {
-            //         this.centerOnFeature(newValue);
-            //     }
         },
         methods: {
             deleteViewer() {
@@ -848,135 +809,9 @@
                         clearInterval(interval);
                 }, 500);
             },
-            // Proj.getPointResolution,
-            // // Sends view infos
-            // sendView(e) {
-            //     let payload = {
-            //         mapId: this.id,
-            //         view: this.$openlayers.getView(this.id),
-            //     };
-            //     let rect = this.$refs.exploreMap.getBoundingClientRect();
-            //     this.mousePosition = [
-            //         e.clientX - rect.left,
-            //         e.clientY - rect.top
-            //     ];
-            //     this.$emit('dragged', payload);
-            // },
-            // postPosition() {
-            //     let extent = this.$openlayers.getView(this.id).calculateExtent();
-            //     let payload = {
-            //         bottomLeftX: Math.round(extent[0]),
-            //         bottomLeftY: Math.round(extent[1]),
-            //         bottomRightX: Math.round(extent[2]),
-            //         bottomLeftY: Math.round(extent[1]),
-            //         image: parseInt(this.imageId),
-            //         topLeftX: Math.round(extent[0]),
-            //         topLeftY: Math.round(extent[3]),
-            //         topRightX: Math.round(extent[2]),
-            //         topRightY: Math.round(extent[3]),
-            //         zoom: this.$openlayers.getView(this.id).getZoom(),
-            //     };
-            //     api.post(`/api/imageinstance/${this.imageId}/position.json`, payload);
-            // },
-
-            // centerOnFeature(id) {
-            //     if (id == 0 || id == '') {
-            //         return;
-            //     }
-            //     api.get(`/api/annotation/${id}.json`).then(response => {
-            //         let annotation = response.data;
-            //         let format = new WKT();
-            //         let feature = format.readFeature(annotation.location);
-            //         let annotLayer = this.$openlayers.getMap(this.id).getLayers().getArray().findIndex(layer => layer.get('title') == annotation.user);
-            //         if (annotLayer < 0) {
-            //             this.addLayer = annotation.user;
-            //         }
-            //         this.$openlayers.getView(this.id).fit(feature.getGeometry());
-            //     })
-            // },
-            //
-            // showTerms(payload) {
-            //     this.termsToShow = payload;
-            // },
-            // setShowWithNoTerm(payload) {
-            //     this.showWithNoTerm = payload;
-            // },
-            // setAllTerms(payload) {
-            //     this.allTerms = payload;
-            // },
-            // setFeatureSelected(payload) {
-            //     this.featureSelected = payload;
-            // },
-            // setUserLayers(payload) {
-            //     this.userLayers = payload;
-            // },
-            // setLayersSelected(payload) {
-            //     this.layersSelected = payload;
-            // },
-            // changeImage(payload) {
-            //     api.get(`/api/abstractimage/${payload.baseImage}/imageservers.json?&imageinstance=${payload.id}`).then(response => {
-            //         this.imsBaseUrl = response.data.imageServersURLs[0];
-            //
-            //         let reset = this.image.width != payload.width || this.image.height != payload.height;
-            //         this.$emit('updateMap', {old: this.currentMap, new: payload});
-            //
-            //         this.extent = [0, 0, this.imageWidth, this.imageHeight];
-            //         if (reset) {
-            //             this.$openlayers.getView(this.id).setCenter([this.imageWidth / 2, this.imageHeight / 2]);
-            //             this.$openlayers.getView(this.id).setZoom(this.initialZoom);
-            //             this.$openlayers.getView(this.id).getProjection().setExtent(this.extent);
-            //             this.zoom = this.$openlayers.getView(this.id).getZoom();
-            //         }
-            //
-            //         let layer = new OlTile({
-            //             source: new Zoomify({
-            //                 url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`,
-            //                 size: [this.imageWidth, this.imageHeight],
-            //                 extent: this.extent,
-            //             }),
-            //             extent: this.extent,
-            //         });
-            //
-            //         // Find a way to avoid "blank flashes" when image change at least for multidimensional images.
-            //         // let oldLayers = this.$openlayers.getMap(this.id).getLayers().getArray();
-            //         // this.$openlayers.getMap(this.id).addLayer(layer);
-            //         // oldLayers.forEach(layer => this.$openlayers.getMap(this.id).removeLayer(layer));
-            //         this.$openlayers.getMap(this.id).setLayerGroup(new Group({layers: [layer]}));
-            //
-            //         this.$openlayers.getView(this.id).setMaxZoom(this.image.depth);
-            //         this.maxZoom = this.$openlayers.getView(this.id).getMaxZoom();
-            //
-            //         this.setUpdateLayers(true);
-            //         this.setUpdateAnnotationsIndex(true);
-            //         this.setFeatureSelected(undefined);
-            //     });
-            // },
-            // setVectorLayersOpacity(payload) {
-            //     this.vectorLayersOpacity = payload;
-            // },
-            // setImageGroup(payload) {
-            //     this.imageGroup = payload;
-            // },
-            // setFeatureSelectedData(payload) {
-            //     this.featureSelectedData = payload;
-            // },
-            // setUpdateLayers(payload) {
-            //     this.updateLayers = payload;
-            // },
-            // setUpdateAnnotationsIndex(payload) {
-            //     this.updateAnnotationsIndex = payload;
-            // },
-            // setSelectedComponent(component) {
-            //     if (component == this.selectedComponent) {
-            //         this.selectedComponent = '';
-            //     } else {
-            //         this.selectedComponent = component;
-            //     }
-            // },
             mustBeShown(key) {
                 return mustBeShown(key, this.projectConfig);
             },
-
         },
         created() {
             this.getWindowWidth();
@@ -1008,7 +843,6 @@
             });
 
 
-
             this.visibleTerms = clone(this.allTermIds);
             this.allTermIds.forEach(term => {
                 this.$set(this.sizeTerms, term, 0)
@@ -1017,63 +851,6 @@
             setInterval(this.getOnlineUsers.bind(this), 5000);
             setInterval(this.savePosition.bind(this), 5000);
             setInterval(this.trackUser.bind(this), 1000);
-
-            // Init map
-            // this.$openlayers.init({
-            //     element: this.id,
-            //     center: [this.imageWidth / 2, this.imageHeight / 2],
-            //     zoom: this.initialZoom,
-            //     controls: [
-            //         new ZoomControls({
-            //             target: document.getElementById('controls-' + this.id),
-            //         }),
-            //         new RotateControls({
-            //             target: document.getElementById('controls-' + this.id),
-            //         })
-            //     ],
-            //     enablePan: true,
-            //     enableMouseWheelZoom: true,
-            //     enableDoubleClickZoom: true,
-            //     minZoom: 0,
-            //     projection: {
-            //         code: 'CYTO',
-            //         extent: this.extent,
-            //     },
-            // });
-            // api.get(`/api/abstractimage/${this.image.baseImage}/imageservers.json`).then(response => {
-            //     this.imsBaseUrl = response.data.imageServersURLs[0];
-            //     // Adds layer
-            //     let layer = new OlTile({
-            //         source: new Zoomify({
-            //             url: `${this.filterUrl}${this.imsBaseUrl}&tileGroup={TileGroup}&z={z}&x={x}&y={y}&channels=0&layer=0&timeframe=0&mimeType=${this.image.mime}`,
-            //             size: [this.imageWidth, this.imageHeight],
-            //             extent: this.extent,
-            //         }),
-            //         extent: this.extent,
-            //     });
-            //     this.$openlayers.getMap(this.id).addLayer(layer);
-            //     this.$openlayers.getView(this.id).setMaxZoom(this.image.depth);
-            //     this.$openlayers.getMap(this.id).on('moveend', () => {
-            //         this.zoom = this.$openlayers.getView(this.id).getZoom();
-            //         this.maxZoom = this.$openlayers.getView(this.id).getMaxZoom();
-            //     });
-            //     this.$openlayers.getMap(this.id).on('moveend', () => {
-            //         this.postPosition();
-            //     });
-            //
-            //     setInterval(this.postPosition, 5000);
-            //
-            //     if (this.isReviewing) {
-            //         api.put(`/api/imageinstance/${this.imageId}/review.json`, {
-            //             id: this.imageId,
-            //         }).then(response => {
-            //             this.changeImage(response.data.imageinstance)
-            //         })
-            //     }
-            //     if (this.centeredFeature != '' && this.centeredFeature != this.image.project) {
-            //         this.centerOnFeature(this.centeredFeature);
-            //     }
-            // });
         },
         beforeDestroy() {
             window.removeEventListener('resize', this.getWindowHeight);

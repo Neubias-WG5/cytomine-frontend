@@ -54,11 +54,13 @@
         <div class="flex">
             <div class="input-group" style="margin-right: 5px;">
                 <span class="input-group-addon">Layer opacity</span>
-                <input class="form-control" :value="parseInt(layerOpacity * 100)" @input="$emit('update:layerOpacity', parseFloat($event.target.value / 100))"
+                <input class="form-control" :value="parseInt(layerOpacity * 100)"
+                       @input="$emit('update:layerOpacity', parseFloat($event.target.value / 100))"
                        type="number" step="1" :max="100" :min="0" name="layers-opacity" id="layers-opacity">
                 <span class="input-group-addon">%</span>
             </div>
-            <input class="range" :value="layerOpacity" @input="$emit('update:layerOpacity', parseFloat($event.target.value))"
+            <input class="range" :value="layerOpacity"
+                   @input="$emit('update:layerOpacity', parseFloat($event.target.value))"
                    type="range" step="0.01" :max="1" :min="0">
         </div>
     </section>
@@ -80,12 +82,6 @@
         data() {
             return {
                 layerToBeAdded: {},
-
-                // vectorLayer: {},
-                // reviewedLayer: {},
-                // intervalId: '',
-                // showReviewLayer: true,
-                // toAdd: {},
             }
         },
         computed: {
@@ -131,10 +127,10 @@
                 this.layerToBeAdded = {};
             },
             addAllLayers() {
-              let layers = this.notSelectedLayersSorted;
-              layers.forEach(layer => {
-                  this.addLayer(layer)
-              })
+                let layers = this.notSelectedLayersSorted;
+                layers.forEach(layer => {
+                    this.addLayer(layer)
+                })
             },
             toggleVisibility(layer) {
                 let index = this.userLayers.findIndex(l => l.id == layer.id);
@@ -177,86 +173,6 @@
                     return `${layer.lastname} ${layer.firstname} (${layer.username}) (${layer.size == undefined ? '0' : layer.size})`;
                 }
             },
-            // vectorLoader(extent, resolution, projection) {
-            //     api.get(`/api/annotation.json?&user=${this.toAdd.id}&image=${this.image.id}&showWKT=true&showTerm=true&notReviewedOnly=${this.isReviewing}&kmeans=true&bbox=${extent.join(',')}`).then(data => {
-            //         let geoms = this.createFeatures(data.data.collection, this.toAdd.id);
-            //         this.loadFeatures(geoms);
-            //     })
-            // },
-            // reviewLoader(extent, resolution, projection) {
-            //     this.userLayers.map(user => {
-            //         api.get(`/api/annotation.json?&user=${user.id}&image=${this.image.id}&roi=false&notReviewedOnly=true&reviewed=true&showWKT=true&showTerm=true&kmeans=true&bbox=${extent.join(',')}`).then(resp => {
-            //             let collection = resp.data.collection;
-            //             let geoms = this.createFeatures(collection, user.id, true);
-            //             this.loadFeatures(geoms, true)
-            //         })
-            //     })
-            // },
-            // loadFeatures(collection, areReviewed = false) {
-            //     if (areReviewed) {
-            //         this.reviewedLayer.getSource().addFeatures(collection);
-            //     } else {
-            //         this.vectorLayer.getSource().addFeatures(collection);
-            //     }
-            // },
-            //
-            // removeLayer(toRemoveId, removeFromSelected = true) {
-            //     let index;
-            //
-            //     if (removeFromSelected) {
-            //         index = this.layersSelected.findIndex(layer => {
-            //             return layer.id === toRemoveId;
-            //         });
-            //         // Removes the layer from the selected
-            //         this.layersSelected.splice(index, 1);
-            //     }
-            //
-            //     // Removes layer from the map
-            //     index = this.layerIndex(this.layersArray, toRemoveId);
-            //     if (index < 0) return;
-            //
-            //     this.layersArray.splice(index, 1);
-            //     this.$openlayers.getMap(this.viewerId).render();
-            // },
-            //
-            // followUser(userId) {
-            //     let index = this.userToFollow.findIndex(user => user == userId);
-            //
-            //     if (index > 0) {
-            //         this.userToFollow = [];
-            //         clearInterval(this.intervalId);
-            //     } else {
-            //         this.userToFollow = [userId];
-            //         this.intervalId = setInterval(this.setUserPosition, 1000);
-            //     }
-            // },
-            // setUserPosition() {
-            //     api.get(`/api/imageinstance/${this.image.id}/position/${this.userToFollow[0]}.json`).then(data => {
-            //         let {x, y, zoom} = data.data;
-            //         this.$openlayers.getView(this.viewerId).setCenter([x, y]);
-            //         this.$openlayers.getView(this.viewerId).setZoom(zoom);
-            //     })
-            // },
-            // isUserOnline(userId) {
-            //     let index = this.onlineUsers.findIndex(user => user.id == userId);
-            //     return index > 0 ? false : true;
-            // },
-            // refreshAnnotationsIndex() {
-            //     api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(data => {
-            //         this.userLayers.map((layer, index) => {
-            //             let annotIndex = data.data.collection.find(index => layer.id === index.user);
-            //             this.userLayers[index].size = (annotIndex) ? annotIndex.countAnnotation : 0;
-            //         });
-            //
-            //         this.layersSelected.map((layer, index) => {
-            //             let userLayer = this.userLayers.find(item => layer.id == item.id);
-            //             layer.size = userLayer.size;
-            //             this.$set(this.layersSelected, index, layer);
-            //             return layer;
-            //         })
-            //     })
-            // },
-            //
         }
     }
 </script>
@@ -265,14 +181,17 @@
     .display-inline-block {
         display: inline-block;
     }
+
     .flex {
         display: flex;
         justify-content: center;
         align-items: center;
     }
+
     .input-group {
         max-width: 250px;
     }
+
     .range {
         width: auto;
     }

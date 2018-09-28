@@ -7,17 +7,18 @@
 </template>
 
 <script>
-    import { parse } from 'wellknown'
-    import clone from 'lodash.clone'
     import uuid from 'uuid'
-    import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
+    import parse from 'wellknown'
+    import clone from 'lodash.clone'
     import AnnotationStatus from '../../helpers/annotationStatus'
+
     import Text from 'ol/style/text';
     import Fill from 'ol/style/fill';
     import Stroke from 'ol/style/stroke';
+    import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
 
     export default {
-        name: "AnnotationSourceVector",
+        name: "AnnotationLayer",
         data() {
             return {
                 features: [],
