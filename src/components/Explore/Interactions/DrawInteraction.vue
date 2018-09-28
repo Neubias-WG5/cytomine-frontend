@@ -70,17 +70,22 @@
                             if (!geometry) {
                                 geometry = new Polygon(null);
                             }
-                            let size = 300;
-                            let originX = coord[0][0];
-                            let originY = coord[0][1];
+                            let originX = coord[0][0],
+                                originY = coord[0][1],
+                                mouseX = coord[1][0],
+                                mouseY = coord[1][1],
+                                deltaX = mouseX - originX,
+                                deltaY = mouseY - originY,
+                                centerX = originX + deltaX / 2,
+                                centerY = originY + deltaY / 2;
                             let newCoordinates = [
                                 coord[0],
-                                [originX - size / 2, originY - size / 2],
-                                [originX - size / 4, originY - size / 2],
-                                [originX - size / 4, originY - size * 2],
-                                [originX + size / 4, originY - size * 2],
-                                [originX + size / 4, originY - size / 2],
-                                [originX + size / 2, originY - size / 2],
+                                [originX - deltaX / 2, originY - deltaY / 2],
+                                [originX - deltaX / 4, originY - deltaY / 2],
+                                [originX - deltaX / 4, originY - deltaY * 2],
+                                [originX + deltaX / 4, originY - deltaY * 2],
+                                [originX + deltaX / 4, originY - deltaY / 2],
+                                [originX + deltaX / 2, originY - deltaY / 2],
                                 coord[0],
                             ];
                             geometry.setCoordinates([newCoordinates]);
