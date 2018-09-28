@@ -75,9 +75,7 @@
                                 mouseX = coord[1][0],
                                 mouseY = coord[1][1],
                                 deltaX = mouseX - originX,
-                                deltaY = mouseY - originY,
-                                centerX = originX + deltaX / 2,
-                                centerY = originY + deltaY / 2;
+                                deltaY = mouseY - originY;
                             let newCoordinates = [
                                 coord[0],
                                 [originX - deltaX / 2, originY - deltaY / 2],

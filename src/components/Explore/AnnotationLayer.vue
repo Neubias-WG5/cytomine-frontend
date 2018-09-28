@@ -1,7 +1,7 @@
 <template>
-    <vl-layer-vector :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity" :id="'layer'+userLayer.id">
-        <vl-source-vector :features.sync="features" ref="olSourceVector"></vl-source-vector>
-        <vl-style-func :factory="styleFuncFactoryProp"></vl-style-func>
+    <vl-layer-vector ref="olLayerVector" :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity" :id="'layer'+userLayer.id" @mounted="rev++">
+        <vl-source-vector :features.sync="features" ref="olSourceVector" @mounted="rev++"></vl-source-vector>
+        <vl-style-func :factory="styleFuncFactoryProp" @mounted="rev++"></vl-style-func>
     </vl-layer-vector>
 
 </template>
@@ -26,6 +26,7 @@
                 properties: {},
                 revisionProperties: 0,
                 revisionCounter: 0,
+                rev: 0
             }
         },
         props: [
@@ -51,6 +52,7 @@
                 let _ = this.visibleTerms;
                 _ = this.visibleNoTerm;
                 _ = this.revisionProperties;
+                _ = this.rev;
                 /////
 
                 console.log("update");
@@ -144,6 +146,9 @@
             },
             selectedProperty() {
                 this.loadProperties(true);
+            },
+            rev() {
+                this.forceRefresh()
             }
         },
         methods:{
@@ -201,7 +206,7 @@
                             this.revisionProperties += 1;
                     })
                 });
-            }
+            },
         },
         created() {
 
