@@ -194,13 +194,14 @@
     import ScaleLine from './ScaleLine'
     import ColorMaps from './Colormaps'
     import OverviewMap from 'ol/control/overviewmap'
+    import View from 'ol/view';
 
     import ViewerButtons from "./ViewerButtons";
 
     import mustBeShown from '../../helpers/mustBeShown';
     import Filters from "./Panels/Filters";
     import NavigationImage from "./Panels/NavigationImage";
-    import clone from "lodash.clone"
+    import clone from "lodash.clone";
     import differenceBy from "lodash.differenceby"
     import sample from "lodash.sample";
     import debounce from "lodash.debounce";
@@ -276,6 +277,7 @@
                 clickCoordinate: undefined,
                 selectedFeatures: [],
                 viewExtent: [0, 0, 0, 0],
+                projection: null,
 
                 imsBaseUrl: '',
                 mousePosition: [0, 0],
@@ -793,10 +795,20 @@
             },
             onMapMounted() {
                 this.$refs.olmap.$createPromise.then(() => {
+                    this.$refs.olmap.$map.getControls().getArray()[0].element.childNodes.forEach(child => {
+                        child.classList.add('btn');
+                        child.classList.add('btn-default');
+                    });
+                    this.$refs.olmap.$map.getControls().getArray()[1].element.childNodes.forEach(child => {
+                        child.classList.add('btn');
+                        child.classList.add('btn-default');
+                    });
+
                     this.$refs.olmap.$map.addControl(new OverviewMap({
                         label: '«',
                         collapseLabel: '»',
                         collapsed: false,
+                        view: new View({projection: this.projection})
                     }));
 
                     this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
@@ -970,12 +982,12 @@
             this.getWindowWidth();
             this.getWindowHeight();
 
-            let cytomineProjection = createProj({
+            this.projection = createProj({
                 code: 'CYTO:FLAT',
                 units: 'pixels',
                 extent: this.projectionExtent,
             });
-            addProj(cytomineProjection);
+            addProj(this.projection);
 
             this.setNewImage(null, this.image);
 
@@ -995,16 +1007,7 @@
                 window.addEventListener('resize', this.getWindowWidth);
             });
 
-            this.$refs.olmap.$createPromise.then(() => {
-                this.$refs.olmap.$map.getControls().getArray()[0].element.childNodes.forEach(child => {
-                    child.classList.add('btn');
-                    child.classList.add('btn-default');
-                });
-                this.$refs.olmap.$map.getControls().getArray()[1].element.childNodes.forEach(child => {
-                    child.classList.add('btn');
-                    child.classList.add('btn-default');
-                });
-            });
+
 
             this.visibleTerms = clone(this.allTermIds);
             this.allTermIds.forEach(term => {
