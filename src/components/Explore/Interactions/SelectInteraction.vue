@@ -14,6 +14,8 @@
 </template>
 
 <script>
+    import clone from "lodash.clone"
+
     export default {
         name: "SelectInteraction",
         props: [
@@ -40,7 +42,7 @@
                 else if (terms.length == 0)
                     fillColor = [238, 238, 238, Math.min(this.layerOpacity + 0.3, 1.)];
                 else {
-                    fillColor = this.styles[terms[0]].getFill().getColor();
+                    fillColor = clone(this.styles[terms[0]].getFill().getColor());
                     fillColor[3] = this.layerOpacity + 0.3;
                 }
                 return fillColor;

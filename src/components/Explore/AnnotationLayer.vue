@@ -1,7 +1,6 @@
 <template>
     <vl-layer-vector ref="olLayerVector"
                      :visible="userLayer.visible && userLayer.selected"
-                     :opacity.number="layerOpacity"
                      :id="'layer'+userLayer.id"
                      @mounted="rev++">
         <vl-source-vector ref="olSourceVector" :features.sync="features" @mounted="rev++"></vl-source-vector>
@@ -55,6 +54,7 @@
                 // See https://github.com/ghettovoice/vuelayers/issues/68#issuecomment-404223423
                 let _ = this.visibleTerms;
                 _ = this.visibleNoTerm;
+                _ = this.layerOpacity;
                 _ = this.rev;
                 /////
 
@@ -62,57 +62,52 @@
 
                 let func = function() {
                     const cache = {};
-                    const strokeProperty = new Stroke({color: '#000000', width: 1.25});
                     return (feature, resolution) => {
+                        let styles = [];
+
                         if (feature.get('clusterSize') > 1) {
                             const size = feature.get('clusterSize');
-                            let style = cache[size];
+                            let styleText = cache[size];
 
-                            if (!style) {
-                                style = createStyle({
-                                    strokeColor: '#111111',
-                                    strokeWidth: 1.25,
-                                    strokeDash: [2, 2],
-                                    fillColor: '#FFFFFF',
+                            if (!styleText) {
+                                styleText = createStyle({
                                     text: size.toString(),
-                                    textFillColor: '#3399CC',
-                                    textFont: '36px Arial, sans-serif',
-                                    textStrokeDash: [],
-                                    // textBackgroundFillColor: '#FFFFFF',
+                                    textStrokeColor: 'black',
+                                    textStrokeWidth: 1.25,
+                                    textFillColor: 'white',
+                                    textFont: '24px Arial, sans-serif',
                                 });
-                                cache[size] = style
+                                cache[size] = styleText
                             }
-                            return [style]
+                            styles.push(this.styles[AnnotationStatus.CLUSTER]);
+                            styles.push(styleText)
+
+
                         }
                         else {
                             let terms = feature.get('terms');
-                            let style;
+
                             if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
-                                style = this.styles[AnnotationStatus.MULTIPLE_TERMS];
+                                styles.push(this.styles[AnnotationStatus.MULTIPLE_TERMS]);
                             else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
-                                style = this.styles[terms[0]];
+                                styles.push(this.styles[terms[0]]);
                             else if (terms.length == 0 && this.visibleNoTerm)
-                                style = this.styles[AnnotationStatus.NO_TERM];
+                                styles.push(this.styles[AnnotationStatus.NO_TERM]);
                             else
                                 return [this.styles[AnnotationStatus.HIDDEN]];
 
-                            if (!this.properties || this.properties == {})
-                                return [style];
-                            else {
-                                style = clone(style);
-                                let text = new Text({
-                                    font: 'bold 36px sans-serif',
-                                    fill: new Fill({
-                                        color: this.selectedProperty.color,
-                                    }),
+                            if (this.properties && this.properties != {}) {
+                                styles.push(createStyle({
                                     text: this.properties[feature.getId()],
-                                    overflow: true,
-                                    stroke: strokeProperty
-                                });
-                                style.setText(text);
-                                return [style];
+                                    textFillColor: this.selectedProperty.color,
+                                    textFont: '36px Arial, sans-serif',
+                                    textOverflow: true,
+                                    textStrokeColor: '#000000',
+                                    textStrokeWidth: 1
+                                }));
                             }
                         }
+                        return styles;
                     }
                 };
                 return func.bind(this);
@@ -170,12 +165,12 @@
                                 }
                             }
                     });
-                    this.loadProperties()
+                    this.loadProperties(true)
                 })
             },
             loadProperties(incrementCounter = false) {
+                this.properties = {};
                 if (this.selectedProperty.key == "") {
-                    this.properties = {};
                     if (incrementCounter)
                         ++this.rev;
                 }

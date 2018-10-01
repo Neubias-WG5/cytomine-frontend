@@ -206,6 +206,8 @@
     import GeoJSON from 'ol/format/geojson';
     import OverviewMap from 'ol/control/overviewmap'
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
+    import AnnotationStatus from "../../helpers/annotationStatus";
+    import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
 
     import mustBeShown from '../../helpers/mustBeShown';
     import clone from "lodash.clone";
@@ -305,7 +307,6 @@
             'viewers',
             'paddingTop',
             'ontology',
-            'styles',
 
             'id',
             'linkedTo',
@@ -430,6 +431,48 @@
                     'rotation': this.rotation
                 }
             },
+            styles() {
+                let pointRadius = 7;
+                let s = {};
+                s[AnnotationStatus.NO_TERM] = createStyle({
+                    strokeColor: [17, 17, 17, this.layersOpacity],
+                    strokeWidth: 2,
+                    fillColor: [238, 238, 238, this.layersOpacity],
+                    imageRadius: pointRadius,
+                });
+
+                s[AnnotationStatus.MULTIPLE_TERMS] = createStyle({
+                    strokeColor: [17, 17, 17, this.layersOpacity],
+                    strokeWidth: 2,
+                    fillColor: [204, 204, 204, this.layersOpacity],
+                    imageRadius: pointRadius,
+                });
+
+                s[AnnotationStatus.HIDDEN] = createStyle({
+                    strokeColor: [0, 0, 0, 0],
+                    strokeWidth: 0,
+                    fillColor: [0, 0, 0, 0]
+                });
+
+                this.ontology.allTerms.forEach(term => {
+                    let c = term.colorRGB;
+                    c[3] = this.layersOpacity;
+                    s[term.id] = createStyle({
+                        strokeColor: [17, 17, 17, this.layersOpacity],
+                        strokeWidth: 2,
+                        fillColor: c,
+                        imageRadius: pointRadius,
+                    })
+                });
+
+                s[AnnotationStatus.CLUSTER] = createStyle({
+                    strokeColor: [13, 13, 13, this.layersOpacity],
+                    strokeWidth: 1.25,
+                    strokeDash: [2, 2],
+                    fillColor: [255, 255, 255, this.layersOpacity],
+                });
+                return s;
+            }
         },
         watch: {
             linkedTo() {
@@ -527,7 +570,7 @@
                         //TODO: [NOTIFICATION]
                     })
                 })
-            }
+            },
         },
         methods: {
             deleteViewer() {
