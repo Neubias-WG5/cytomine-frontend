@@ -263,7 +263,7 @@
                 visibleTerms: [],
                 associableTerms: [],
                 sizeTerms: {},
-                visibleNoTerm: false,
+                visibleNoTerm: true,
                 annotationProperties: [],
                 onlineUsers: [],
                 imageSequences: [],
