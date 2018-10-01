@@ -232,10 +232,13 @@
                     }).then(response => {
                         //TODO: [NOTIFICATION]
                         this.annotation.term.push(termId);
-                        this.$emit('update:selectedFeature', null); // todo: temporary
                         let feature = this.selectedFeature;
                         feature.properties.terms = this.annotation.term;
-                        this.$emit('forceUpdateLayer', this.annotation.user);
+                        this.$emit('updateFeature', {
+                            layerId: this.annotation.user,
+                            featureId: this.annotation.id,
+                            terms: this.annotation.term
+                        });
                         this.$emit('update:selectedFeature', feature);
                     }).catch(errors => {
                         //TODO: [NOTIFICATION]
@@ -245,10 +248,13 @@
                     api.delete(`api/annotation/${this.annotation.id}/term/${termId}.json`).then(response => {
                         //TODO: [NOTIFICATION]
                         this.annotation.term = newList;
-                        this.$emit('update:selectedFeature', null); // todo: temporary
                         let feature = this.selectedFeature;
                         feature.properties.terms = this.annotation.term;
-                        this.$emit('forceUpdateLayer', this.annotation.user);
+                        this.$emit('updateFeature', {
+                            layerId: this.annotation.user,
+                            featureId: this.annotation.id,
+                            terms: this.annotation.term
+                        });
                         this.$emit('update:selectedFeature', feature);
                     }).catch(errors => {
                         //TODO: [NOTIFICATION]
@@ -293,10 +299,13 @@
                 api.post(`api/annotation/${this.annotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
                     //TODO: [NOTIFICATION]
                     let callback = function () {
-                        this.$emit('update:selectedFeature', null); // todo: temporary
                         let feature = this.selectedFeature;
                         feature.properties.terms = this.annotation.term;
-                        this.$emit('forceUpdateLayer', this.annotation.user);
+                        this.$emit('updateFeature', {
+                            layerId: this.annotation.user,
+                            featureId: this.annotation.id,
+                            terms: this.annotation.term
+                        });
                         this.$emit('update:selectedFeature', feature);
                     };
                     this.getAnnotation(this.selectedFeature, callback.bind(this));

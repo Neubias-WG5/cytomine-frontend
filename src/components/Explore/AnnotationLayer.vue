@@ -1,6 +1,10 @@
 <template>
-    <vl-layer-vector ref="olLayerVector" :visible="userLayer.visible && userLayer.selected" :opacity.number="layerOpacity" :id="'layer'+userLayer.id" @mounted="rev++">
-        <vl-source-vector :features.sync="features" ref="olSourceVector" @mounted="rev++"></vl-source-vector>
+    <vl-layer-vector ref="olLayerVector"
+                     :visible="userLayer.visible && userLayer.selected"
+                     :opacity.number="layerOpacity"
+                     :id="'layer'+userLayer.id"
+                     @mounted="rev++">
+        <vl-source-vector ref="olSourceVector" :features.sync="features" @mounted="rev++"></vl-source-vector>
         <vl-style-func :factory="styleFuncFactoryProp" @mounted="rev++"></vl-style-func>
     </vl-layer-vector>
 
@@ -22,10 +26,10 @@
         data() {
             return {
                 features: [],
-                localExtent: [0, 0, 0, 0],
                 properties: {},
-                revisionProperties: 0,
-                revisionCounter: 0,
+                localExtent: [0, 0, 0, 0],
+
+                clearAllRev: 0,
                 rev: 0
             }
         },
@@ -47,11 +51,10 @@
                 if (!this.userLayer.visible)
                     return function() { return (a,b) => {}};
 
-                // Kind of hack to force computed property update.
+                // Force computed property update.
                 // See https://github.com/ghettovoice/vuelayers/issues/68#issuecomment-404223423
                 let _ = this.visibleTerms;
                 _ = this.visibleNoTerm;
-                _ = this.revisionProperties;
                 _ = this.rev;
                 /////
 
@@ -84,7 +87,7 @@
                         else {
                             let terms = feature.get('terms');
                             let style;
-                            if (terms.length > 1 && this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)
+                            if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
                                 style = this.styles[AnnotationStatus.MULTIPLE_TERMS];
                             else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
                                 style = this.styles[terms[0]];
@@ -118,17 +121,10 @@
         watch: {
             userLayer: {
                 handler: function(newValue, oldValue) {
-                    // If annotations have been deleted, reload all annotations
-                    // if (newValue.size < oldValue.size) {
-                    //     this.features = [];
-                    //     this.loadAnnotations();
-                    // }
-                    // else
-
-                    if (newValue.revisionCounter > this.revisionCounter) {
+                    if (newValue.clearAllRev > this.clearAllRev) {
+                        this.clearAllRev = newValue.clearAllRev;
                         this.features = [];
                         this.loadAnnotations();
-                        this.revisionCounter = newValue.revisionCounter;
                     }
                     else if ((newValue.visible && newValue.selected /*&& (!oldValue.visible || !oldValue.selected)*/)
                         || newValue.size != oldValue.size) {
@@ -147,9 +143,6 @@
             selectedProperty() {
                 this.loadProperties(true);
             },
-            rev() {
-                this.forceRefresh()
-            }
         },
         methods:{
             computeLocalExtent(newExtent) {
@@ -163,13 +156,6 @@
             },
             loadAnnotations() {
                 api.get(`api/annotation.json?user=${this.userLayer.id}&image=${this.image.id}&notReviewedOnly=${this.isReviewing}&showWKT=true&showTerm=true&kmeans=true&bbox=${this.extent.join(',')}`).then(response => {
-                    // Remove clusters
-                    // let index = this.features.findIndex(feature => feature.properties.clusterSize > 1);
-                    // while (index !== -1) {
-                    //     this.features.splice(index, 1);
-                    //     index = this.features.findIndex(feature => feature.properties.clusterSize > 1);
-                    // }
-                    // Add features if not existing
                     this.features = response.data.collection.map(annotation => {
                             return {
                                 type: 'Feature',
@@ -184,8 +170,6 @@
                                 }
                             }
                     });
-                    // this.features = uniqby(this.features.concat(newFeatures), 'id')
-
                     this.loadProperties()
                 })
             },
@@ -193,7 +177,7 @@
                 if (this.selectedProperty.key == "") {
                     this.properties = {};
                     if (incrementCounter)
-                        this.revisionProperties += 1;
+                        ++this.rev;
                 }
 
                 if (!this.selectedProperty.key || parseInt(this.userLayer.id) < 0)
@@ -203,17 +187,14 @@
                     response.data.collection.forEach(item => {
                         this.$set(this.properties, item.idAnnotation, item.value);
                         if (incrementCounter)
-                            this.revisionProperties += 1;
+                           ++this.rev;
                     })
                 });
             },
         },
-        created() {
-
-        },
         mounted() {
             this.computeLocalExtent(this.extent);
-            this.revisionProperties++;
+            this.rev++;
         }
     }
 </script>

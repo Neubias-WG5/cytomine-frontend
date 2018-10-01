@@ -1,7 +1,7 @@
 <template>
-    <vl-interaction-select :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
+    <vl-interaction-select ident="select-target" :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
         <template slot-scope="select">
-            <vl-style-box :z-index="9999999">
+            <vl-style-box>
                 <vl-style-stroke :color="[17, 17, 17, 1]" :width="4"></vl-style-stroke>
                 <vl-style-fill :color="featureStyle"></vl-style-fill>
                 <vl-style-circle :radius="5">
@@ -36,9 +36,9 @@
                 let terms = this.selectedFeature.properties.terms;
                 let fillColor;
                 if (terms.length > 1)
-                    fillColor = [204, 204, 204, this.layerOpacity + 0.3];
+                    fillColor = [204, 204, 204, Math.min(this.layerOpacity + 0.3, 1.)];
                 else if (terms.length == 0)
-                    fillColor = [238, 238, 238, this.layerOpacity + 0.3];
+                    fillColor = [238, 238, 238, Math.min(this.layerOpacity + 0.3, 1.)];
                 else {
                     fillColor = this.styles[terms[0]].getFill().getColor();
                     fillColor[3] = this.layerOpacity + 0.3;
@@ -50,11 +50,10 @@
                 _ = this.visibleNoTerm;
                 _ = this.activeTool;
                 return (feature, layer) => {
-                    let drawableLayer = (layer) ?  layer.get('id') == 'Drawable' : false;
                     let terms = feature.get('terms');
-                    return (this.activeTool == 'Select' || drawableLayer)
+                    return (this.activeTool == 'Select')
                         && (feature.get('clusterSize') == 0 && ((terms.length == 0 && this.visibleNoTerm)
-                        || (terms.length > 0 &&  this.visibleTerms.filter(t => -1 !== terms.indexOf(t)) > 0)));
+                        || (terms.length > 0 &&   this.visibleTerms.filter(t => terms.includes(t)).length > 0)));
                 }
             },
             selectedFeatures: {
@@ -84,10 +83,22 @@
 
                 if (this.selectedFeature.properties.terms.length == 0 && !newValue)
                     this.$emit('update:selectedFeature', null)
+            },
+            selectedFeature: {
+                handler() {
+                    this.refresh()
+                },
+                deep: true
+            },
+            layerOpacity() {
+                this.refresh();
             }
         },
         methods: {
-
+            refresh() {
+                console.log("refres");
+                this.$refs.olSelectInteraction.getFeatures().forEach(feature => feature.changed());
+            }
         }
     }
 </script>

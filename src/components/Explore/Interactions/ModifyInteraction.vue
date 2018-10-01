@@ -1,16 +1,12 @@
 <template>
-    <!--<span v-if="modifyToolActive">-->
-        <!--<vl-layer-vector id="Drawable">-->
-            <!--<vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVectorDraw" ></vl-source-vector>-->
-        <!--</vl-layer-vector>-->
-        <!--<vl-interaction-draw ref="olDrawInteraction" source="draw-target" :type="drawType"-->
-                             <!--:freehand="drawFreehand" :freehand-condition="undefined"-->
-                             <!--:geometry-function="drawGeometryFunc" @drawend="onDrawEnd" @drawstart="onDrawStart">-->
-        <!--</vl-interaction-draw>-->
-    <!--</span>-->
+    <span v-if="modifyToolActive">
+        <vl-interaction-modify ref="olModifyInteraction" source="select-target" @modifyend="edit">
+        </vl-interaction-modify>
+    </span>
 </template>
 
 <script>
+    import parse from 'wellknown'
     import Draw from 'ol/interaction/draw';
     import Polygon from 'ol/geom/polygon';
     import WKT from 'ol/format/wkt';
@@ -19,6 +15,7 @@
         name: "ModifyInteraction",
         data() {
             return {
+                format: new WKT(),
             }
         },
         props: [
@@ -42,12 +39,12 @@
                 else if (this.activeTool == 'Remove') {
                     this.remove()
                 }
-                // else if (this.activeTool == 'Edit') {
-                //     this.$refs.olModifyInteraction.recreate();
-                // }
-                // else if (this.activeTool == 'Drag') {
-                //     this.$refs.olTranslateInteraction.recreate();
-                // }
+                else if (this.activeTool == 'Edit') {
+                    // this.$refs.olModifyInteraction.recreate();
+                }
+                else if (this.activeTool == 'Drag') {
+                    this.translate();
+                }
                 // else if (this.activeTool)
             }
         },
@@ -58,16 +55,35 @@
                     id: this.selectedFeature.properties.id
                 }).then(response => {
                     // TODO: [NOTIFICATION]
-                    this.$emit('updateAnnotationIndexes');
-                    this.$emit('update:selectedFeature', null); // TODO: temporary, find better way to update selected geometry (force rerendering of select)
-                    this.$emit('forceUpdateLayer', response.data.data.annotation.user);
-                    this.$emit('selectFeature', {layerId: response.data.data.annotation.user, featureId: response.data.data.annotation.id});
+                    let annotation = response.data.data.annotation;
+                    let feature = this.selectedFeature;
+                    feature.geometry = parse(annotation.location);
+                    this.$emit('updateFeature', {
+                        layerId: annotation.user,
+                        featureId: annotation.id,
+                        geometry: this.format.readGeometry(annotation.location)
+                    });
+                    this.$emit('update:selectedFeature', feature);
                     this.$emit('update:activeTool', 'Select');
                 }).catch(error => {
                     // TODO: [NOTIFICATION]
                     this.$emit('update:activeTool', 'Select');
                 });
 
+            },
+            edit(evt) {
+                // TODO: get annotation from backend while available in AnnotationDetails !!
+                api.get(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
+                    let annotation = response.data;
+                    annotation.location = this.format.writeFeature(evt.features.getArray()[0]);
+                    api.put(`api/annotation/${annotation.id}.json`, annotation).then(response => {
+                        //TODO: [NOTIFICATION]
+                        // this.$emit('update:activeTool', 'Select');
+                    }).catch(error => {
+                        //TODO: [NOTIFICATION]
+                        this.$emit('update:activeTool', 'Select');
+                    })
+                })
             },
             remove() {
                 this.$confirm({
@@ -76,32 +92,32 @@
                     okText: 'Delete',
                     content: `This annotation #${this.selectedFeature.properties.id} will be permanently deleted. Continue?`
                 })
-                    .then(() => {
-                        api.delete(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
-                            this.$notify({
-                                placement: 'bottom-right',
-                                type: 'success',
-                                content: response.data.message
-                            });
-                            this.$emit('updateAnnotationIndexes');
-                            this.$emit('update:selectedFeature', null);
-                            this.$emit('update:activeTool', 'Select');
-                        }).catch(error => {
-                            this.$notify({
-                                placement: 'bottom-right',
-                                type: 'danger',
-                                content: error.response.data.errors
-                            });
-                            this.$emit('update:activeTool', 'Select');
-                        })
-                    })
-                    .catch(() => {
+                .then(() => {
+                    api.delete(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
                         this.$notify({
                             placement: 'bottom-right',
-                            content: 'Delete operation aborted.'
+                            type: 'success',
+                            content: response.data.message
+                        });
+                        this.$emit('updateAnnotationIndexes');
+                        this.$emit('update:selectedFeature', null);
+                        this.$emit('update:activeTool', 'Select');
+                    }).catch(error => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: error.response.data.errors
                         });
                         this.$emit('update:activeTool', 'Select');
                     })
+                })
+                .catch(() => {
+                    this.$notify({
+                        placement: 'bottom-right',
+                        content: 'Delete operation aborted.'
+                    });
+                    this.$emit('update:activeTool', 'Select');
+                })
             }
         }
     }
