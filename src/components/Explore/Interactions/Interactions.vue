@@ -9,7 +9,7 @@
                         Select
                     </button>
                 </template>
-                <template v-if="this.canDraw">
+                <template v-if="this.isDrawable">
                     <template v-if="mustBeShown('project-tools-point')">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: draw.activeTool == 'Point'}]"
                                 @click="addInteraction('Point')" title="Add a point as new annotation">
@@ -202,7 +202,7 @@
             featureSelectedId() {
                 return this.featureSelected.getArray()[0].getId();
             },
-            canDraw() {
+            isDrawable() {
                 return !this.project.isReadOnly
                     || this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1;
             }

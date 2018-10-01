@@ -41,7 +41,7 @@
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
                         :project="project"
-                        :project-config="projectConfig" :selected-feature="selectedFeature"
+                        :project-config="projectConfig" :selected-annotation="selectedAnnotation"
                         :drawable-layer-ids="drawableUserLayerIds"></viewer-toolbar>
 
         <div :id="'overviewmap-'+id" class="overview-container"></div>

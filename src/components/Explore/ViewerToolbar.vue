@@ -8,50 +8,50 @@
                     Select
                 </button>
             </template>
-            <template v-if="canDraw">
+            <template v-if="isDrawable">
                 <template v-if="mustBeShown('project-tools-point')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Point'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Point'}, {disabled: !canDraw}]"
                             @click="setInteraction('Point')" title="Add a point as new annotation">
                         <i class="fas fa-map-marker-alt"></i>
                         Point
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-line')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Line'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Line'}, {disabled: !canDraw}]"
                             @click="setInteraction('Line')" title="Add a line as new annotation">
                         <i class="fas fa-minus"></i>
                         Line
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-arrow')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Arrow'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Arrow'}, {disabled: !canDraw}]"
                             @click="setInteraction('Arrow')" title="Add an arrow as new annotation">
                         <i class="fas fa-long-arrow-alt-right"></i>
                         Arrow
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-rectangle')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Rectangle'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Rectangle'}, {disabled: !canDraw}]"
                             @click="setInteraction('Rectangle')" title="Add a rectangle as new annotation">
                         <i class="fas fa-vector-square"></i>
                         Rectangle
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-diamond')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Ellipse'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Ellipse'}, {disabled: !canDraw}]"
                             @click="setInteraction('Ellipse')" title="Add an ellipse as new annotation">
                         Ellipse
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-circle')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Circle'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Circle'}, {disabled: !canDraw}]"
                             @click="setInteraction('Circle')" title="Add a circle as new annotation">
                         <i class="far fa-circle"></i>
                         Circle
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-polygon')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Polygon'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Polygon'}, {disabled: !canDraw}]"
                             @click="setInteraction('Polygon')" title="Add a polygon as new annotation">
                         <i class="fas fa-draw-polygon"></i>
                         Polygon
@@ -65,20 +65,20 @@
                     </button>
                 </template> -->
                 <template v-if="mustBeShown('project-tools-freehand')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Freehand'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Freehand'}, {disabled: !canDraw}]"
                             @click="setInteraction('Freehand')" title="Add a new annotation with freehand draw">
                         <i class="fas fa-pencil-alt"></i>
                         Freehand
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-union')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Union'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Union'}, {disabled: !canDraw}]"
                             @click="setInteraction('Union')" title="Correct an annotation by adding a freehand area">
                         <i class="far fa-object-group"></i>
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-difference')">
-                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Difference'}, {disabled: !hasAtLeastOnDrawableLayer}]"
+                    <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Difference'}, {disabled: !canDraw}]"
                             @click="setInteraction('Difference')" title="Correct an annotation by removing a freehand area">
                         <i class="far fa-object-ungroup"></i>
                     </button>
@@ -117,31 +117,30 @@
             </div>
         </div>
 
-        <template v-if="selectedFeature && selectedFeature != {} &&  isAnnotationEditable(selectedFeature)">
+        <template v-if="selectedAnnotation && isEditable">
             <div class="btn-group" role="group">
-                <template v-if="mustBeShown('project-tools-fill') && selectedFeature.geometry.type != 'Point'
-                    && selectedFeature.geometry.type != 'LineString' ">
+                <template v-if="mustBeShown('project-tools-fill') && canFill">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Fill'}]"
                             @click="setInteraction('Fill')" title="Fill holes in the selected annotation">
                         <i class="fas fa-fill"></i>
                         Fill
                     </button>
                 </template>
-                <template v-if="mustBeShown('project-tools-edit') && selectedFeature.geometry.type != 'Point'">
+                <template v-if="mustBeShown('project-tools-edit') && canEdit">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Edit'}]"
                             @click="setInteraction('Edit')" title="Edit geometry of the selected annotation">
                         <i class="fas fa-edit"></i>
                         Edit
                     </button>
                 </template>
-                <template v-if="mustBeShown('project-tools-rotate') && selectedFeature.geometry.type != 'Point'">
+                <template v-if="mustBeShown('project-tools-rotate') && canRotate">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Rotate'}]"
                             @click="setInteraction('Rotate')" title="Rotate the selected annotation">
                         <i class="fas fa-redo-alt"></i>
                         Rotate
                     </button>
                 </template>
-                <!-- <template v-if="mustBeShown('project-tools-resize') && selectedFeature.geometry.type != 'Point'"> TODO RESIZE
+                <!-- <template v-if="mustBeShown('project-tools-resize') && canResize> TODO RESIZE
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Resize'}]" @click="setInteraction('Resize')" title="Resize the selected annotation">
                         <span class="glyphicon glyphicon-resize-full"></span>
                         Resize
@@ -179,7 +178,7 @@
             'projectConfig',
             'currentUser',
             'activeTool',
-            'selectedFeature',
+            'selectedAnnotation',
             'drawableLayerIds'
         ],
         data() {
@@ -187,11 +186,30 @@
             }
         },
         computed: {
-            canDraw() {
+            isDrawable() {
                 return !this.project.isReadOnly
                     || this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1;
             },
-            hasAtLeastOnDrawableLayer() {
+            isEditable() {
+                return this.selectedAnnotation.class != "be.cytomine.ontology.AlgoAnnotation"
+                    && (this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1
+                        || (!this.project.isReadOnly && !this.project.isRestricted)
+                        || (this.currentUser.id == this.selectedAnnotation.user && this.project.isRestricted));
+            },
+            canEdit() {
+                return !this.selectedAnnotation.location.includes("POINT");
+            },
+            canRotate() {
+                return !this.selectedAnnotation.location.includes("POINT");
+            },
+            canResize() {
+                return !this.selectedAnnotation.location.includes("POINT");
+            },
+            canFill() {
+                return !this.selectedAnnotation.location.includes("POINT")
+                    && !this.selectedAnnotation.location.includes("LINESTRING");
+            },
+            canDraw() {
                 return this.drawableLayerIds.length > 0
             }
         },
@@ -201,12 +219,6 @@
             },
             mustBeShown(key) {
                 return mustBeShown(key, this.projectConfig);
-            },
-            isAnnotationEditable(feature) {
-                return feature.properties.class != "be.cytomine.ontology.AlgoAnnotation"
-                    && (this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1
-                        || (!this.project.isReadOnly && !this.project.isRestricted)
-                        || (this.currentUser.id == feature.properties.user && this.project.isRestricted));
             },
         }
     }
