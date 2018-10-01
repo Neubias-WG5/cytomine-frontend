@@ -3,7 +3,7 @@ var webpack = require('webpack')
 
 module.exports = {
     entry: {
-        Explorer: './src/apps/explorer/main.js',
+        Explorer: ['babel-polyfill', './src/apps/explorer/main.js'],
         Software: './src/apps/software/main.js'
     },
     output: {

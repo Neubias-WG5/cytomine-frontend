@@ -478,8 +478,12 @@
                     this.selectedFeature = null;
             },
             selectedFeature(newValue) {
-                if (!newValue)
+                if (!newValue) {
                     this.selectedAnnotation = null;
+                    // When annotation currently edited is unselected, go back to select tool.
+                    if (['Edit', 'Rotate', 'Drag', 'Resize', 'Remove'].includes(this.activeTool))
+                        this.activeTool = 'Select';
+                }
                 else
                     api.get(`api/annotation/${newValue.properties.id}.json`).then(response => {
                         this.selectedAnnotation = response.data;

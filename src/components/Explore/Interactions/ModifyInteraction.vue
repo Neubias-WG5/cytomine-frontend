@@ -1,7 +1,9 @@
 <template>
     <span v-if="modifyToolActive">
-        <vl-interaction-modify ref="olModifyInteraction" source="select-target" @modifyend="edit">
+        <vl-interaction-modify v-if="activeTool == 'Edit'" ref="olModifyInteraction" source="select-target" @modifyend="edit">
         </vl-interaction-modify>
+        <vl-interaction-translate v-if="activeTool == 'Drag'" source="select-target" @translateend="edit"></vl-interaction-translate>
+        <vl-interaction-rotate v-if="activeTool == 'Rotate'" source="select-target" @rotateend="edit"></vl-interaction-rotate>
     </span>
 </template>
 
@@ -44,7 +46,7 @@
                     // this.$refs.olModifyInteraction.recreate();
                 }
                 else if (this.activeTool == 'Drag') {
-                    this.translate();
+                    // this.translate();
                 }
                 // else if (this.activeTool)
             }

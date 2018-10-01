@@ -7,6 +7,8 @@ import 'vue-popperjs/dist/css/vue-popper.css';
 import AsyncComputed from 'vue-async-computed';
 import VueLayers from 'vuelayers';
 import ZoomifySource from './zoomify-source'
+import TranslateInteraction from './translate-interaction'
+import RotateInteraction from './rotate-interaction'
 
 window.api = Axios.create({});
 
@@ -16,6 +18,8 @@ Vue.use(SlVueTree);
 Vue.use(AsyncComputed);
 Vue.use(VueLayers);
 Vue.use(ZoomifySource);
+Vue.use(TranslateInteraction);
+Vue.use(RotateInteraction);
 
 new Vue({
   el: '#app',
