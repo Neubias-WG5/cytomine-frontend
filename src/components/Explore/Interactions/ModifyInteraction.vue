@@ -23,6 +23,7 @@
             'image',
             'currentUser',
             'selectedFeature',
+            'selectedAnnotation',
             'isReviewing'
         ],
         computed: {
@@ -64,6 +65,7 @@
                         geometry: this.format.readGeometry(annotation.location)
                     });
                     this.$emit('update:selectedFeature', feature);
+                    this.$emit('update:selectedAnnotation', annotation);
                     this.$emit('update:activeTool', 'Select');
                 }).catch(error => {
                     // TODO: [NOTIFICATION]
@@ -72,17 +74,14 @@
 
             },
             edit(evt) {
-                // TODO: get annotation from backend while available in AnnotationDetails !!
-                api.get(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
-                    let annotation = response.data;
-                    annotation.location = this.format.writeFeature(evt.features.getArray()[0]);
-                    api.put(`api/annotation/${annotation.id}.json`, annotation).then(response => {
-                        //TODO: [NOTIFICATION]
-                        // this.$emit('update:activeTool', 'Select');
-                    }).catch(error => {
-                        //TODO: [NOTIFICATION]
-                        this.$emit('update:activeTool', 'Select');
-                    })
+                let annotation = this.selectedAnnotation;
+                annotation.location = this.format.writeFeature(evt.features.getArray()[0]);
+                api.put(`api/annotation/${annotation.id}.json`, annotation).then(response => {
+                    //TODO: [NOTIFICATION]
+                    this.$emit('update:selectedAnnotation', response.data.annotation);
+                }).catch(error => {
+                    //TODO: [NOTIFICATION]
+                    this.$emit('update:activeTool', 'Select');
                 })
             },
             remove() {

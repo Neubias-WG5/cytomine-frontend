@@ -36,7 +36,7 @@
             <modify-interaction :active-tool.sync="activeTool" :image="image" :current-user="currentUser"
                                 :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                                 :is-reviewing="isReviewing" @updateAnnotationIndexes="updateAnnotationIndexes"
-                                @updateFeature="updateFeature"></modify-interaction>
+                                @updateFeature="updateFeature" :selected-annotation.sync="selectedAnnotation"></modify-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
@@ -170,7 +170,8 @@
                             :terms="allTerms" :selected-feature.sync="selectedFeature"
                             :project-config="projectConfig" :currentUser="currentUser" :project="project"
                             :element-height="elementHeight" :element-width="elementWidth" @updateFeature="updateFeature"
-                            @toogleAssociateTerm="toggleAssociateTerm" :associable-terms.sync="associableTerms">
+                            @toogleAssociateTerm="toggleAssociateTerm" :associable-terms.sync="associableTerms"
+                            :selected-annotation.sync="selectedAnnotation">
         </annotation-details>
     </div>
 </template>
@@ -208,6 +209,7 @@
 
     import mustBeShown from '../../helpers/mustBeShown';
     import clone from "lodash.clone";
+    import difference from "lodash.difference"
     import differenceBy from "lodash.differenceby"
     import sample from "lodash.sample";
     import debounce from "lodash.debounce";
@@ -241,19 +243,21 @@
         data() {
             return {
                 viewerNames: ['View 1', 'View 2', 'View 3', 'View 4'],
-                selectedComponent: '',
-                selectedFilter: "",
+
+                activeTool: 'Select',
                 followedUser: "",
-                selectedSequence: {},
                 linkedToValues: [],
                 reviewMode: false,
                 layersOpacity: 0.3,
-                selectedFeature: undefined,
-                activeTool: 'Select',
+                selectedComponent: '',
+                selectedFilter: "",
+                selectedSequence: {},
                 selectedProperty: {
                     key: "",
                     color: '#000000'
                 },
+                selectedFeature: undefined,
+                selectedAnnotation: undefined,
 
                 userLayers: [],
                 visibleTerms: [],
@@ -470,10 +474,56 @@
                 }
             },
             activeTool(newValue) {
-                console.log("activeTool new Value" + newValue);
                 if (!['Select', 'Fill', 'Edit', 'Rotate', 'Drag', 'Resize', 'Remove'].includes(newValue))
                     this.selectedFeature = null;
             },
+            selectedFeature(newValue) {
+                if (!newValue)
+                    this.selectedAnnotation = null;
+                else
+                    api.get(`api/annotation/${newValue.properties.id}.json`).then(response => {
+                        this.selectedAnnotation = response.data;
+                        this.associableTerms = clone(this.selectedAnnotation.term)
+                    })
+            },
+            associableTerms(newList) {
+                if (!this.selectedAnnotation)
+                    return;
+
+                let termsToAdd = difference(newList, this.selectedAnnotation.term);
+                let termsToRemove = difference(this.selectedAnnotation.term, newList);
+                termsToAdd.forEach(termId => {
+                    api.post(`api/annotation/${this.selectedAnnotation.id}/term/${termId}.json`, {
+                        term: termId,
+                        userannotation: this.selectedAnnotation.id
+                    }).then(response => {
+                        //TODO: [NOTIFICATION]
+                        this.selectedAnnotation.term.push(termId);
+                        this.updateFeature({
+                            layerId: this.selectedAnnotation.user,
+                            featureId: this.selectedAnnotation.id,
+                            terms: this.selectedAnnotation.term
+                        });
+                        this.selectedFeature.properties.terms = this.selectedAnnotation.term;
+                    }).catch(errors => {
+                        //TODO: [NOTIFICATION]
+                    })
+                });
+                termsToRemove.forEach(termId => {
+                    api.delete(`api/annotation/${this.selectedAnnotation.id}/term/${termId}.json`).then(response => {
+                        //TODO: [NOTIFICATION]
+                        this.selectedAnnotation.term = newList;
+                        this.updateFeature({
+                            layerId: this.selectedAnnotation.user,
+                            featureId: this.selectedAnnotation.id,
+                            terms: this.selectedAnnotation.term
+                        });
+                        this.selectedFeature.properties.terms = this.selectedAnnotation.term;
+                    }).catch(errors => {
+                        //TODO: [NOTIFICATION]
+                    })
+                })
+            }
         },
         methods: {
             deleteViewer() {

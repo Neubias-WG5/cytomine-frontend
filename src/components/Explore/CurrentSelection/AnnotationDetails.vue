@@ -6,29 +6,29 @@
                          @dragstop="setFocus(false)" @clicked="setFocus(true)">
             <div class="panel component-panel" :style="`width: 300px; height:300px;`">
                 <div class="panel-body">
-                    <section v-if="this.annotation && mustBeShown('project-explore-annotation-main')">
+                    <section v-if="this.selectedAnnotation && mustBeShown('project-explore-annotation-main')">
                         <h4><i class="fas fa-mouse-pointer"></i> Current selection</h4>
                         <section v-if="mustBeShown('project-explore-annotation-info')">
                             <h5><i class="fas fa-info-circle"></i> General information</h5>
                             <dl class="dl-horizontal">
                                 <dt>Area</dt>
-                                <dd>{{Math.round(annotation.area)}} {{annotation.areaUnit}}</dd>
+                                <dd>{{Math.round(selectedAnnotation.area)}} {{selectedAnnotation.areaUnit}}</dd>
                                 <dt>Perimeter</dt>
-                                <dd>{{Math.round(annotation.perimeter)}} {{annotation.perimeterUnit}}</dd>
+                                <dd>{{Math.round(selectedAnnotation.perimeter)}} {{selectedAnnotation.perimeterUnit}}</dd>
                                 <dt>Term(s)</dt>
-                                <template v-if="annotation.term.length > 0">
-                                    <dd v-for="term in annotation.term" :key="'term-'+term">
+                                <template v-if="selectedAnnotation.term.length > 0">
+                                    <dd v-for="term in selectedAnnotation.term" :key="'term-'+term">
                                         <term v-bind="termById(term)"></term>
                                     </dd>
                                 </template>
                                 <dd v-else><span class="label label-default">No term</span></dd>
                                 <dt>User</dt>
                                 <dd>
-                                    <username :user="userById(annotation.user)"></username>
+                                    <username :user="userById(selectedAnnotation.user)"></username>
                                 </dd>
                                 <dt>Created</dt>
                                 <dd>
-                                    <date-item :value="annotation.created"></date-item>
+                                    <date-item :value="selectedAnnotation.created"></date-item>
                                 </dd>
                                 <dt>Editable</dt>
                                 <dd v-if="editable">
@@ -47,17 +47,17 @@
                         </section>
                         <section v-if="mustBeShown('project-explore-annotation-preview')">
                             <h5><i class="fas fa-crop-alt"></i> Annotation preview</h5>
-                            <img class="thumbnail" :src="annotation.smallCropURL+'&alphaMask=true'"
+                            <img class="thumbnail" :src="selectedAnnotation.smallCropURL+'&alphaMask=true'"
                                  alt="A crop of the annotation area">
                         </section>
                         <section v-if="mustBeShown('project-explore-annotation-comments')">
                             <h5>
                                 <i class="fas fa-comments"></i>
-                                Comments <span class="label label-info">{{annotation.nbComments}}</span>
+                                Comments <span class="label label-info">{{selectedAnnotation.nbComments}}</span>
                             </h5>
                             <div class="text-center">
                                 <button class="btn btn-default" @click="openCommentModal = true">Add a comment</button>
-                                <!-- @click="showCommentModal(annotation.id)" -->
+                                <!-- @click="showCommentModal(selectedAnnotation.id)" -->
                             </div>
                         </section>
                         <section v-if="mustBeShown('project-explore-annotation-similarities')">
@@ -109,14 +109,14 @@
                         <!--<section v-if="mustBeShown('project-explore-annotation-properties')">-->
                         <!--<h5>Properties</h5>-->
                         <!--<div class="text-center">-->
-                        <!--<a :href="'#tabs-annotationproperties-'+ annotation.image +'-'+annotation.id"-->
+                        <!--<a :href="'#tabs-annotationproperties-'+ selectedAnnotation.image +'-'+selectedAnnotation.id"-->
                         <!--class="btn btn-default">Add a property</a>-->
                         <!--</div>-->
                         <!--</section>-->
                         <!--<section v-if="mustBeShown('project-explore-annotation-description')">-->
                         <!--<h5>Description</h5>-->
                         <!--<div class="text-center">-->
-                        <!--<a :href="'#descriptionModal'+annotation.id" class="btn btn-default">Add description</a>-->
+                        <!--<a :href="'#descriptionModal'+selectedAnnotation.id" class="btn btn-default">Add description</a>-->
                         <!--</div>-->
                         <!--</section>-->
                     </section>
@@ -124,12 +124,12 @@
             </div>
         </vue-drag-resize>
 
-        <annotation-comments-modal v-if="annotation" :open.sync="openCommentModal" :annotation="annotation"
+        <annotation-comments-modal v-if="selectedAnnotation" :open.sync="openCommentModal" :annotation="selectedAnnotation"
                                    :project="project" :current-user="currentUser" :users="users"
                                    @updateNbComments="updateNbComments">
         </annotation-comments-modal>
 
-        <annotation-similarities-modal v-if="annotation" :open.sync="openSimilaritiesModal" :annotation="annotation">
+        <annotation-similarities-modal v-if="selectedAnnotation" :open.sync="openSimilaritiesModal" :annotation="selectedAnnotation">
 
         </annotation-similarities-modal>
     </div>
@@ -144,8 +144,6 @@
     import DateItem from "../../Datatable/DateItem";
     import AnnotationCommentsModal from "./AnnotationCommentsModal";
     import AnnotationSimilaritiesModal from "./AnnotationSimilaritiesModal";
-    import difference from "lodash.difference"
-    import clone from "lodash.clone"
 
     export default {
         name: 'AnnotationDetails',
@@ -159,7 +157,6 @@
         },
         data() {
             return {
-                annotation: null,
                 focus: false,
                 openCommentModal: false,
                 openSimilaritiesModal: false,
@@ -173,16 +170,17 @@
             'users',
             'currentUser',
             'selectedFeature',
+            'selectedAnnotation',
             'elementWidth',
             'elementHeight',
             'associableTerms',
         ],
         computed: {
             editable() {
-                return this.annotation.class != "be.cytomine.ontology.AlgoAnnotation"
+                return this.selectedAnnotation.class != "be.cytomine.ontology.AlgoAnnotation"
                     && (this.findIndex(this.project.admins, this.currentUser.id) != -1
                         || (!this.project.isReadOnly && !this.project.isRestricted)
-                        || (this.currentUser.id == this.annotation.user && this.project.isRestricted));
+                        || (this.currentUser.id == this.selectedAnnotation.user && this.project.isRestricted));
             },
             isRetrievalActive() {
                 return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer
@@ -191,10 +189,10 @@
         },
         asyncComputed: {
             suggestedTerms() {
-                if (!this.annotation || !this.isRetrievalActive)
+                if (!this.selectedAnnotation || !this.isRetrievalActive)
                     return undefined;
 
-                return api.get(`/api/annotation/${this.annotation.id}/retrieval.json`).then(response => {
+                return api.get(`/api/annotation/${this.selectedAnnotation.id}/retrieval.json`).then(response => {
                     let sum = 0;
                     let toReturn = [];
                     response.data.term.forEach(term => {
@@ -216,67 +214,8 @@
             }
         },
         watch: {
-            selectedFeature(newFeature) {
-                this.getAnnotation(newFeature);
-            },
-            associableTerms(newList) {
-                if (!this.annotation)
-                    return;
-
-                let termsToAdd = difference(newList, this.annotation.term);
-                let termsToRemove = difference(this.annotation.term, newList);
-                termsToAdd.forEach(termId => {
-                    api.post(`api/annotation/${this.annotation.id}/term/${termId}.json`, {
-                        term: termId,
-                        userannotation: this.annotation.id
-                    }).then(response => {
-                        //TODO: [NOTIFICATION]
-                        this.annotation.term.push(termId);
-                        let feature = this.selectedFeature;
-                        feature.properties.terms = this.annotation.term;
-                        this.$emit('updateFeature', {
-                            layerId: this.annotation.user,
-                            featureId: this.annotation.id,
-                            terms: this.annotation.term
-                        });
-                        this.$emit('update:selectedFeature', feature);
-                    }).catch(errors => {
-                        //TODO: [NOTIFICATION]
-                    })
-                });
-                termsToRemove.forEach(termId => {
-                    api.delete(`api/annotation/${this.annotation.id}/term/${termId}.json`).then(response => {
-                        //TODO: [NOTIFICATION]
-                        this.annotation.term = newList;
-                        let feature = this.selectedFeature;
-                        feature.properties.terms = this.annotation.term;
-                        this.$emit('updateFeature', {
-                            layerId: this.annotation.user,
-                            featureId: this.annotation.id,
-                            terms: this.annotation.term
-                        });
-                        this.$emit('update:selectedFeature', feature);
-                    }).catch(errors => {
-                        //TODO: [NOTIFICATION]
-                    })
-                })
-            }
         },
         methods: {
-            getAnnotation(newFeature, callback = () => {
-            }) {
-                if (!newFeature || newFeature == {}) {
-                    this.annotation = null;
-                    this.similarAnnotations = null;
-                }
-                else {
-                    api.get(`api/annotation/${newFeature.properties.id}.json`).then(response => {
-                        this.annotation = response.data;
-                        this.$emit('update:associableTerms', clone(this.annotation.term));
-                        callback()
-                    })
-                }
-            },
             findIndex(array, toFind) {
                 return array.findIndex(item => item.id === toFind);
             },
@@ -293,31 +232,33 @@
                 this.focus = focus;
             },
             updateNbComments(value) {
-                this.annotation.nbComments = value;
+                let annotation = this.selectedAnnotation;
+                annotation.nbComments = value;
+                this.$emit('update:selectedAnnotation', annotation);
             },
             replaceTermBySuggested(termId) {
-                api.post(`api/annotation/${this.annotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
+                api.post(`api/annotation/${this.selectedAnnotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
                     //TODO: [NOTIFICATION]
-                    let callback = function () {
-                        let feature = this.selectedFeature;
-                        feature.properties.terms = this.annotation.term;
-                        this.$emit('updateFeature', {
-                            layerId: this.annotation.user,
-                            featureId: this.annotation.id,
-                            terms: this.annotation.term
-                        });
-                        this.$emit('update:selectedFeature', feature);
-                    };
-                    this.getAnnotation(this.selectedFeature, callback.bind(this));
+                    let annotation = this.selectedAnnotation;
+                    annotation.term = [termId];
+                    this.$emit('update:selectedAnnotation', annotation);
+
+                    let feature = this.selectedFeature;
+                    feature.properties.terms = [termId];
+                    this.$emit('updateFeature', {
+                        layerId: this.selectedAnnotation.user,
+                        featureId: this.selectedAnnotation.id,
+                        terms: this.selectedAnnotation.term
+                    });
+
+                    this.$emit('update:selectedFeature', feature);
+                    this.$emit('update:associableTerms', [termId]);
                 }).catch(errors => {
                     //TODO: [NOTIFICATION]
                 })
             }
         },
         mounted() {
-            if (this.selectedFeature) {
-                this.getAnnotation(this.selectedFeature)
-            }
         }
     }
 </script>
