@@ -21,7 +21,7 @@
             <dd v-if="image.magnification">{{image.magnification}}X</dd>
             <dd v-else><span class="label label-default">Undefined</span></dd>
             <dt>Status</dt>
-            <dd v-if="image.reviewed"><span class="label label-sucess">Reviewed</span></dd>
+            <dd v-if="image.reviewed"><span class="label label-success">Reviewed</span></dd>
             <dd v-else-if="image.inReview"><span class="label label-warning">In review</span></dd>
             <dd v-else><span class="label label-info">Not reviewed</span></dd>
         </dl>

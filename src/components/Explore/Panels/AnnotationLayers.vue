@@ -10,24 +10,27 @@
                 </option>
             </select>
             <button class="btn btn-default" @click="addLayer()">Add</button>
-            <button class="btn btn-default" @click="addAllLayers()">Add all</button>
+            <button class="btn btn-default" @click="addAllLayers()" v-if="notSelectedLayers.length < 10">Add all</button>
         </div>
         <ul class="list-group mt-4">
-            <li class="list-group-item clearfix" v-for="layer in selectedLayers" :key="layer.id" v-if="layer.selected">
+            <li class="list-group-item clearfix" v-for="layer in selectedLayersSorted" :key="layer.id" v-if="layer.selected">
                 {{userDisplayName(layer)}}
                 <div class="pull-right">
-                    <template v-if="isEditable(layer)">
+                    <template v-if="!isReviewing">
+                        <template v-if="isEditable(layer)">
                     <span class="label label-success" style="margin: 2px;">
                         <i class="fas fa-check-circle"></i>
                         Editable
                     </span>
-                    </template>
-                    <template v-else>
+                        </template>
+                        <template v-else>
                     <span class="label label-danger" style="margin: 2px;">
                         <i class="fas fa-times-circle"></i>
                         Read-only
                     </span>
+                        </template>
                     </template>
+
 
                     <div class="btn-group" role="group">
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.visible}]"
@@ -37,7 +40,8 @@
                         </button>
                         <button :class="['btn', 'btn-default', 'btn-xs', {active: layer.drawable}]"
                                 :disabled="!isEditable(layer)"
-                                title="Add new annotations in this layer" @click="toggleDrawability(layer)">
+                                title="Add new annotations in this layer" @click="toggleDrawability(layer)"
+                                v-if="!isReviewing">
                             <i class="fas fa-drafting-compass"></i>
                             Draw
                         </button>
@@ -72,7 +76,7 @@
         name: 'AnnotationLayers',
         props: [
             'viewerId',
-            // 'isReviewing',
+            'isReviewing',
             'project',
             'userLayers',
             'currentUser',
@@ -94,25 +98,31 @@
             selectedLayers() {
                 return this.layers.filter(item => item.selected)
             },
+            selectedLayersSorted() {
+                return this.sortLayers(this.selectedLayers);
+            },
             notSelectedLayers() {
                 return this.layers.filter(item => !item.selected)
             },
             notSelectedLayersSorted() {
-                let users = this.notSelectedLayers.filter(item => !item.algo && !item.review).sort((a, b) => {
-                    return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())
-                });
-
-                let algos = this.notSelectedLayers.filter(item => item.algo && !item.review).sort((a, b) => {
-                    return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())
-                });
-
-                let review = this.notSelectedLayers.filter(item => item.review);
-
-                return review.concat(users.concat(algos))
+                return this.sortLayers(this.notSelectedLayers)
             }
         },
         watch: {},
         methods: {
+            sortLayers(layers) {
+                let users = layers.filter(item => !item.algo && !item.review).sort((a, b) => {
+                    return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())
+                });
+
+                let algos = layers.filter(item => item.algo && !item.review).sort((a, b) => {
+                    return this.userDisplayName(a).toLowerCase().localeCompare(this.userDisplayName(b).toLowerCase())
+                });
+
+                let review = layers.filter(item => item.review);
+
+                return review.concat(users.concat(algos))
+            },
             addLayer(layer = this.layerToBeAdded) {
                 if (layer.id == undefined)
                     return;

@@ -2,11 +2,11 @@
     <vl-interaction-select ident="select-target" :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
         <template slot-scope="select">
             <vl-style-box>
-                <vl-style-stroke :color="[17, 17, 17, 1]" :width="4"></vl-style-stroke>
-                <vl-style-fill :color="featureStyle"></vl-style-fill>
+                <vl-style-stroke v-bind="strokeStyle"></vl-style-stroke>
+                <vl-style-fill :color="fillStyle"></vl-style-fill>
                 <vl-style-circle :radius="5">
-                    <vl-style-stroke :color="[17, 17, 17, 1]" :width="4"></vl-style-stroke>
-                    <vl-style-fill :color="featureStyle"></vl-style-fill>
+                    <vl-style-stroke v-bind="strokeStyle"></vl-style-stroke>
+                    <vl-style-fill :color="fillStyle"></vl-style-fill>
                 </vl-style-circle>
             </vl-style-box>
         </template>
@@ -25,26 +25,47 @@
             'layerOpacity',
             'visibleTerms',
             'visibleNoTerm',
+            'isReviewing'
         ],
         data() {
             return {
             }
         },
         computed: {
-            featureStyle() {
+            strokeStyle() {
+                if (!this.selectedFeature || this.selectedFeature == {})
+                    return {color: [0,0,0,0], width:0 };
+
+                if (this.isReviewing) {
+                    if (!this.selectedFeature.properties.class.includes("Reviewed"))
+                        return {color: [255, 0, 0, 1], width: 5};
+                    else
+                        return {color: [80, 204, 102, 1], width: 5};
+                }
+                else {
+                    return {color: [17, 17, 17, 1], width: 4}
+                }
+            },
+            fillStyle() {
                 if (!this.selectedFeature || this.selectedFeature == {})
                     return [0, 0, 0, 0];
 
                 let terms = this.selectedFeature.properties.terms;
                 let fillColor;
-                if (terms.length > 1)
-                    fillColor = [204, 204, 204, Math.min(this.layerOpacity + 0.3, 1.)];
-                else if (terms.length == 0)
-                    fillColor = [238, 238, 238, Math.min(this.layerOpacity + 0.3, 1.)];
-                else {
-                    fillColor = clone(this.styles[terms[0]].getFill().getColor());
-                    fillColor[3] = this.layerOpacity + 0.3;
+                if (this.isReviewing && !this.selectedFeature.properties.class.includes("Reviewed")) {
+                    fillColor = [189, 54, 47, Math.min(this.layerOpacity + 0.3, 1.)]
                 }
+                else {
+                    if (terms.length > 1)
+                        fillColor = [204, 204, 204, Math.min(this.layerOpacity + 0.3, 1.)];
+                    else if (terms.length == 0)
+                        fillColor = [238, 238, 238, Math.min(this.layerOpacity + 0.3, 1.)];
+                    else {
+                        fillColor = clone(this.styles[terms[0]].getFill().getColor());
+                        fillColor[3] = this.layerOpacity + 0.3;
+                    }
+                }
+
                 return fillColor;
             },
             selectFilterFunc() {

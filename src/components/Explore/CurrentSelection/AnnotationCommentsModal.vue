@@ -112,6 +112,9 @@
                 this.$emit('update:open', false)
             },
             loadComments() {
+                if (this.annotationType.includes("reviewed"))
+                    return;
+
                 api.get(`api/${this.annotationType}/${this.annotation.id}/comment.json`).then(response => {
                     this.comments = response.data.collection;
                     this.nbComments = response.data.size;

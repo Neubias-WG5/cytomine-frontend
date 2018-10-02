@@ -148,14 +148,22 @@
                             remove: this.activeTool == 'Difference',
                             review: this.isReviewing
                         }).then(response => {
+                            let annotation = response.data.annotation;
+                            let user;
+                            if (!annotation) {
+                                annotation = response.data.reviewedannotation;
+                                user = -100;
+                            }
+                            else
+                                user = annotation.user;
                             // TODO: [NOTIFICATION]
 
                             // Union can merge several annotations into a single one
                             // 1) annotation layer index can decrease
                             // 2) Refresh all features from layer as we don't know which annotations have been merged.
                             this.$emit('updateAnnotationIndexes');
-                            this.$emit('forceUpdateLayer', response.data.annotation.user);
-                            this.$emit('selectFeature', {layerId: response.data.annotation.user, featureId: response.data.annotation.id});
+                            this.$emit('forceUpdateLayer', user);
+                            this.$emit('selectFeature', {layerId: user, featureId: annotation.id});
                             this.features.splice(0, this.features.length);
                             this.$refs.olSourceVectorDraw.clear();
                             this.$refs.olDrawInteraction.recreate();

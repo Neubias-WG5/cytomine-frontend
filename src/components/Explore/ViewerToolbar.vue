@@ -8,7 +8,7 @@
                     Select
                 </button>
             </template>
-            <template v-if="isDrawable">
+            <template v-if="isDrawable && !isReviewing">
                 <template v-if="mustBeShown('project-tools-point')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Point'}, {disabled: !canDraw}]"
                             @click="setInteraction('Point')" title="Add a point as new annotation">
@@ -71,6 +71,8 @@
                         Freehand
                     </button>
                 </template>
+            </template>
+            <template v-if="isDrawable">
                 <template v-if="mustBeShown('project-tools-union')">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Union'}, {disabled: !canDraw}]"
                             @click="setInteraction('Union')" title="Correct an annotation by adding a freehand area">
@@ -179,7 +181,8 @@
             'currentUser',
             'activeTool',
             'selectedAnnotation',
-            'drawableLayerIds'
+            'drawableLayerIds',
+            'isReviewing'
         ],
         data() {
             return {

@@ -55,6 +55,7 @@
                 let _ = this.visibleTerms;
                 _ = this.visibleNoTerm;
                 _ = this.layerOpacity;
+                _ = this.isReviewing;
                 _ = this.rev;
                 /////
 
@@ -81,20 +82,28 @@
                             }
                             styles.push(this.styles[AnnotationStatus.CLUSTER]);
                             styles.push(styleText)
-
-
                         }
                         else {
                             let terms = feature.get('terms');
+                            if (this.isReviewing && !this.userLayer.review) {
+                                if (this.visibleTerms.filter(t => terms.includes(t)).length > 0)
+                                    styles.push(this.styles[AnnotationStatus.NOT_REVIEWED]);
+                                else
+                                    return [this.styles[AnnotationStatus.HIDDEN]];
+                            }
+                            else {
+                                if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
+                                    styles.push(this.styles[AnnotationStatus.MULTIPLE_TERMS]);
+                                else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
+                                    styles.push(this.styles[terms[0]]);
+                                else if (terms.length == 0 && this.visibleNoTerm)
+                                    styles.push(this.styles[AnnotationStatus.NO_TERM]);
+                                else
+                                    return [this.styles[AnnotationStatus.HIDDEN]];
 
-                            if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
-                                styles.push(this.styles[AnnotationStatus.MULTIPLE_TERMS]);
-                            else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
-                                styles.push(this.styles[terms[0]]);
-                            else if (terms.length == 0 && this.visibleNoTerm)
-                                styles.push(this.styles[AnnotationStatus.NO_TERM]);
-                            else
-                                return [this.styles[AnnotationStatus.HIDDEN]];
+                                if (this.userLayer.review)
+                                    styles.push(this.styles[AnnotationStatus.REVIEWED])
+                            }
 
                             if (this.properties && this.properties != {}) {
                                 styles.push(createStyle({
@@ -111,7 +120,7 @@
                     }
                 };
                 return func.bind(this);
-            }
+            },
         },
         watch: {
             userLayer: {
@@ -150,7 +159,14 @@
                 }
             },
             loadAnnotations() {
-                api.get(`api/annotation.json?user=${this.userLayer.id}&image=${this.image.id}&notReviewedOnly=${this.isReviewing}&showWKT=true&showTerm=true&kmeans=true&bbox=${this.extent.join(',')}`).then(response => {
+                let user;
+                if (this.userLayer.id < 0) {
+                    user = `reviewed=true`
+                }
+                else {
+                    user = `user=${this.userLayer.id}&notReviewedOnly=${this.isReviewing}`
+                }
+                api.get(`api/annotation.json?${user}&image=${this.image.id}&showWKT=true&showTerm=true&kmeans=true&bbox=${this.extent.join(',')}`).then(response => {
                     this.features = response.data.collection.map(annotation => {
                             return {
                                 type: 'Feature',

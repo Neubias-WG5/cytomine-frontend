@@ -22,7 +22,7 @@
 
             <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
-                                :visible-no-term="visibleNoTerm" :associable-terms="associableTerms"></select-interaction>
+                                :visible-no-term="visibleNoTerm" :associable-terms="associableTerms" :is-reviewing="isReviewing"></select-interaction>
 
             <measure-interaction :image="image" :active-tool="activeTool"></measure-interaction>
 
@@ -40,7 +40,7 @@
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
-                        :project="project"
+                        :project="project" :is-reviewing="isReviewing"
                         :project-config="projectConfig" :selected-annotation="selectedAnnotation"
                         :drawable-layer-ids="drawableUserLayerIds"></viewer-toolbar>
 
@@ -114,7 +114,8 @@
 
                 <review v-show="selectedComponent == 'review'" @changeReviewStatus="changeReviewStatus"
                         :image="image" :current-user="currentUser" :review-user="userById(image.reviewUser)"
-                        :review-mode.sync="reviewMode" :nb-visible-annotations="0"></review>
+                        :review-mode.sync="reviewMode" :user-layers="userLayers" :project="project"
+                        @forceUpdateLayer="forceUpdateLayer" @updateAnnotationIndexes="updateAnnotationIndexes"></review>
 
                 <multidimension v-show="selectedComponent == 'multidimension' && hasImageSequences"
                                 :image-groups="imageGroups" :image-sequences="imageSequences"
@@ -171,7 +172,8 @@
                             :project-config="projectConfig" :currentUser="currentUser" :project="project"
                             :element-height="elementHeight" :element-width="elementWidth" @updateFeature="updateFeature"
                             @toogleAssociateTerm="toggleAssociateTerm" :associable-terms.sync="associableTerms"
-                            :selected-annotation.sync="selectedAnnotation">
+                            :selected-annotation.sync="selectedAnnotation" :is-reviewing="isReviewing"
+                            @updateAnnotationIndexes="updateAnnotationIndexes" @selectFeature="selectFeature" @forceUpdateLayer="forceUpdateLayer">
         </annotation-details>
     </div>
 </template>
@@ -316,7 +318,7 @@
         ],
         computed: {
             isReviewing() {
-                return this.image.inReview;
+                return this.image.inReview && this.image.reviewUser == this.currentUser.id && this.reviewMode;
             },
             isCurrentViewer() {
                 return this.lastEventMapId == this.id;
@@ -471,6 +473,20 @@
                     strokeDash: [2, 2],
                     fillColor: [255, 255, 255, this.layersOpacity],
                 });
+
+                s[AnnotationStatus.NOT_REVIEWED] = createStyle({
+                    strokeColor: [189, 54, 47, 1],
+                    strokeWidth: 5,
+                    fillColor: [189, 54, 47, Math.max(this.layersOpacity - 0.1, 0.)],
+                    imageRadius: pointRadius,
+                });
+
+                s[AnnotationStatus.REVIEWED] = createStyle({
+                    strokeColor: [91, 183, 91, 1],
+                    strokeWidth: 5,
+                    imageRadius: pointRadius,
+                });
+
                 return s;
             }
         },
@@ -487,7 +503,7 @@
                     this.changeImage(newValue.model.id);
             },
             reviewMode() {
-                this.updateReviewLayer();
+                this.updateAnnotationIndexes();
                 this.saveImageConsultation();
             },
             elementWidth(newValue) {
@@ -640,8 +656,6 @@
                 this.saveImageConsultation()
             },
             setUserLayers(selectDefaultLayers = true) {
-                this.updateReviewLayer();
-
                 api.get(`/api/project/${this.image.project}/userlayer.json?image=${this.image.id}`).then(response => {
                     let layers = response.data.collection;
                     layers.forEach(userLayer => {
@@ -657,13 +671,16 @@
                         }
                     });
                     api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(response => {
+                        let countReviewed = 0;
                         response.data.collection.forEach(item => {
                             let index = this.userLayers.findIndex(user => item.user == user.id);
                             let layer = this.userLayers[index];
                             layer.size = item.countAnnotation;
                             this.userLayers.splice(index, 1, layer);
+                            countReviewed += item.countReviewedAnnotation;
                         });
 
+                        this.updateReviewLayer(countReviewed);
                         if (selectDefaultLayers) {
                             api.get(`/api/project/${this.image.project}/defaultlayer.json`).then(response => {
                                 if (response.data.collection[0]) {
@@ -685,19 +702,25 @@
                             })
                         }
                     });
-                })
+                });
+
             },
             updateLayer(payload) {
                 this.userLayers.splice(payload.index, 1, payload.layer);
             },
             updateAnnotationIndexes() {
                 api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(response => {
+                    let countReviewed = 0;
                     response.data.collection.forEach(item => {
                         let index = this.userLayers.findIndex(user => item.user == user.id);
                         let layer = this.userLayers[index];
                         layer.size = item.countAnnotation;
                         this.userLayers.splice(index, 1, layer);
+
+                        countReviewed += item.countReviewedAnnotation;
                     });
+
+                    this.updateReviewLayer(countReviewed)
                 })
             },
             forceUpdateLayer(layerId) {
@@ -706,12 +729,12 @@
                 layer.clearAllRev++;
                 this.userLayers.splice(index, 1, layer);
             },
-            updateReviewLayer() {
+            updateReviewLayer(count = 0) {
                 let reviewIndex = this.userLayers.findIndex(l => l.id == -100);
                 if (reviewIndex == -1) {
                     let reviewLayer = {
                         id: -100,
-                        size: 0,
+                        size: count,
                         selected: this.reviewMode || this.image.reviewed,
                         visible: this.reviewMode,
                         drawable: this.reviewMode,
@@ -723,7 +746,7 @@
                 }
                 else {
                     let reviewLayer = this.userLayers[reviewIndex];
-                    reviewLayer.size = 0;
+                    reviewLayer.size = count;
                     reviewLayer.selected = this.reviewMode || this.image.reviewed;
                     reviewLayer.visible = this.reviewMode;
                     reviewLayer.drawable = this.reviewMode;

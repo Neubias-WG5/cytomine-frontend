@@ -8,6 +8,19 @@
                 <div class="panel-body">
                     <section v-if="this.selectedAnnotation && mustBeShown('project-explore-annotation-main')">
                         <h4><i class="fas fa-mouse-pointer"></i> Current selection</h4>
+                        <section v-if="isReviewing">
+                            <h5><i class="fas fa-check-circle"></i> Review</h5>
+                            <div class="text-center">
+                                <div class="btn-group">
+                                    <button class="btn btn-success" v-if="!isAnnotationReviewed" @click="acceptReview">
+                                        <i class="fas fa-check"></i> Accept it
+                                    </button>
+                                    <button class="btn btn-danger" v-if="isAnnotationReviewed" @click="rejectReview">
+                                        <i class="fas fa-minus"></i> Reject it
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
                         <section v-if="mustBeShown('project-explore-annotation-info')">
                             <h5><i class="fas fa-info-circle"></i> General information</h5>
                             <dl class="dl-horizontal">
@@ -26,6 +39,12 @@
                                 <dd>
                                     <username :user="userById(selectedAnnotation.user)"></username>
                                 </dd>
+                                <template v-if="isAnnotationReviewed">
+                                    <dt>Reviewer</dt>
+                                    <dd>
+                                        <username :user="userById(selectedAnnotation.reviewUser)"></username>
+                                    </dd>
+                                </template>
                                 <dt>Created</dt>
                                 <dd>
                                     <date-item :value="selectedAnnotation.created"></date-item>
@@ -50,7 +69,7 @@
                             <img class="thumbnail" :src="selectedAnnotation.smallCropURL+'&alphaMask=true'"
                                  alt="A crop of the annotation area">
                         </section>
-                        <section v-if="mustBeShown('project-explore-annotation-comments')">
+                        <section v-if="mustBeShown('project-explore-annotation-comments') && !isAnnotationReviewed">
                             <h5>
                                 <i class="fas fa-comments"></i>
                                 Comments <span class="label label-info">{{selectedAnnotation.nbComments}}</span>
@@ -174,6 +193,7 @@
             'elementWidth',
             'elementHeight',
             'associableTerms',
+            'isReviewing'
         ],
         computed: {
             editable() {
@@ -183,9 +203,12 @@
                         || (this.currentUser.id == this.selectedAnnotation.user && this.project.isRestricted));
             },
             isRetrievalActive() {
-                return !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer
+                return !this.isReviewing && !this.project.retrievalDisable && !this.project.hideUsersLayer && !this.project.hideAdminsLayer
                     && this.selectedFeature.geometry.type != 'Point' && this.selectedFeature.geometry.type != 'LineString';
             },
+            isAnnotationReviewed() {
+                return this.selectedAnnotation.class == "be.cytomine.ontology.ReviewedAnnotation"
+            }
         },
         asyncComputed: {
             suggestedTerms() {
@@ -255,6 +278,30 @@
                     this.$emit('update:associableTerms', [termId]);
                 }).catch(errors => {
                     //TODO: [NOTIFICATION]
+                })
+            },
+            acceptReview() {
+                api.post(`api/annotation/${this.selectedAnnotation.id}/review.json`, {}).then(response => {
+                    //TODO
+                    let annotationId = response.data.reviewedannotation.id;
+                    this.$emit('updateAnnotationIndexes');
+                    this.$emit('selectFeature', {layerId: -100, featureId: annotationId});
+                    this.$emit('forceUpdateLayer', this.selectedAnnotation.user);
+
+                }).catch(errors => {
+
+                })
+            },
+            rejectReview() {
+                api.delete(`api/annotation/${this.selectedAnnotation.parentIdent}/review.json`).then(response => {
+                    let annotationId = this.selectedAnnotation.parentIdent;
+                    this.$emit('updateAnnotationIndexes');
+                    this.$emit('forceUpdateLayer', this.selectedAnnotation.user);
+                    this.$emit('selectFeature', {layerId: this.selectedAnnotation.user, featureId: annotationId});
+
+
+                }).catch(errors => {
+
                 })
             }
         },

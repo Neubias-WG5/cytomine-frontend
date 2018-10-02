@@ -59,10 +59,17 @@
                 }).then(response => {
                     // TODO: [NOTIFICATION]
                     let annotation = response.data.data.annotation;
+                    let user;
+                    if (!annotation) {
+                        annotation = response.data.data.reviewedannotation;
+                        user = -100;
+                    }
+                    else
+                        user = annotation.user;
                     let feature = this.selectedFeature;
                     feature.geometry = parse(annotation.location);
                     this.$emit('updateFeature', {
-                        layerId: annotation.user,
+                        layerId: user,
                         featureId: annotation.id,
                         geometry: this.format.readGeometry(annotation.location)
                     });
@@ -80,7 +87,10 @@
                 annotation.location = this.format.writeFeature(evt.features.getArray()[0]);
                 api.put(`api/annotation/${annotation.id}.json`, annotation).then(response => {
                     //TODO: [NOTIFICATION]
-                    this.$emit('update:selectedAnnotation', response.data.annotation);
+                    let annotation = response.data.annotation;
+                    if (!annotation)
+                        annotation = response.data.reviewedannotation;
+                    this.$emit('update:selectedAnnotation', annotation);
                 }).catch(error => {
                     //TODO: [NOTIFICATION]
                     this.$emit('update:activeTool', 'Select');

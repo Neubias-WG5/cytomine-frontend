@@ -25,20 +25,29 @@
                 </div>
                 <div v-else-if="isInReviewByMe && reviewMode">
                     <div class="alert alert-info">
-                        You are in review mode.
+                        You are in review mode. <br>
+                        {{reviewLayer.size}} annotations already reviewed.
                     </div>
-                    There are {{nbVisibleAnnotations}} visible annotations.
-                    Review them one by one with Select tool or
-                    <div class="text-center">
-                        <div class="btn-group">
-                            <button class="btn btn-default btn-xs">
-                                <i class="fas fa-check-double"></i> Accept all
-                            </button>
-                            <button class="btn btn-default btn-xs">
-                                <i class="fas fa-minus"></i> Reject all
-                            </button>
+                    <template v-if="nbVisibleAnnotations > 0">
+                        The layers of <username-list :users="visibleUserLayers"></username-list> are currently
+                        displayed (in total: {{nbVisibleAnnotations}} annotations).<br>
+                        <div v-if="!taskReviewAll">
+                            Review them one by one with Select tool or
+                            <div class="text-center" >
+                                <div class="btn-group" >
+                                    <button class="btn btn-success btn-xs" @click="acceptAll">
+                                        <i class="fas fa-check-double"></i> Accept all
+                                    </button>
+                                    <button class="btn btn-danger btn-xs" @click="rejectAll">
+                                        <i class="fas fa-minus"></i> Reject all
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        <task :task.sync="taskReviewAll" :timeout="2000"></task>
+
+                    </template>
+
                     <hr/>
                     <div class="text-center">
                         <div class="btn-group-vertical">
@@ -85,16 +94,25 @@
 <script>
     import Username from "../../User/Username";
     import DateItem from "../../Datatable/DateItem";
+    import UsernameList from "../../User/UsernameList";
+    import Task from "../../Task"
 
     export default {
         name: 'Review',
-        components: {DateItem, Username},
+        components: {UsernameList, DateItem, Username, Task},
+        data() {
+            return {
+                taskReviewAll: null,
+            }
+        },
         props: [
+            'project',
             'image',
             'currentUser',
             'reviewMode',
             'reviewUser',
-            'nbVisibleAnnotations',
+            'userLayers',
+            'users'
         ],
         computed: {
             isNotReviewed() {
@@ -105,9 +123,44 @@
             },
             isValidatedByMe() {
                 return this.image.reviewed && this.image.reviewUser == this.currentUser.id;
-            }
+            },
+            visibleUserLayers() {
+                return this.userLayers.filter(userLayer => userLayer.selected && userLayer.visible && !userLayer.review);
+            },
+            visibleUserLayerIds() {
+                return this.visibleUserLayers.map(layer => layer.id);
+            },
+            nbVisibleAnnotations() {
+                let sum = 0;
+                this.visibleUserLayers.forEach(layer => sum += layer.size);
+                return sum;
+            },
+            reviewLayer() {
+                return this.userLayers.find(l => l.id == -100)
+            },
         },
         methods: {
+            acceptAll() {
+                api.post(`api/task.json.project=${this.project.id}`, {}).then(response => {
+                    this.taskReviewAll = response.data.task;
+                    api.post(`api/imageinstance/${this.image.id}/annotation/review.json?users=${this.visibleUserLayerIds.join(',')}&task=${this.taskReviewAll.id}`, {}).then(response => {
+                        this.taskReviewAll = null;
+                        this.$emit('updateAnnotationIndexes');
+                        this.visibleUserLayerIds.forEach(id => this.$emit('forceUpdateLayer', id));
+                    })
+                })
+            },
+            rejectAll() {
+                api.post(`api/task.json.project=${this.project.id}`, {}).then(response => {
+                    this.taskReviewAll = response.data.task;
+                    api.delete(`api/imageinstance/${this.image.id}/annotation/review.json?users=${this.visibleUserLayerIds.join(',')}&task=${this.taskReviewAll.id}`, {}).then(response => {
+                        this.taskReviewAll = null;
+                        this.$emit('updateAnnotationIndexes');
+                        this.visibleUserLayerIds.forEach(id => this.$emit('forceUpdateLayer', id));
+                    })
+                })
+
+            }
         }
     }
 </script>
