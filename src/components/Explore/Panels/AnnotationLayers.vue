@@ -167,7 +167,7 @@
                 })
             },
             isEditable(layer) {
-                return !layer.algo
+                return !layer.algo && !layer.review
                     && (this.project.admins.findIndex(item => item.id === this.currentUser.id) != -1
                         || (!this.project.isReadOnly && !this.project.isRestricted)
                         || (this.currentUser.id == layer.id && this.project.isRestricted));
