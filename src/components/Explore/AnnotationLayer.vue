@@ -1,7 +1,7 @@
 <template>
     <vl-layer-vector ref="olLayerVector"
                      :visible="userLayer.visible && userLayer.selected"
-                     :id="'layer'+userLayer.id"
+                     :id="'layer'+userLayer.id" :z-index="zIndex"
                      @mounted="rev++">
         <vl-source-vector ref="olSourceVector" :features.sync="features" @mounted="rev++"></vl-source-vector>
         <vl-style-func :factory="styleFuncFactoryProp" @mounted="rev++"></vl-style-func>
@@ -121,6 +121,9 @@
                 };
                 return func.bind(this);
             },
+            zIndex() {
+                return (this.userLayer.id < 0) ? 20 : 10;
+            }
         },
         watch: {
             userLayer: {

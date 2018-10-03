@@ -67,7 +67,7 @@
     .scale-line {
         background: white;
         position: absolute;
-        z-index: 9999;
+        z-index: 900;
         padding: 10px 10px 5px 10px;
         display: block;
         right: 15px;

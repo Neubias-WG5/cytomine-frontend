@@ -1169,7 +1169,7 @@
         position: absolute;
         bottom: 1em;
         left: 1em;
-        z-index: 2000;
+        z-index: 1000;
     }
 
     .component-panel {
@@ -1177,6 +1177,7 @@
         overflow-y: auto;
         position: absolute;
         padding-top: 0;
+        z-index: 1000
     }
 
     .component-panel-bottom {

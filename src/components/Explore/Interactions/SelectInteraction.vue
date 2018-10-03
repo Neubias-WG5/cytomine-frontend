@@ -1,7 +1,7 @@
 <template>
     <vl-interaction-select ident="select-target" :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
         <template slot-scope="select">
-            <vl-style-box>
+            <vl-style-box :z-index="30">
                 <vl-style-stroke v-bind="strokeStyle"></vl-style-stroke>
                 <vl-style-fill :color="fillStyle"></vl-style-fill>
                 <vl-style-circle :radius="5">
