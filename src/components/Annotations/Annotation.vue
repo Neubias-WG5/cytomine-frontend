@@ -1,5 +1,5 @@
 <template>
-    <li class="img-box">
+    <div class="img-box">
         <popper>
             <div class="popper" trigger="hover" :options="{placement: 'auto'}">
                 <div class="annotation-detail">
@@ -12,7 +12,7 @@
                         <dd>
                             <date-item :value="annotation.created"></date-item>
                         </dd>
-                        <template v-if="annotation.userByTerm[0]">
+                        <template v-if="annotation.userByTerm && annotation.userByTerm.length > 0">
                             <dt>Term(s)</dt>
                             <dd v-for="term in annotation.userByTerm" :key="term.id + uuid()">
                                 <term v-bind="termById(term.term)"></term><br/>
@@ -23,22 +23,31 @@
                                         </span>
                             </dd>
                         </template>
+                        <template v-else-if="annotation.term && annotation.term.length > 0">
+                            <dt>Term(s)</dt>
+                            <dd v-for="term in annotation.term" :key="term + uuid()">
+                                <term v-bind="termById(term)"></term><br/>
+                            </dd>
+                        </template>
                     </dl>
                 </div>
             </div>
             <div slot="reference">
                 <a class="annot-link"
-                   :href="`#tabs-${isReviewing ? 'review' : 'image'}-${image.project}-${image.id}-${annotation.id}`">
+                   :href="`#tabs-${isReviewing ? 'review' : 'image'}-${annotation.project}-${annotation.id}-${annotation.id}`">
                     <img class="annot-img" :src="cropURL(annotation.smallCropURL)" alt="">
                 </a>
                 <div class="annot-info">
                     <div class="pull-right">
                         <i class="fas fa-check-circle" style="color:green;" v-if="annotation.reviewed"></i>
                     </div>
+                    <div class="text-center">
+                        <span class="label label-default" v-if="annotation.similarity">{{parseFloat(annotation.similarity).toExponential(3)}}</span>
+                    </div>
                 </div>
             </div>
         </popper>
-    </li>
+    </div>
 </template>
 
 <script>
@@ -51,7 +60,7 @@
     import uuid from 'uuid'
 
     export default {
-        name: 'Annotation',
+        name: "Annotation",
         components: {
             DateItem,
             Username,
@@ -63,11 +72,10 @@
             }
         },
         props: [
-            'image',
             'users',
             'terms',
             'isReviewing',
-            'sizeTerms',
+            // 'sizeTerms',
             'annotation'
         ],
         methods: {
@@ -107,7 +115,7 @@
     .annot-info {
         position: relative;
         width: 90px;
-        bottom: 20px;
+        bottom: 22px;
         right: 5px;
     }
 

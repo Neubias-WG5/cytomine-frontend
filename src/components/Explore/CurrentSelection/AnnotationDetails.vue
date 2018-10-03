@@ -148,7 +148,9 @@
                                    @updateNbComments="updateNbComments">
         </annotation-comments-modal>
 
-        <annotation-similarities-modal v-if="selectedAnnotation" :open.sync="openSimilaritiesModal" :annotation="selectedAnnotation">
+        <annotation-similarities-modal v-if="selectedAnnotation" :open.sync="openSimilaritiesModal"
+                                       :annotation="selectedAnnotation" :similarities="similarAnnotations"
+                                       :users="users" :terms="terms" :suggested-terms="suggestedTerms">
 
         </annotation-similarities-modal>
     </div>

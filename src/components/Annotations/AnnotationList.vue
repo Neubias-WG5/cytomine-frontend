@@ -1,12 +1,12 @@
 <template>
-    <ul class="annotations-container">
+    <div class="annotations-container">
         <annotation v-for="annotation in annotations" :key="annotation.id + uuid()"
-                    :annotation="annotation" :is-reviewing="isReviewing">
+                    :annotation="annotation" :is-reviewing="isReviewing" :users="users" :terms="terms">
         </annotation>
         <div v-if="annotations && annotations.length == 0" class="alert alert-info mt-4">
             No annotation
         </div>
-    </ul>
+    </div>
 </template>
 
 <script>
@@ -15,12 +15,14 @@
 
     export default {
         name: "AnnotationList",
-        components: [
+        components: {
             Annotation
-        ],
+        },
         props: [
             'annotations',
-            'isReviewing'
+            'isReviewing',
+            'users',
+            'terms'
         ],
         methods: {
             uuid
@@ -35,5 +37,6 @@
         flex-wrap: wrap;
         padding: 0;
         margin-top: 1em;
+        justify-content: center;
     }
 </style>

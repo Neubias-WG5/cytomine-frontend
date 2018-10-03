@@ -42,7 +42,7 @@
             </ul>
         </div>
         <div class="clearfix"></div>
-        <annotation-list :annotations="annotations" :is-reviewing="isReviewing"></annotation-list>
+        <annotation-list :annotations="annotations" :is-reviewing="isReviewing" :users="users" :terms="terms"></annotation-list>
     </div>
 </template>
 
