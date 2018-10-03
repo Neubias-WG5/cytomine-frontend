@@ -86,7 +86,8 @@
                         else {
                             let terms = feature.get('terms');
                             if (this.isReviewing && !this.userLayer.review) {
-                                if (this.visibleTerms.filter(t => terms.includes(t)).length > 0)
+                                if ((terms.length > 0 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
+                                    || (terms.length == 0 && this.visibleNoTerm))
                                     styles.push(this.styles[AnnotationStatus.NOT_REVIEWED]);
                                 else
                                     return [this.styles[AnnotationStatus.HIDDEN]];
