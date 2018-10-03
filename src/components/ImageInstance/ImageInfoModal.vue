@@ -1,5 +1,5 @@
 <template>
-    <modal v-model="openModal" :title="image.instanceFilename" :footer="false" @hide="close">
+    <modal v-model="openModal" :title="image.instanceFilename" :footer="false" @hide="close" :append-to-body="true">
         <blockquote v-if="description"><p>{{description}}</p></blockquote>
 
         <p class="lead">General information</p>
