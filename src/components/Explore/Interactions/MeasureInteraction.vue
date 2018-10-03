@@ -1,7 +1,7 @@
 <template>
     <span>
         <vl-layer-vector>
-            <vl-source-vector ident="draw-measure-target" :features.sync="features"
+            <vl-source-vector :ident="'draw-measure-target'+viewerId" :features.sync="features"
                               ref="olSourceVector"></vl-source-vector>
             <vl-style-box>
                 <vl-style-stroke color="#ffcc33" :width="2"></vl-style-stroke>
@@ -10,7 +10,7 @@
         </vl-layer-vector>
 
         <template v-if="measureToolActive">
-            <vl-interaction-draw v-if="measureToolActive" source="draw-measure-target" :type="drawType"
+            <vl-interaction-draw v-if="measureToolActive" :source="'draw-measure-target'+viewerId" :type="drawType"
                                  @drawstart="onDrawStart" @drawend="onDrawEnd">
                 <vl-style-box>
                     <vl-style-stroke color="rgba(0, 0, 0, 0.5)" :width="2" :line-dash="[10, 10]"></vl-style-stroke>
@@ -19,7 +19,7 @@
             </vl-interaction-draw>
         </template>
 
-        <vl-overlay v-for="overlay in overlays" :key="overlay.id" :id="overlay.id" positioning="bottom-center"
+        <vl-overlay v-for="overlay in overlays" :key="overlay.id" :id="overlay.id+viewerId" positioning="bottom-center"
                     :position="overlay.coords" :offset="[0, 0]" :auto-pan="true">
             <template slot-scope="scope">
                 <div class="tooltip tooltip-static">
@@ -57,7 +57,8 @@
         },
         props: [
             'image',
-            'activeTool'
+            'activeTool',
+            'viewerId'
         ],
         computed: {
             measureToolActive() {

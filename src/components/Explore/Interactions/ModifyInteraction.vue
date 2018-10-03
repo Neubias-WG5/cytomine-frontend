@@ -1,9 +1,9 @@
 <template>
     <span v-if="modifyToolActive">
-        <vl-interaction-modify v-if="activeTool == 'Edit'" ref="olModifyInteraction" source="select-target" @modifyend="edit">
+        <vl-interaction-modify v-if="activeTool == 'Edit'" ref="olModifyInteraction" :source="'select-target'+viewerId" @modifyend="edit">
         </vl-interaction-modify>
-        <vl-interaction-translate v-if="activeTool == 'Drag'" source="select-target" @translateend="edit"></vl-interaction-translate>
-        <vl-interaction-rotate v-if="activeTool == 'Rotate'" source="select-target" @rotateend="edit"></vl-interaction-rotate>
+        <vl-interaction-translate v-if="activeTool == 'Drag'" :source="'select-target'+viewerId" @translateend="edit"></vl-interaction-translate>
+        <vl-interaction-rotate v-if="activeTool == 'Rotate'" :source="'select-target'+viewerId" @rotateend="edit"></vl-interaction-rotate>
     </span>
 </template>
 
@@ -26,7 +26,8 @@
             'currentUser',
             'selectedFeature',
             'selectedAnnotation',
-            'isReviewing'
+            'isReviewing',
+            'viewerId'
         ],
         computed: {
             modifyToolActive() {

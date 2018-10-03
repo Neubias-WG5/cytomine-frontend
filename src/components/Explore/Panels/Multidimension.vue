@@ -6,8 +6,7 @@
         <div class="input-group">
             <span class="input-group-addon">Current image group</span>
             <select class="btn btn-default" style="width: 100%"
-
-                    v-model="selected" name="imageGroupSelect" id="imageGroupSelect">
+                    v-model="selected" name="imageGroupSelect">
                 <option :value="{}">Select an image group</option>
                 <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence">
                     {{getImageGroupById(sequence.imageGroup).name}}

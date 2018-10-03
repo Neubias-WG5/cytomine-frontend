@@ -18,26 +18,26 @@
                                       :visible-no-term="visibleNoTerm" :selected-property="selectedProperty"
                                       :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
                                       :terms="allTerms" :layer-opacity="layersOpacity"
-                                      :styles="styles"></annotation-layer>
+                                      :styles="styles" :viewer-id="id"></annotation-layer>
 
             <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
                                 :visible-no-term="visibleNoTerm" :associable-terms="associableTerms"
-                                :is-reviewing="isReviewing" :point-radius="pointRadius"></select-interaction>
+                                :is-reviewing="isReviewing" :point-radius="pointRadius" :viewer-id="id"></select-interaction>
 
-            <measure-interaction :image="image" :active-tool="activeTool"></measure-interaction>
+            <measure-interaction :image="image" :active-tool="activeTool" :viewer-id="id"></measure-interaction>
 
             <draw-interaction :active-tool="activeTool" :user-layers="userLayers" :associable-terms="associableTerms"
                               :drawable-layer-ids="drawableUserLayerIds" :image="image" :current-user="currentUser"
                               :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                               :is-reviewing="isReviewing"
                               @updateAnnotationIndexes="updateAnnotationIndexes"
-                              @forceUpdateLayer="forceUpdateLayer"></draw-interaction>
+                              @forceUpdateLayer="forceUpdateLayer" :viewer-id="id"></draw-interaction>
 
             <modify-interaction :active-tool.sync="activeTool" :image="image" :current-user="currentUser"
                                 :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                                 :is-reviewing="isReviewing" @updateAnnotationIndexes="updateAnnotationIndexes"
-                                @updateFeature="updateFeature" :selected-annotation.sync="selectedAnnotation"></modify-interaction>
+                                @updateFeature="updateFeature" :selected-annotation.sync="selectedAnnotation" :viewer-id="id"></modify-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
@@ -107,7 +107,7 @@
                 <ontology v-show="selectedComponent == 'ontology'" :project="project" :ontology="ontology"
                           :visible-terms="visibleTerms" :associable-terms="associableTerms" :size-terms="sizeTerms"
                           :visible-no-term.sync="visibleNoTerm" @toggleAssociateTerm="toggleAssociateTerm"
-                          @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms"></ontology>
+                          @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms" :viewer-id="id"></ontology>
 
                 <annotations v-show="selectedComponent == 'annotationList'" :isReviewing="isReviewing"
                              :users="userLayers" :terms="allTerms" :image="image" :visible-term-ids="visibleTerms"
@@ -126,7 +126,7 @@
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties"
-                            :properties="availableAnnotationProperties" :selected-property.sync="selectedProperty">
+                            :properties="availableAnnotationProperties" :selected-property.sync="selectedProperty" :viewer-id="id">
                 </properties>
 
                 <div v-show="selectedComponent == 'follow' && mustBeShown('project-explore-follow') && hasOnlineUsers">
@@ -934,7 +934,7 @@
                 })
             },
             selectFeature(payload) {
-                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}`);
+                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}${this.id}`);
                 let retries = 0;
                 let interval = setInterval(() => {
                     retries++;
@@ -959,7 +959,7 @@
                 }, 500);
             },
             updateFeature(payload) {
-                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}`);
+                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}${this.id}`);
                 let retries = 0;
                 let interval = setInterval(() => {
                     retries++;

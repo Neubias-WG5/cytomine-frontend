@@ -1,7 +1,7 @@
 <template>
     <vl-layer-vector ref="olLayerVector"
                      :visible="userLayer.visible && userLayer.selected"
-                     :id="'layer'+userLayer.id" :z-index="zIndex"
+                     :id="'layer'+userLayer.id+viewerId" :z-index="zIndex"
                      @mounted="rev++">
         <vl-source-vector ref="olSourceVector" :features.sync="features" @mounted="rev++"></vl-source-vector>
         <vl-style-func :factory="styleFuncFactoryProp" @mounted="rev++"></vl-style-func>
@@ -44,6 +44,7 @@
             'imageExtent',
             'layerOpacity',
             'styles',
+            'viewerId'
         ],
         computed: {
             styleFuncFactoryProp() {

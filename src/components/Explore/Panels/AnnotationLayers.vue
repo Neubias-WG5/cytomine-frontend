@@ -2,7 +2,7 @@
     <section>
         <h4><i class="fas fa-layer-group"></i> Layers</h4>
         <div class="btn-group" style="display:flex;">
-            <select class="btn btn-default" v-model="layerToBeAdded" name="user-layer" id="user-layer"
+            <select class="btn btn-default" v-model="layerToBeAdded" name="user-layer"
                     style="width: 100%;">
                 <option :value="{}">Choose an annotation layer</option>
                 <option v-for="layer in notSelectedLayersSorted" :key="layer.id" :value="layer">
@@ -60,7 +60,7 @@
                 <span class="input-group-addon">Layer opacity</span>
                 <input class="form-control" :value="parseInt(layerOpacity * 100)"
                        @input="$emit('update:layerOpacity', parseFloat($event.target.value / 100))"
-                       type="number" step="1" :max="100" :min="0" name="layers-opacity" id="layers-opacity">
+                       type="number" step="1" :max="100" :min="0" name="layers-opacity" >
                 <span class="input-group-addon">%</span>
             </div>
             <input class="range" :value="layerOpacity"

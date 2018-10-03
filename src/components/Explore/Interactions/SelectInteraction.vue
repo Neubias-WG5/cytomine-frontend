@@ -1,5 +1,5 @@
 <template>
-    <vl-interaction-select ident="select-target" :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
+    <vl-interaction-select :ident="'select-target'+viewerId" :filter="selectFilterFunc" :features.sync="selectedFeatures" ref="olSelectInteraction">
         <template slot-scope="select">
             <vl-style-box :z-index="30">
                 <vl-style-stroke v-bind="strokeStyle"></vl-style-stroke>
@@ -26,7 +26,8 @@
             'visibleTerms',
             'visibleNoTerm',
             'isReviewing',
-            'pointRadius'
+            'pointRadius',
+            'viewerId'
         ],
         data() {
             return {

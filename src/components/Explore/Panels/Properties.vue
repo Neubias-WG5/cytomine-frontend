@@ -6,11 +6,11 @@
         <div class="alert alert-info">Choose a color and a property to show</div>
         <div class="form-horizontal">
             <div class="form-group">
-                <label for="property-color" class="col-sm-3 control-label">Color</label>
+                <label :for="'property-color'+viewerId" class="col-sm-3 control-label">Color</label>
                 <div class="col-sm-9">
                     <select class="form-control" :value="selectedProperty.color"
                             @input="changeColor($event.target.value)"
-                            name="property-color" id="property-color">
+                            name="property-color" :id="'property-color'+viewerId">
                         <option v-for="color in colors" :key="color.value" :value="color.value">
                             {{color.name}}
                         </option>
@@ -18,11 +18,11 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="properties" class="col-sm-3 control-label">Key</label>
+                <label :for="'properties'+viewerId" class="col-sm-3 control-label">Key</label>
                 <div class="col-sm-9">
                     <select class="form-control" :value="selectedProperty.key"
                             @input="changeKey($event.target.value)" name="properties"
-                            id="properties">
+                            :id="'properties'+viewerId">
                         <option value="">No key selected</option>
                         <option v-for="property in propertiesToShow" :key="property.key" :value="property.key">
                             {{property.key}}
@@ -42,7 +42,8 @@
         name: 'Properties',
         props: [
             'properties',
-            'selectedProperty'
+            'selectedProperty',
+            'viewerId'
         ],
         data() {
             return {

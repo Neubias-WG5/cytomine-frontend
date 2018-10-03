@@ -1,9 +1,9 @@
 <template>
     <span v-if="drawToolActive">
-        <vl-layer-vector id="Drawable">
-            <vl-source-vector ident="draw-target" :features.sync="features" ref="olSourceVectorDraw" ></vl-source-vector>
+        <vl-layer-vector :id="'Drawable'+viewerId">
+            <vl-source-vector :ident="'draw-target'+viewerId" :features.sync="features" ref="olSourceVectorDraw" ></vl-source-vector>
         </vl-layer-vector>
-        <vl-interaction-draw ref="olDrawInteraction" source="draw-target" :type="drawType"
+        <vl-interaction-draw ref="olDrawInteraction" :source="'draw-target'+viewerId" :type="drawType"
                              :freehand="drawFreehand" :freehand-condition="undefined"
                              :geometry-function="drawGeometryFunc" @drawend="onDrawEnd" @drawstart="onDrawStart">
         </vl-interaction-draw>
@@ -31,7 +31,8 @@
             'image',
             'currentUser',
             'selectedFeature',
-            'isReviewing'
+            'isReviewing',
+            'viewerId'
         ],
         computed: {
             drawToolActive() {
