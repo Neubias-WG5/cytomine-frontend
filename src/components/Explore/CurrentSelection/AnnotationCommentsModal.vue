@@ -136,25 +136,22 @@
                     comment: this.sendText,
                     subject: `Cytomine: ${this.currentUser.firstname} ${this.currentUser.lastname} (${this.currentUser.username}) shared an annotation with you`
                 }).then(response => {
-                    console.log(response.data.message);
-                    // this.$notify({
-                    //     placement: 'bottom-right',
-                    //     type: 'success',
-                    //     content: response.data.message
-                    // })
                     this.sendEmails = [];
                     this.sendUsers = [];
                     this.sendText = '';
                     this.sendingSpinner = false;
                     this.loadComments();
-
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'success',
+                        content: response.data.message
+                    })
                 }).catch(error => {
-                    console.log(error.response.data.errors);
-                    // this.$notify({
-                    //     placement: 'bottom-right',
-                    //     type: 'danger',
-                    //     content: error.response.data.errors
-                    // })
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'danger',
+                        content: error.response.data.errors
+                    });
                     this.sendingSpinner = false;
                 })
             },

@@ -569,7 +569,6 @@
                         term: termId,
                         userannotation: this.selectedAnnotation.id
                     }).then(response => {
-                        //TODO: [NOTIFICATION]
                         this.selectedAnnotation.term.push(termId);
                         this.updateFeature({
                             layerId: this.selectedAnnotation.user,
@@ -577,13 +576,21 @@
                             terms: this.selectedAnnotation.term
                         });
                         this.selectedFeature.properties.terms = this.selectedAnnotation.term;
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
                     }).catch(errors => {
-                        //TODO: [NOTIFICATION]
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: errors.response.data.errors
+                        });
                     })
                 });
                 termsToRemove.forEach(termId => {
                     api.delete(`api/annotation/${this.selectedAnnotation.id}/term/${termId}.json`).then(response => {
-                        //TODO: [NOTIFICATION]
                         this.selectedAnnotation.term = newList;
                         this.updateFeature({
                             layerId: this.selectedAnnotation.user,
@@ -591,8 +598,17 @@
                             terms: this.selectedAnnotation.term
                         });
                         this.selectedFeature.properties.terms = this.selectedAnnotation.term;
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
                     }).catch(errors => {
-                        //TODO: [NOTIFICATION]
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: errors.response.data.errors
+                        });
                     })
                 })
             },

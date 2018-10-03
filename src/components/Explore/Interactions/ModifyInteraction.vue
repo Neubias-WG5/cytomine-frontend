@@ -57,7 +57,6 @@
                     fill: true,
                     id: this.selectedFeature.properties.id
                 }).then(response => {
-                    // TODO: [NOTIFICATION]
                     let annotation = response.data.data.annotation;
                     let user;
                     if (!annotation) {
@@ -76,8 +75,17 @@
                     this.$emit('update:selectedFeature', feature);
                     this.$emit('update:selectedAnnotation', annotation);
                     this.$emit('update:activeTool', 'Select');
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'success',
+                        content: response.data.data.message
+                    });
                 }).catch(error => {
-                    // TODO: [NOTIFICATION]
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'danger',
+                        content: error.response.data.data.errors
+                    });
                     this.$emit('update:activeTool', 'Select');
                 });
 
@@ -86,13 +94,21 @@
                 let annotation = this.selectedAnnotation;
                 annotation.location = this.format.writeFeature(evt.features.getArray()[0]);
                 api.put(`api/annotation/${annotation.id}.json`, annotation).then(response => {
-                    //TODO: [NOTIFICATION]
                     let annotation = response.data.annotation;
                     if (!annotation)
                         annotation = response.data.reviewedannotation;
                     this.$emit('update:selectedAnnotation', annotation);
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'success',
+                        content: response.data.message
+                    });
                 }).catch(error => {
-                    //TODO: [NOTIFICATION]
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'danger',
+                        content: error.response.data.errors
+                    });
                     this.$emit('update:activeTool', 'Select');
                 })
             },
@@ -105,14 +121,14 @@
                 })
                 .then(() => {
                     api.delete(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
+                        this.$emit('updateAnnotationIndexes');
+                        this.$emit('update:selectedFeature', null);
+                        this.$emit('update:activeTool', 'Select');
                         this.$notify({
                             placement: 'bottom-right',
                             type: 'success',
                             content: response.data.message
                         });
-                        this.$emit('updateAnnotationIndexes');
-                        this.$emit('update:selectedFeature', null);
-                        this.$emit('update:activeTool', 'Select');
                     }).catch(error => {
                         this.$notify({
                             placement: 'bottom-right',

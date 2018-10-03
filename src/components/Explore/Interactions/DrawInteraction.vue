@@ -156,7 +156,6 @@
                             }
                             else
                                 user = annotation.user;
-                            // TODO: [NOTIFICATION]
 
                             // Union can merge several annotations into a single one
                             // 1) annotation layer index can decrease
@@ -167,11 +166,20 @@
                             this.features.splice(0, this.features.length);
                             this.$refs.olSourceVectorDraw.clear();
                             this.$refs.olDrawInteraction.recreate();
+                            this.$notify({
+                                placement: 'bottom-right',
+                                type: 'success',
+                                content: response.data.message
+                            });
                         }).catch(error => {
-                            // TODO: [NOTIFICATION]
                             this.features.splice(0, this.features.length);
                             this.$refs.olSourceVectorDraw.clear();
                             this.$refs.olDrawInteraction.recreate();
+                            this.$notify({
+                                placement: 'bottom-right',
+                                type: 'danger',
+                                content: error.response.data.errors
+                            });
                         });
                         break;
                     default:
@@ -182,18 +190,26 @@
                             term: this.associableTerms,
                             user: userId,
                         }})).then(response => {
-                            // TODO: [NOTIFICATION] this.notification("Annotation added", data.data.message, "success");
                             let annotationId = response.data.message.split(" ")[1].split(",")[0]; // HORRIBLE HACK to get id
                             this.$emit('updateAnnotationIndexes');
                             this.$emit('selectFeature', {layerId: this.currentUser.id, featureId: annotationId});
                             this.features.splice(0, this.features.length);
                             this.$refs.olSourceVectorDraw.clear();
                             this.$refs.olDrawInteraction.recreate();
+                            this.$notify({
+                                placement: 'bottom-right',
+                                type: 'success',
+                                content: response.data.message
+                            });
                         }).catch(error => {
-                            // TODO: [NOTIFICATION] this.notification("Cannot add annotation", error.response.data.errors, "error");
                             this.features.splice(0, this.features.length);
                             this.$refs.olSourceVectorDraw.clear();
                             this.$refs.olDrawInteraction.recreate();
+                            this.$notify({
+                                placement: 'bottom-right',
+                                type: 'danger',
+                                content: error.response.data.errors
+                            });
                         });
                 }
             }

@@ -147,6 +147,17 @@
                         this.taskReviewAll = null;
                         this.$emit('updateAnnotationIndexes');
                         this.visibleUserLayerIds.forEach(id => this.$emit('forceUpdateLayer', id));
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
+                    }).catch(error => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: error.response.data.errors
+                        });
                     })
                 })
             },
@@ -157,6 +168,17 @@
                         this.taskReviewAll = null;
                         this.$emit('updateAnnotationIndexes');
                         this.visibleUserLayerIds.forEach(id => this.$emit('forceUpdateLayer', id));
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
+                    }).catch(error => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: error.response.data.errors
+                        });
                     })
                 })
 

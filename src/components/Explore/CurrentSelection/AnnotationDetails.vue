@@ -263,7 +263,6 @@
             },
             replaceTermBySuggested(termId) {
                 api.post(`api/annotation/${this.selectedAnnotation.id}/term/${termId}/clearBefore.json`, {}).then(response => {
-                    //TODO: [NOTIFICATION]
                     let annotation = this.selectedAnnotation;
                     annotation.term = [termId];
                     this.$emit('update:selectedAnnotation', annotation);
@@ -278,20 +277,36 @@
 
                     this.$emit('update:selectedFeature', feature);
                     this.$emit('update:associableTerms', [termId]);
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'success',
+                        content: response.data.message
+                    });
                 }).catch(errors => {
-                    //TODO: [NOTIFICATION]
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'danger',
+                        content: errors.response.data.errors
+                    });
                 })
             },
             acceptReview() {
                 api.post(`api/annotation/${this.selectedAnnotation.id}/review.json`, {}).then(response => {
-                    //TODO
                     let annotationId = response.data.reviewedannotation.id;
                     this.$emit('updateAnnotationIndexes');
                     this.$emit('selectFeature', {layerId: -100, featureId: annotationId});
                     this.$emit('forceUpdateLayer', this.selectedAnnotation.user);
-
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'success',
+                        content: response.data.message
+                    });
                 }).catch(errors => {
-
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'danger',
+                        content: errors.response.data.errors
+                    });
                 })
             },
             rejectReview() {
@@ -300,10 +315,17 @@
                     this.$emit('updateAnnotationIndexes');
                     this.$emit('forceUpdateLayer', this.selectedAnnotation.user);
                     this.$emit('selectFeature', {layerId: this.selectedAnnotation.user, featureId: annotationId});
-
-
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'success',
+                        content: response.data.message
+                    });
                 }).catch(errors => {
-
+                    this.$notify({
+                        placement: 'bottom-right',
+                        type: 'danger',
+                        content: errors.response.data.errors
+                    });
                 })
             }
         },
