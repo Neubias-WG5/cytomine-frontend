@@ -545,6 +545,9 @@
             activeTool(newValue) {
                 if (!['Select', 'Fill', 'Edit', 'Rotate', 'Drag', 'Resize', 'Remove'].includes(newValue))
                     this.selectedFeature = null;
+
+                if (newValue == 'Screenshot')
+                    this.screenshot()
             },
             selectedFeature(newValue) {
                 if (!newValue) {
@@ -974,6 +977,21 @@
                     else if (retries == 5)
                         clearInterval(interval);
                 }, 500);
+            },
+            screenshot() {
+                if (this.$refs.olview)
+                    this.$refs.olview.$createPromise.then(() => {
+                        let extent = this.$refs.olview.$view.calculateExtent();
+                        let x = Math.max(Math.round(extent[0]), 0),
+                            y = Math.max(Math.round(this.image.height - extent[3]), 0),
+                            width = Math.round(extent[2] - extent[0]),
+                            height = Math.round(extent[3] - extent[1]),
+                            zoom = (this.image.depth < this.zoom) ? this.image.depth : this.zoom;
+                        api.get(`api/imageinstance/${this.image.id}/camera_url-${x}-${y}-${width}-${height}.jpg?zoom=${zoom}`).then(response => {
+                            open(`${this.filterUrl}${response.data.url}&drawScaleBar=true`) //&magnification=${magnification}
+                        })
+                    });
+                this.activeTool = 'Select';
             },
             mustBeShown(key) {
                 return mustBeShown(key, this.projectConfig);
