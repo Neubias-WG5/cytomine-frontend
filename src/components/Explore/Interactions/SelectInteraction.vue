@@ -4,7 +4,7 @@
             <vl-style-box :z-index="30">
                 <vl-style-stroke v-bind="strokeStyle"></vl-style-stroke>
                 <vl-style-fill :color="fillStyle"></vl-style-fill>
-                <vl-style-circle :radius="5">
+                <vl-style-circle :radius="pointRadius">
                     <vl-style-stroke v-bind="strokeStyle"></vl-style-stroke>
                     <vl-style-fill :color="fillStyle"></vl-style-fill>
                 </vl-style-circle>
@@ -25,7 +25,8 @@
             'layerOpacity',
             'visibleTerms',
             'visibleNoTerm',
-            'isReviewing'
+            'isReviewing',
+            'pointRadius'
         ],
         data() {
             return {

@@ -12,7 +12,7 @@
                     :ontology="ontology" @deleteViewer="deleteViewer" @linkViewers="linkViewers"
                     @changeImage="changeImage" @current-map="viewer" @updateImage="updateImage"
                     :lastEventMapId="lastEventMapId" @setCurrentViewer="setCurrentViewer"
-                    :linked-viewers-bus="linkedViewersBus"></viewer>
+                    :linked-viewers-bus="linkedViewersBus" :point-radius="pointRadius"></viewer>
         </div>
     </div>
 </template>
@@ -48,6 +48,7 @@
                 lastEventMapId: null,
                 linkedViewersBus: new Vue(),
                 currentRoute: '',
+                pointRadius: 8,
             }
         },
         computed: {
@@ -197,8 +198,11 @@
             });
 
             // DEPENDS ON [BACKBONE]
-            setInterval(this.checkRoute, 1000)
+            setInterval(this.checkRoute.bind(this), 1000)
         },
+        mounted() {
+            this.pointRadius = localStorage.getItem(`point_radius${this.project.id}`) || 8;
+        }
     }
 </script>
 

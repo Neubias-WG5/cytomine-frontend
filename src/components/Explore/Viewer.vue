@@ -22,7 +22,8 @@
 
             <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
-                                :visible-no-term="visibleNoTerm" :associable-terms="associableTerms" :is-reviewing="isReviewing"></select-interaction>
+                                :visible-no-term="visibleNoTerm" :associable-terms="associableTerms"
+                                :is-reviewing="isReviewing" :point-radius="pointRadius"></select-interaction>
 
             <measure-interaction :image="image" :active-tool="activeTool"></measure-interaction>
 
@@ -310,6 +311,7 @@
             'viewers',
             'paddingTop',
             'ontology',
+            'pointRadius',
 
             'id',
             'linkedTo',
@@ -443,20 +445,19 @@
                 }
             },
             styles() {
-                let pointRadius = 7;
                 let s = {};
                 s[AnnotationStatus.NO_TERM] = createStyle({
                     strokeColor: [17, 17, 17, this.layersOpacity],
                     strokeWidth: 2,
                     fillColor: [238, 238, 238, this.layersOpacity],
-                    imageRadius: pointRadius,
+                    imageRadius: this.pointRadius,
                 });
 
                 s[AnnotationStatus.MULTIPLE_TERMS] = createStyle({
                     strokeColor: [17, 17, 17, this.layersOpacity],
                     strokeWidth: 2,
                     fillColor: [204, 204, 204, this.layersOpacity],
-                    imageRadius: pointRadius,
+                    imageRadius: this.pointRadius,
                 });
 
                 s[AnnotationStatus.HIDDEN] = createStyle({
@@ -472,7 +473,7 @@
                         strokeColor: [17, 17, 17, this.layersOpacity],
                         strokeWidth: 2,
                         fillColor: c,
-                        imageRadius: pointRadius,
+                        imageRadius: this.pointRadius,
                     })
                 });
 
@@ -487,13 +488,13 @@
                     strokeColor: [189, 54, 47, 1],
                     strokeWidth: 5,
                     fillColor: [189, 54, 47, Math.max(this.layersOpacity - 0.1, 0.)],
-                    imageRadius: pointRadius,
+                    imageRadius: this.pointRadius,
                 });
 
                 s[AnnotationStatus.REVIEWED] = createStyle({
                     strokeColor: [91, 183, 91, 1],
                     strokeWidth: 5,
-                    imageRadius: pointRadius,
+                    imageRadius: this.pointRadius,
                 });
 
                 return s;
