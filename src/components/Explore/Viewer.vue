@@ -110,7 +110,8 @@
 
                 <annotations v-show="selectedComponent == 'annotationList'" :isReviewing="isReviewing"
                              :users="userLayers" :terms="allTerms" :image="image" :visible-term-ids="visibleTerms"
-                             :visible-user-ids="visibleUserLayerIds" :size-terms="sizeTerms"></annotations>
+                             :visible-user-ids="visibleUserLayerIds" :size-terms="sizeTerms" :visible-no-term="visibleNoTerm"
+                             :active="selectedComponent == 'annotationList'" :nb-visible-annotations="nbVisibleAnnotations" :has-review-layer="hasReviewLayer"></annotations>
 
                 <review v-show="selectedComponent == 'review'" @changeReviewStatus="changeReviewStatus"
                         :image="image" :current-user="currentUser" :review-user="userById(image.reviewUser)"
@@ -355,6 +356,14 @@
             },
             drawableUserLayerIds() {
                 return this.userLayers.filter(userLayer => userLayer.selected && userLayer.drawable).map(userLayer => userLayer.id)
+            },
+            nbVisibleAnnotations() {
+                let count = 0;
+                this.userLayers.filter(userLayer => userLayer.selected && userLayer.visible).forEach(layer => count += layer.size);
+                return count;
+            },
+            hasReviewLayer() {
+                return this.reviewMode || this.image.reviewed
             },
             filterUrl() {
                 if (!this.selectedFilter)
@@ -735,7 +744,7 @@
                     let reviewLayer = {
                         id: -100,
                         size: count,
-                        selected: this.reviewMode || this.image.reviewed,
+                        selected: this.hasReviewLayer,
                         visible: this.reviewMode,
                         drawable: this.reviewMode,
                         opacity: 0.3,
@@ -747,7 +756,7 @@
                 else {
                     let reviewLayer = this.userLayers[reviewIndex];
                     reviewLayer.size = count;
-                    reviewLayer.selected = this.reviewMode || this.image.reviewed;
+                    reviewLayer.selected = this.hasReviewLayer;
                     reviewLayer.visible = this.reviewMode;
                     reviewLayer.drawable = this.reviewMode;
                     this.userLayers.splice(reviewIndex, 1, reviewLayer);

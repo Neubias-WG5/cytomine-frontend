@@ -3,12 +3,23 @@
         <h4>
             <i class="fas fa-shapes"></i> Visible annotations
         </h4>
+        <div v-if="hasReviewLayer">
+            <label class="radio-inline">
+                <input type="radio" v-model="reviewed" :value="true"> Reviewed
+            </label>
+            <label class="radio-inline">
+                <input type="radio" v-model="reviewed" :value="false"> Not reviewed
+            </label>
+        </div>
         <div class="btn-group">
-            <button @click="setFilter(null)" :class="['btn', 'btn-default', {active: filter == null}]">All
+            <button @click="setFilter(null)" :class="['btn', 'btn-default', {active: filter == null}]">All with term(s)
             </button>
             <button @click="setFilter(term.id)" :class="['btn', 'btn-default', {active: filter == term.id}]"
                     v-for="term in visibleTerms" :key="term.id + uuid()">
                 <term :size="sizeTerms[term.id]" :name="term.name" :color="term.color"></term>
+            </button>
+            <button @click="setFilter('noterm')" :class="['btn', 'btn-default', {active: filter == 'noterm'}]" v-if="visibleNoTerm">
+                <span class="label label-default">No term</span>
             </button>
         </div>
         <div class="pull-right">
@@ -31,45 +42,7 @@
             </ul>
         </div>
         <div class="clearfix"></div>
-        <ul class="annotations-container">
-            <li class="img-box" v-for="annotation in annotations" :key="annotation.id + uuid()">
-                <popper>
-                    <div class="popper" trigger="hover" :options="{placement: 'auto'}">
-                        <div class="annotation-detail">
-                            <dl class="dl-horizontal">
-                                <dt>Created by</dt>
-                                <dd v-if="annotation.user !== undefined">
-                                    <username :user="userById(annotation.user)"></username>
-                                </dd>
-                                <dt>Date</dt>
-                                <dd>
-                                    <date-item :value="annotation.created"></date-item>
-                                </dd>
-                                <template v-if="annotation.userByTerm[0]">
-                                    <dt>Term(s)</dt>
-                                    <dd v-for="term in annotation.userByTerm" :key="term.id + uuid()">
-                                        <term v-bind="termById(term.term)"></term>&nbsp;by
-                                        <span v-for="(user, index) in term.user" :key="user + uuid()">
-                                            <username :user="userById(user)"></username>
-                                            <span v-if="index + 1 < term.user.length">, </span>
-                                        </span>
-                                    </dd>
-                                </template>
-                            </dl>
-                        </div>
-                    </div>
-                    <div slot="reference">
-                        <a class="annot-link"
-                           :href="`#tabs-${isReviewing ? 'review' : 'image'}-${image.project}-${image.id}-${annotation.id}`">
-                            <img class="annot-img" :src="cropURL(annotation.smallCropURL)" alt="">
-                        </a>
-                    </div>
-                </popper>
-            </li>
-            <div v-if="annotations && annotations.length == 0" class="alert alert-info mt-4">
-                No annotation
-            </div>
-        </ul>
+        <annotation-list :annotations="annotations" :is-reviewing="isReviewing"></annotation-list>
     </div>
 </template>
 
@@ -81,10 +54,12 @@
     import DateItem from "../../Datatable/DateItem";
 
     import uuid from 'uuid'
+    import AnnotationList from "../../Annotations/AnnotationList";
 
     export default {
         name: 'Annotations',
         components: {
+            AnnotationList,
             DateItem,
             Username,
             Term,
@@ -93,9 +68,12 @@
         data() {
             return {
                 filter: null,
+                reviewed: true,
                 page: 0,
                 max: 10,
-                totalPages: null
+                totalPages: null,
+                rev: 0,
+                previousNbVisibleAnnotations: 0
             }
         },
         props: [
@@ -106,34 +84,42 @@
             'visibleNoTerm',
             'visibleTermIds',
             'visibleUserIds',
-            'sizeTerms'
+            'sizeTerms',
+            'nbVisibleAnnotations',
+            'active',
+            'hasReviewLayer'
         ],
         asyncComputed: {
             annotations() {
-                if (this.visibleTermIds.length == 0 || this.visibleUserIds.length == 0) {
+                let _ = this.rev;
+                if ((this.visibleTermIds.length == 0 && !this.filter)|| this.visibleUserIds.length == 0) {
                     this.totalPages = 0;
                     this.page = 0;
                     return [];
                 }
 
                 let terms;
-                if (this.filter)
+                if (this.filter == 'noterm')
+                    terms = `&noTerm=true`;
+                else if (this.filter)
                     terms = `&term=${this.filter}`;
                 else
                     terms = (this.visibleTermIds.length > 0) ? `&terms=${this.visibleTermIds.join(',')}` : '';
                 let users = (this.visibleUserIds.length > 0) ? `&users=${this.visibleUserIds.join(',')}` : '';
-                let reviewed = (this.isReviewing) ? 'true' : 'false';
 
-                return api.get(`/api/annotation.json?&image=${this.image.id}&reviewed=${reviewed}&max=${this.max}&offset=${this.page * this.max}${terms}${users}`).then(data => {
+                let reviewed;
+                if (this.hasReviewLayer) {
+                    reviewed = (this.reviewed) ? `&reviewed=true` : `&notReviewedOnly=true`;
+                    users = (this.reviewed) ? '' : users;
+                }
+                else
+                    reviewed = '';
+
+                return api.get(`/api/annotation.json?image=${this.image.id}${reviewed}&max=${this.max}&offset=${this.page * this.max}${terms}${users}`).then(data => {
                     let annots = data.data.collection;
                     this.totalPages = data.data.totalPages;
                     if (this.page >= this.totalPages)
                         this.page = 0;
-                    // if (!this.filter && this.visibleNoTerm) {
-                    //     api.get(`/api/annotation.json&image=${this.image.id}&reviewed=${reviewed}&max=${this.max}&offset=${this.page * this.max}&noTerm=true&${users}`).then(data => {
-                    //         annots = annots.concat(data.data.collection)
-                    //     })
-                    // }
                     return annots;
                 });
             },
@@ -142,6 +128,18 @@
             visibleTerms() {
                 return this.terms.filter(term => this.visibleTermIds.includes(term.id))
             },
+        },
+        watch: {
+            nbVisibleAnnotations(newValue, oldValue) {
+                if (newValue != oldValue)
+                    this.rev++;
+            },
+            active(newValue, oldValue) {
+                if (newValue && !oldValue && this.nbVisibleAnnotations != this.previousNbVisibleAnnotations) {
+                    this.previousNbVisibleAnnotations = this.nbVisibleAnnotations;
+                    this.rev++;
+                }
+            }
         },
         methods: {
             uuid,
@@ -171,43 +169,12 @@
 </script>
 
 <style scoped>
-    .img-box {
-        width: 100px;
-        height: 100px;
-    }
-
-    .annot-img {
-        max-width: 90px;
-        max-height: 90px;
-    }
-
-    .annot-link {
-        display: block;
-        width: 90px;
-        height: 90px;
-        border: 1px solid rgb(240, 240, 240);
-        text-align: center;
-    }
-
-    .annotations-container {
-        display: flex;
-        list-style: none;
-        flex-wrap: wrap;
-        padding: 0;
-        margin-top: 1em;
-    }
-
     .dl-horizontal dt {
         width: 80px;
     }
 
     .dl-horizontal dd {
         margin-left: 100px;
-    }
-
-    .annotation-detail {
-        text-align: left;
-        margin: 5px;
     }
 
     .pagination {
