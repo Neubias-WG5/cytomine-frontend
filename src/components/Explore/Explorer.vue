@@ -211,5 +211,9 @@
         display: flex;
         flex-wrap: wrap;
     }
+
+    .alert {
+        z-index: 1010;
+    }
 </style>
 
