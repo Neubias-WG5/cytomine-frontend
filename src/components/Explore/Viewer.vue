@@ -61,8 +61,7 @@
         </div>
         <div v-show="(isCurrentViewer && selectedComponent != '')"
              class="panel component-panel component-panel-bottom"
-             :style="`max-height:75%; ${selectedComponent == 'multidimension' ? 'width:33%;' :  ''}
-             ${selectedComponent == 'review' ? 'width:25%;' :  ''}`">
+             v-bind:style="styleSelectedComponent">
             <div class="panel-body">
                 <div v-show="selectedComponent == 'informations'">
                     <informations :image="image" :project="project"></informations>
@@ -498,6 +497,19 @@
                 });
 
                 return s;
+            },
+            styleSelectedComponent() {
+                let style = {
+                    maxHeight: '75%',
+                };
+
+                if (['digitalZoom', 'review', 'informations', 'linkmap', 'filter', 'properties', 'follow'].includes(this.selectedComponent)) {
+                    style['maxWidth'] = '50%';
+                }
+                else if (['multidimension', 'ontology', 'annotationLayers'].includes(this.selectedComponent)) {
+                    style['maxWidth'] = '80%';
+                }
+                return style;
             }
         },
         watch: {
