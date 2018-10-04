@@ -2,7 +2,7 @@
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
         <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
                 @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" @moveend="calculateViewExtent"
-                @click="clickCoordinate = $event.coordinate"
+                @click="setClickCoordinate"
                 data-projection="CYTO:FLAT">
 
             <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :max-zoom="maxZoom"
@@ -990,6 +990,12 @@
                     else if (retries == 5)
                         clearInterval(interval);
                 }, 500);
+            },
+            setClickCoordinate(event) {
+                let coord = event.coordinate;
+                if (coord[0] > 0 && coord[0] < this.image.width && coord[1] > 0 && coord[1] < this.image.height) {
+                    this.clickCoordinate = coord.map(value => Math.round(value));
+                }
             },
             screenshot() {
                 if (this.$refs.olview)
