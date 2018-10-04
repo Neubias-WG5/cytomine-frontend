@@ -1,18 +1,23 @@
 <template>
-    <div>
+    <section>
         <h4>
             <i class="fas fa-images"></i> Multidimension
         </h4>
-        <div class="input-group">
-            <span class="input-group-addon">Current image group</span>
-            <select class="btn btn-default" style="width: 100%"
-                    v-model="selected" name="imageGroupSelect">
-                <option :value="{}">Select an image group</option>
-                <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence">
-                    {{getImageGroupById(sequence.imageGroup).name}}
-                </option>
-            </select>
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label :for="'property-color'+viewerId" class="col-sm-4 control-label">Image group</label>
+                <div class="col-sm-8">
+                    <select class="form-control"
+                            v-model="selected" name="imageGroupSelect">
+                        <option :value="{}">Select an image group</option>
+                        <option v-for="sequence in imageSequences" :key="sequence.id" :value="sequence">
+                            {{getImageGroupById(sequence.imageGroup).name}}
+                        </option>
+                    </select>
+                </div>
+            </div>
         </div>
+
         <template v-if="selected !== {} && selectedImageGroup">
             <div>
                 <dl>
@@ -134,7 +139,7 @@
             <!--:selectedMap="selectedMap"></spectra>-->
         </template>
 
-    </div>
+    </section>
 </template>
 
 <script>
