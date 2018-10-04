@@ -550,7 +550,7 @@
             },
             onlineUsers(newValue) {
                 if (this.followedUser !== "") {
-                    if (newValue.find(u => u.id == this.followedUser.id) == -1) {
+                    if (!newValue.find(u => u.id == this.followedUser.id)) {
                         this.stopUserTracking()
                     }
                 }
