@@ -522,8 +522,13 @@
                 this.setNewImage(oldImage, newImage)
             },
             selectedSequence(newValue) {
-                if (newValue !== {})
+                if (!newValue)
+                    this.selectedSequence = {};
+                else if (newValue && newValue != {} && newValue.model) {
                     this.changeImage(newValue.model.id);
+
+                }
+
             },
             reviewMode() {
                 this.updateAnnotationIndexes();
@@ -682,15 +687,22 @@
 
                 api.get(`/api/annotation/property/key.json?idImage=${newImage.id}&user=true`).then(data => {
                     this.annotationProperties = data.data.collection;
-                });
 
-                // TODO: if selected property no more in annotation properties: remove it
+                    // if selected property no more in annotation properties: remove it
+                    if (!this.annotationProperties.find(prop => prop.key == this.selectedProperty.key)) {
+                        this.selectedProperty.key = "";
+                        this.selectedProperty.color = "#000000"
+                    }
+                });
 
                 api.get(`/api/imageinstance/${newImage.id}/imagesequence.json`).then(data => {
                     this.imageSequences = data.data.collection;
-                });
 
-                // TODO: If current sequence no more in imagesequence: deselect it
+                    // If current sequence no more in imagesequence: deselect it
+                    if (this.selectedSequence && !this.imageSequences.find(sequence => sequence.id == this.selectedSequence.id)) {
+                        this.selectedSequence = {}
+                    }
+                });
 
                 this.getOnlineUsers();
 
@@ -714,12 +726,13 @@
                     });
                     api.get(`/api/imageinstance/${this.image.id}/annotationindex.json`).then(response => {
                         let countReviewed = 0;
-                        response.data.collection.forEach(item => {
-                            let index = this.userLayers.findIndex(user => item.user == user.id);
-                            let layer = this.userLayers[index];
-                            layer.size = item.countAnnotation;
+                        let annotIndexes = response.data.collection;
+                        let layers = this.userLayers;
+                        layers.forEach((layer, index) => {
+                            let item = annotIndexes.find(item => item.user == layer.id);
+                            layer.size = (item) ? item.countAnnotation : 0;
                             this.userLayers.splice(index, 1, layer);
-                            countReviewed += item.countReviewedAnnotation;
+                            if (item) countReviewed += item.countReviewedAnnotation;
                         });
 
                         this.updateReviewLayer(countReviewed);
