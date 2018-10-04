@@ -2,6 +2,7 @@
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
         <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
                 @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" @moveend="calculateViewExtent"
+                @click="clickCoordinate = $event.coordinate"
                 data-projection="CYTO:FLAT">
 
             <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :max-zoom="maxZoom"
@@ -121,7 +122,7 @@
                 <multidimension v-show="selectedComponent == 'multidimension' && hasImageSequences"
                                 :image-groups="imageGroups" :image-sequences="imageSequences"
                                 :selected-sequence.sync="selectedSequence" :viewer-id="id"
-                                @changeSequence="changeSequence"></multidimension>
+                                @changeSequence="changeSequence" :click-coordinate="clickCoordinate" :element-width="elementWidth"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties"
@@ -506,7 +507,7 @@
                 if (['digitalZoom', 'review', 'informations', 'linkmap', 'filter', 'properties', 'follow'].includes(this.selectedComponent)) {
                     style['maxWidth'] = '50%';
                 }
-                else if (['multidimension', 'ontology', 'annotationLayers'].includes(this.selectedComponent)) {
+                else if ([ 'ontology', 'annotationLayers'].includes(this.selectedComponent)) {
                     style['maxWidth'] = '80%';
                 }
                 return style;

@@ -158,10 +158,10 @@
                             }
 
                             api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
-                                this.hdf5 = response.data;
+                                group.hdf5 = response.data;
                                 this.imageGroups.push(group);
                             }).catch(errors => {
-                                this.hdf5 = undefined;
+                                group.hdf5 = undefined;
                                 this.imageGroups.push(group);
                             })
                         });

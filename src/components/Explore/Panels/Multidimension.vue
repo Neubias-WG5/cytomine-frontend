@@ -137,6 +137,7 @@
             <!--:imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>-->
             <!--<spectra :imageSequence="selectedSequence" :imageGroup="selected" :mousePosition="mousePosition"-->
             <!--:selectedMap="selectedMap"></spectra>-->
+            <spectrum :image-group="selectedImageGroup" :coordinates="clickCoordinate" :element-width="elementWidth" @activeStateChanged="refreshSliders"></spectrum>
         </template>
 
     </section>
@@ -145,13 +146,13 @@
 <script>
     import vueSlider from 'vue-slider-component'
 
-    import Spectra from './Multidimension/Spectra'
     import Overlay from './Multidimension/Overlay'
+    import Spectrum from "./Multidimension/Spectrum";
 
     export default {
         name: 'Multidimension',
         components: {
-            Spectra,
+            Spectrum,
             Overlay,
             vueSlider,
         },
@@ -160,6 +161,8 @@
             'imageGroups',
             'imageSequences',
             'selectedSequence',
+            'clickCoordinate',
+            'elementWidth'
         ],
         data() {
             return {}
@@ -200,6 +203,11 @@
                     this.$emit('changeSequence', {c: this.currentChannel, z: this.currentZStack, t: newValue})
                 }
             },
+        },
+        watch: {
+            elementWidth() {
+                this.refreshSliders();
+            }
         },
         methods: {
             getImageGroupById(imageGroupId) {
@@ -259,9 +267,28 @@
                 this.currentTime = this.selectedImageGroup.times[index + value];
                 this.$refs.timeslider.setValue(this.currentTime)
             },
+            refreshSliders() {
+                // Use an interval as we don't know when Plotly graph object has been erased (happens X ms after active=false)
+                let retries = 0;
+                let interval = setInterval(() => {
+                    retries++;
+                    if (this.$refs.channelslider)
+                        this.$refs.channelslider.refresh();
+
+                    if (this.$refs.zstackslider)
+                        this.$refs.zstackslider.refresh();
+
+                    if (this.$refs.timeslider)
+                        this.$refs.timeslider.refresh();
+                    if (retries == 5)
+                        clearInterval(interval);
+                }, 50);
+
+            }
         },
     }
 </script>
+
 
 <style scoped>
     dt {
