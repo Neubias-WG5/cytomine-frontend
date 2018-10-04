@@ -138,6 +138,7 @@
             <!--<spectra :imageSequence="selectedSequence" :imageGroup="selected" :mousePosition="mousePosition"-->
             <!--:selectedMap="selectedMap"></spectra>-->
             <spectrum :image-group="selectedImageGroup" :coordinates="clickCoordinate" :element-width="elementWidth" @activeStateChanged="refreshSliders"></spectrum>
+            <!--<overlay :image-group="selectedImageGroup" :image-sequence="selectedSequence"></overlay>-->
         </template>
 
     </section>
