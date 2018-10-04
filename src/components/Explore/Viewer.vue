@@ -94,8 +94,8 @@
                     :viewer-id="id" :filters="filters" :selectedFilter.sync="selectedFilter">
                 </filters>
 
-                <color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"
-                            :viewer-id="id"></color-maps>
+                <!--<color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"-->
+                            <!--:viewer-id="id"></color-maps>-->
 
                 <annotation-layers v-show="selectedComponent == 'annotationLayers'"
                                    @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"

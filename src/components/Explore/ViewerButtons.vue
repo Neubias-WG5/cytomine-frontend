@@ -18,10 +18,10 @@
                 :class="['btn', 'btn-default', {active: selectedComponent == 'digitalZoom' }]" title="Digital zoom">
             <i class="fas fa-search"></i>
         </button>
-        <button v-if="mustBeShown('project-explore-colormap')" @click="setSelected('colormap')"
-                :class="['btn', 'btn-default', {active: selectedComponent == 'colormap' }]" title="Color maps">
-            <i class="fas fa-adjust"></i>
-        </button>
+        <!--<button v-if="mustBeShown('project-explore-colormap')" @click="setSelected('colormap')"-->
+                <!--:class="['btn', 'btn-default', {active: selectedComponent == 'colormap' }]" title="Color maps">-->
+            <!--<i class="fas fa-adjust"></i>-->
+        <!--</button>-->
         <button @click="setSelected('annotationLayers')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'annotationLayers' }]"
                 title="Annotation layers">
