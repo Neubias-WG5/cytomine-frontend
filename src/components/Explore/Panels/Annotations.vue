@@ -23,31 +23,17 @@
             </button>
         </div>
         <div class="pull-right">
-            <ul class="pagination" v-if="totalPages > 1">
-                <li :class="{disabled: page == 0}">
-                    <a @click="previousAnnotations" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
-                </li>
-                <li @click="page = (n-1)" v-for="n in totalPages" :key="n" :class="{active: n-1 == page}">
-                    <a>
-                        {{ n }}
-                    </a>
-                </li>
-                <li :class="{disabled: page == totalPages - 1}">
-                    <a @click="nextAnnotations" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
+            <paginate v-if="totalPages > 1" :page-count="totalPages" v-model="page" :container-class="'pagination'"
+                      :prev-text="'&laquo;'" :next-text="'&raquo;'"></paginate>
         </div>
         <div class="clearfix"></div>
-        <annotation-list :annotations="annotations" :is-reviewing="isReviewing" :users="users" :terms="terms"></annotation-list>
+        <annotation-list :annotations="annotations" :is-reviewing="isReviewing" :users="users" :terms="terms" :loading="loading"></annotation-list>
     </div>
 </template>
 
 <script>
     import Popper from 'vue-popperjs';
+    import Paginate from 'vuejs-paginate';
 
     import Term from "../../Ontology/Term";
     import Username from "../../User/Username";
@@ -55,6 +41,7 @@
 
     import uuid from 'uuid'
     import AnnotationList from "../../Annotations/AnnotationList";
+
 
     export default {
         name: 'Annotations',
@@ -64,16 +51,18 @@
             Username,
             Term,
             Popper,
+            Paginate
         },
         data() {
             return {
                 filter: null,
                 reviewed: true,
-                page: 0,
+                page: 1,
                 max: 10,
-                totalPages: null,
+                totalPages: 0,
                 rev: 0,
-                previousNbVisibleAnnotations: 0
+                previousNbVisibleAnnotations: 0,
+                loading: false,
             }
         },
         props: [
@@ -94,10 +83,10 @@
                 let _ = this.rev;
                 if ((this.visibleTermIds.length == 0 && !this.filter)|| this.visibleUserIds.length == 0) {
                     this.totalPages = 0;
-                    this.page = 0;
+                    this.page = 1;
                     return [];
                 }
-
+                this.loading = true;
                 let terms;
                 if (this.filter == 'noterm')
                     terms = `&noTerm=true`;
@@ -115,12 +104,16 @@
                 else
                     reviewed = '';
 
-                return api.get(`/api/annotation.json?image=${this.image.id}${reviewed}&max=${this.max}&offset=${this.page * this.max}${terms}${users}`).then(data => {
+                let page = Math.max(0, (this.page - 1));
+                return api.get(`/api/annotation.json?image=${this.image.id}${reviewed}&max=${this.max}&offset=${page * this.max}${terms}${users}`).then(data => {
                     let annots = data.data.collection;
                     this.totalPages = data.data.totalPages;
                     if (this.page >= this.totalPages)
-                        this.page = 0;
+                        this.page = this.totalPages;
+                    this.loading = false;
                     return annots;
+                }).catch(error => {
+                    this.loading = false;
                 });
             },
         },
@@ -143,17 +136,9 @@
         },
         methods: {
             uuid,
-            previousAnnotations() {
-                if (this.page !== 0)
-                    this.page -= 1;
-            },
-            nextAnnotations() {
-                if (this.page !== this.totalPages - 1)
-                    this.page += 1;
-            },
             setFilter(filter) {
                 this.filter = filter;
-                this.page = 0;
+                this.page = 1;
             },
             userById(userId) {
                 return this.users.find(user => user.id === userId);
