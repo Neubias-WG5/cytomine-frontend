@@ -119,8 +119,10 @@
                     this.$emit('update:selectedFeature', null)
             },
             selectedFeature: {
-                handler() {
-                    this.refresh()
+                handler(newValue) {
+                    this.refresh();
+                    if (newValue)
+                        this.saveSelectAction(newValue.properties.id)
                 },
                 deep: true
             },
@@ -130,8 +132,13 @@
         },
         methods: {
             refresh() {
-                console.log("refres");
                 this.$refs.olSelectInteraction.getFeatures().forEach(feature => feature.changed());
+            },
+            saveSelectAction(id) {
+                api.post(`api/annotationaction.json`, {
+                    action: "select",
+                    annotationIdent: id
+                })
             }
         }
     }
