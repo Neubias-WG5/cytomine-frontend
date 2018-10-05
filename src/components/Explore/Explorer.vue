@@ -117,7 +117,7 @@
             },
             updateImage(newImage) {
                 this.viewers.forEach(viewer => {
-                    if (viewer.imageId == newImage.id)
+                    if (viewer.image.id == newImage.id)
                         viewer.image = newImage;
                 })
             },
