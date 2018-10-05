@@ -852,6 +852,17 @@
                     api.post(`/api/imageinstance/${this.image.id}/review.json`).then(response => {
                         this.reviewMode = true;
                         this.$emit('updateImage', response.data.imageinstance);
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
+                    }).catch(error => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: error.response.data.errors
+                        });
                     });
                 }
                 else if (payload == 'cancel' || payload == 'unvalidate') {
@@ -859,12 +870,34 @@
                         if (payload == 'cancel') this.reviewMode = false;
                         if (payload == 'unvalidate') this.reviewMode = true;
                         this.$emit('updateImage', response.data.imageinstance);
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
+                    }).catch(error => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: error.response.data.errors
+                        });
                     })
                 }
                 else if (payload == 'validate') {
                     api.delete(`/api/imageinstance/${this.image.id}/review.json?cancel=false`).then(response => {
                         this.reviewMode = false;
                         this.$emit('updateImage', response.data.imageinstance);
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'success',
+                            content: response.data.message
+                        });
+                    }).catch(error => {
+                        this.$notify({
+                            placement: 'bottom-right',
+                            type: 'danger',
+                            content: error.response.data.errors
+                        });
                     })
                 }
             },
