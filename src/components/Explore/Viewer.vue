@@ -516,10 +516,7 @@
         watch: {
             currentRoute() {
                 // [BACKBONE]
-                let index = this.currentRoute.lastIndexOf('-');
-                let value = this.currentRoute.substr(index + 1);
-                if (!(value == this.project.id || value == this.image.id || value == 0 || value == ''))
-                    this.goToFeature(value);
+                this.checkCurrentRoute();
             },
             linkedTo() {
                 // Sets the local value to the value sent by the parent
@@ -989,6 +986,8 @@
 
                     this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
                     this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
+
+                    this.checkCurrentRoute();
                 });
             },
             calculateViewExtent() {
@@ -1004,6 +1003,8 @@
                 let retries = 0;
                 let interval = setInterval(() => {
                     retries++;
+                    if (!layer)
+                        layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}${this.id}`);
                     let feature = layer.getSource().getFeatureById(payload.featureId);
                     if (feature != null) {
                         clearInterval(interval);
@@ -1054,6 +1055,7 @@
                     layer.selected = true;
                     layer.visible = true;
                     this.userLayers.splice(index, 1, layer);
+                    this.center = [annotation.centroid.x, annotation.centroid.y];
                     this.selectFeature({layerId: annotation.user, featureId: annotation.id, centerOn: true})
                 })
             },
@@ -1077,6 +1079,12 @@
                         })
                     });
                 this.activeTool = 'Select';
+            },
+            checkCurrentRoute() {
+                let index = this.currentRoute.lastIndexOf('-');
+                let value = this.currentRoute.substr(index + 1);
+                if (!(value == this.project.id || value == this.image.id || value == 0 || value == ''))
+                    this.goToFeature(value);
             },
             mustBeShown(key) {
                 return mustBeShown(key, this.projectConfig);
