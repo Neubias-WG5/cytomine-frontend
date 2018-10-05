@@ -3,7 +3,7 @@
         <vl-layer-vector>
             <vl-source-vector :ident="'draw-measure-target'+viewerId" :features.sync="features"
                               ref="olSourceVector"></vl-source-vector>
-            <vl-style-box>
+            <vl-style-box :z-index="25">
                 <vl-style-stroke color="#ffcc33" :width="2"></vl-style-stroke>
                 <vl-style-fill color="rgba(255, 255, 255, 0.2)"></vl-style-fill>
             </vl-style-box>
