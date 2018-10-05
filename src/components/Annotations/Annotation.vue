@@ -34,7 +34,7 @@
             </div>
             <div slot="reference">
                 <a class="annot-link"
-                   :href="`#tabs-${isReviewing ? 'review' : 'image'}-${annotation.project}-${annotation.id}-${annotation.id}`">
+                   :href="`#tabs-${isReviewing ? 'review' : 'image'}-${annotation.project}-${annotation.image}-${annotation.id}`">
                     <img class="annot-img" :src="cropURL(annotation.smallCropURL)" alt="">
                 </a>
                 <div class="annot-info">

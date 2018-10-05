@@ -302,7 +302,7 @@
             }
         },
         props: [
-            'currentRoute',
+            'currentRoute', // [BACKBONE]
             'project',
             'projectConfig',
             'filters',
@@ -514,6 +514,13 @@
             }
         },
         watch: {
+            currentRoute() {
+                // [BACKBONE]
+                let index = this.currentRoute.lastIndexOf('-');
+                let value = this.currentRoute.substr(index + 1);
+                if (!(value == this.project.id || value == this.image.id || value == 0 || value == ''))
+                    this.goToFeature(value);
+            },
             linkedTo() {
                 // Sets the local value to the value sent by the parent
                 this.linkedToValues = this.linkedTo;
@@ -1011,7 +1018,9 @@
                                 user: feature.get('user'),
                                 clusterSize: feature.get('clusterSize')
                             }
-                        }
+                        };
+                        if (payload.centerOn)
+                            this.$refs.olview.fit(feature.getGeometry());
                     }
                     else if (retries == 5)
                         clearInterval(interval);
@@ -1036,6 +1045,17 @@
                     else if (retries == 5)
                         clearInterval(interval);
                 }, 500);
+            },
+            goToFeature(id) {
+                api.get(`api/annotation/${id}.json`).then(response => {
+                    let annotation = response.data;
+                    let index = this.userLayers.findIndex(user => user.id == this.currentUser.id);
+                    let layer = this.userLayers[index];
+                    layer.selected = true;
+                    layer.visible = true;
+                    this.userLayers.splice(index, 1, layer);
+                    this.selectFeature({layerId: annotation.user, featureId: annotation.id, centerOn: true})
+                })
             },
             setClickCoordinate(event) {
                 let coord = event.coordinate;
