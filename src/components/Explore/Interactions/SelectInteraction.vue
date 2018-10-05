@@ -27,7 +27,8 @@
             'visibleNoTerm',
             'isReviewing',
             'pointRadius',
-            'viewerId'
+            'viewerId',
+            'visibleUserIds'
         ],
         data() {
             return {
@@ -94,6 +95,14 @@
             }
         },
         watch: {
+            visibleUserIds(newValue) {
+                if (!this.selectedFeature || this.selectedFeature == {})
+                    return;
+
+                let user = this.selectedFeature.properties.user;
+                if (!newValue.includes(user))
+                    this.$emit('update:selectedFeature', null)
+            },
             visibleTerms(newValue) {
                 if (!this.selectedFeature || this.selectedFeature == {})
                     return;

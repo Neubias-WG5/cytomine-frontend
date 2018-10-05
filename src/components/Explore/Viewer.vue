@@ -24,7 +24,7 @@
             <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
                                 :visible-no-term="visibleNoTerm" :associable-terms="associableTerms"
-                                :is-reviewing="isReviewing" :point-radius="pointRadius" :viewer-id="id"></select-interaction>
+                                :is-reviewing="isReviewing" :point-radius="pointRadius" :viewer-id="id" :visible-user-ids="visibleUserLayerIds"></select-interaction>
 
             <measure-interaction :image="image" :active-tool="activeTool" :viewer-id="id"></measure-interaction>
 
