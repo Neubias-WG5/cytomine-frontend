@@ -21,12 +21,22 @@ Vue.use(ZoomifySource);
 Vue.use(TranslateInteraction);
 Vue.use(RotateInteraction);
 
+
+window.exploreInstances = {};
+
 window.addExploreInstance = function(id) {
     console.log("TRY TO ADD");
-    new Vue({
+    let vm = new Vue({
         el: `#explorer-vue-${id}`,
         render: h => h(App)
     });
+    window.exploreInstances[id] = vm;
 };
+
+window.removeExploreInstance = function(id) {
+    window.exploreInstances[id].$destroy();
+    window.exploreInstances[id] = null;
+
+}
 
 
