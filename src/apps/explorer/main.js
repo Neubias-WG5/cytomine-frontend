@@ -21,7 +21,12 @@ Vue.use(ZoomifySource);
 Vue.use(TranslateInteraction);
 Vue.use(RotateInteraction);
 
-new Vue({
-  el: '#app',
-  render: h => h(App)
-});
+window.addExploreInstance = function(id) {
+    console.log("TRY TO ADD");
+    new Vue({
+        el: `#explorer-vue-${id}`,
+        render: h => h(App)
+    });
+};
+
+

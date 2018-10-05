@@ -210,7 +210,7 @@
     import GeoJSON from 'ol/format/geojson';
     import OverviewMap from 'ol/control/overviewmap'
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
-    import AnnotationStatus from "../../helpers/annotationStatus";
+    import { AnnotationStyleStatus } from "../../helpers/annotationStyleStatus";
     import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
 
     import mustBeShown from '../../helpers/mustBeShown';
@@ -446,21 +446,21 @@
             },
             styles() {
                 let s = {};
-                s[AnnotationStatus.NO_TERM] = createStyle({
+                s[AnnotationStyleStatus.NO_TERM] = createStyle({
                     strokeColor: [17, 17, 17, this.layersOpacity],
                     strokeWidth: 2,
                     fillColor: [238, 238, 238, this.layersOpacity],
                     imageRadius: this.pointRadius,
                 });
 
-                s[AnnotationStatus.MULTIPLE_TERMS] = createStyle({
+                s[AnnotationStyleStatus.MULTIPLE_TERMS] = createStyle({
                     strokeColor: [17, 17, 17, this.layersOpacity],
                     strokeWidth: 2,
                     fillColor: [204, 204, 204, this.layersOpacity],
                     imageRadius: this.pointRadius,
                 });
 
-                s[AnnotationStatus.HIDDEN] = createStyle({
+                s[AnnotationStyleStatus.HIDDEN] = createStyle({
                     strokeColor: [0, 0, 0, 0],
                     strokeWidth: 0,
                     fillColor: [0, 0, 0, 0]
@@ -477,21 +477,21 @@
                     })
                 });
 
-                s[AnnotationStatus.CLUSTER] = createStyle({
+                s[AnnotationStyleStatus.CLUSTER] = createStyle({
                     strokeColor: [13, 13, 13, this.layersOpacity],
                     strokeWidth: 1.25,
                     strokeDash: [2, 2],
                     fillColor: [255, 255, 255, this.layersOpacity],
                 });
 
-                s[AnnotationStatus.NOT_REVIEWED] = createStyle({
+                s[AnnotationStyleStatus.NOT_REVIEWED] = createStyle({
                     strokeColor: [189, 54, 47, 1],
                     strokeWidth: 5,
                     fillColor: [189, 54, 47, Math.max(this.layersOpacity - 0.1, 0.)],
                     imageRadius: this.pointRadius,
                 });
 
-                s[AnnotationStatus.REVIEWED] = createStyle({
+                s[AnnotationStyleStatus.REVIEWED] = createStyle({
                     strokeColor: [91, 183, 91, 1],
                     strokeWidth: 5,
                     imageRadius: this.pointRadius,

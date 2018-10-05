@@ -1,4 +1,4 @@
-export default AnnotationStatus = {
+export const AnnotationStyleStatus = {
     NO_TERM: 'NO_TERM',
     MULTIPLE_TERMS: 'MULTIPLE_TERMS',
     CLUSTER: 'CLUSTER',

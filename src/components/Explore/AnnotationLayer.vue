@@ -13,7 +13,7 @@
     import uuid from 'uuid'
     import parse from 'wellknown'
     import clone from 'lodash.clone'
-    import AnnotationStatus from '../../helpers/annotationStatus'
+    import { AnnotationStyleStatus } from '../../helpers/annotationStyleStatus'
 
     import Text from 'ol/style/text';
     import Fill from 'ol/style/fill';
@@ -81,7 +81,7 @@
                                 });
                                 cache[size] = styleText
                             }
-                            styles.push(this.styles[AnnotationStatus.CLUSTER]);
+                            styles.push(this.styles[AnnotationStyleStatus.CLUSTER]);
                             styles.push(styleText)
                         }
                         else {
@@ -89,22 +89,22 @@
                             if (this.isReviewing && !this.userLayer.review) {
                                 if ((terms.length > 0 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
                                     || (terms.length == 0 && this.visibleNoTerm))
-                                    styles.push(this.styles[AnnotationStatus.NOT_REVIEWED]);
+                                    styles.push(this.styles[AnnotationStyleStatus.NOT_REVIEWED]);
                                 else
-                                    return [this.styles[AnnotationStatus.HIDDEN]];
+                                    return [this.styles[AnnotationStyleStatus.HIDDEN]];
                             }
                             else {
                                 if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
-                                    styles.push(this.styles[AnnotationStatus.MULTIPLE_TERMS]);
+                                    styles.push(this.styles[AnnotationStyleStatus.MULTIPLE_TERMS]);
                                 else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
                                     styles.push(this.styles[terms[0]]);
                                 else if (terms.length == 0 && this.visibleNoTerm)
-                                    styles.push(this.styles[AnnotationStatus.NO_TERM]);
+                                    styles.push(this.styles[AnnotationStyleStatus.NO_TERM]);
                                 else
-                                    return [this.styles[AnnotationStatus.HIDDEN]];
+                                    return [this.styles[AnnotationStyleStatus.HIDDEN]];
 
                                 if (this.userLayer.review)
-                                    styles.push(this.styles[AnnotationStatus.REVIEWED])
+                                    styles.push(this.styles[AnnotationStyleStatus.REVIEWED])
                             }
 
                             if (this.properties && this.properties != {}) {
