@@ -1081,6 +1081,9 @@
                 this.activeTool = 'Select';
             },
             checkCurrentRoute() {
+                if (!this.currentRoute.includes("tabs-image-") && !this.currentRoute.includes("tabs-review-"))
+                    return;
+
                 let index = this.currentRoute.lastIndexOf('-');
                 let value = this.currentRoute.substr(index + 1);
                 if (!(value == this.project.id || value == this.image.id || value == 0 || value == ''))
