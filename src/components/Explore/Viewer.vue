@@ -707,8 +707,8 @@
                     this.imageSequences = data.data.collection;
 
                     // If current sequence no more in imagesequence: deselect it
-                    if (this.selectedSequence && !this.imageSequences.find(sequence => sequence.id == this.selectedSequence.id)) {
-                        this.selectedSequence = {}
+                    if (this.selectedSequence) {
+                        this.selectedSequence = this.imageSequences.find(sequence => sequence.imageGroup == this.selectedSequence.imageGroup)
                     }
                 });
 
