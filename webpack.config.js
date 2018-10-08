@@ -1,15 +1,16 @@
 var path = require('path')
 var webpack = require('webpack')
+var UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
     entry: {
         Explorer: ['babel-polyfill', './src/apps/explorer/main.js'],
-        Software: './src/apps/software/main.js'
+        // Software: './src/apps/software/main.js'
     },
     output: {
         path: path.resolve(__dirname, './dist'),
         publicPath: 'application/views/v2.0/dist/',
-        filename: '[name].bundle.js'
+        filename: 'bundle.js'
     },
     module: {
         rules: [
@@ -111,11 +112,11 @@ if (process.env.NODE_ENV === 'production') {
                 NODE_ENV: '"production"'
             }
         }),
-        new webpack.optimize.UglifyJsPlugin({
+        new UglifyJSPlugin({
             sourceMap: true,
-            compress: {
-                warnings: false
-            }
+            // compress: {
+            //     warnings: false
+            // }
         }),
         new webpack.LoaderOptionsPlugin({
             minimize: true
