@@ -671,6 +671,8 @@
                     this.imsServers = response.data.imageServersURLs;
                 });
 
+                this.projection.setExtent(this.projectionExtent);
+
                 // Change base layer
                 // Reset position & zoom if necessary
                 let reset = !oldImage || newImage.width != oldImage.width || newImage.height != oldImage.height;
