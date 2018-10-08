@@ -370,7 +370,9 @@
             filterUrl() {
                 if (!this.selectedFilter)
                     return "";
-                return `${this.selectedFilter.imagingServer}${this.selectedFilter.baseUrl}`;
+
+                let server = (this.selectedFilter.imagingServer) ? this.selectedFilter.imagingServer : this.selectedFilter.processingServer;
+                return `${server}${this.selectedFilter.baseUrl}`;
             },
             viewerIndex() {
                 return this.viewers.findIndex(map => map.id === this.id);
