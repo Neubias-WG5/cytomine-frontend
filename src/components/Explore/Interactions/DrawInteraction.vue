@@ -136,7 +136,11 @@
         },
         methods: {
             onDrawStart(evt) {
-                this.features = []
+                this.features = [];
+
+                if (['Union', 'Difference'].includes(this.activeTool)) {
+                    this.$emit('update:selectedFeature', null)
+                }
             },
             onDrawEnd(evt) {
                 switch(this.activeTool) {
