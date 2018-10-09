@@ -163,7 +163,8 @@
             'imageSequences',
             'selectedSequence',
             'clickCoordinate',
-            'elementWidth'
+            'elementWidth',
+            'active'
         ],
         data() {
             return {}
@@ -208,6 +209,10 @@
         watch: {
             elementWidth() {
                 this.refreshSliders();
+            },
+            active(newValue) {
+                if (newValue)
+                    this.refreshSliders();
             }
         },
         methods: {

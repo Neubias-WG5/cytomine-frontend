@@ -122,7 +122,8 @@
                 <multidimension v-show="selectedComponent == 'multidimension' && hasImageSequences"
                                 :image-groups="imageGroups" :image-sequences="imageSequences"
                                 :selected-sequence.sync="selectedSequence" :viewer-id="id"
-                                @changeSequence="changeSequence" :click-coordinate="clickCoordinate" :element-width="elementWidth"></multidimension>
+                                @changeSequence="changeSequence" :click-coordinate="clickCoordinate"
+                                :element-width="elementWidth" :active="selectedComponent == 'multidimension'"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties"
@@ -709,6 +710,11 @@
                     // If current sequence no more in imagesequence: deselect it
                     if (this.selectedSequence) {
                         this.selectedSequence = this.imageSequences.find(sequence => sequence.imageGroup == this.selectedSequence.imageGroup)
+                    }
+
+                    // If not current sequence, select first available
+                    if (!this.selectedSequence && this.imageSequences.length > 0) {
+                        this.selectedSequence = this.imageSequences[0]
                     }
                 });
 
