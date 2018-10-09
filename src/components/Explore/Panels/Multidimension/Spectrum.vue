@@ -9,6 +9,9 @@
                 </button>
             </div>
             <plotly-line-chart :chart="chart" v-if="active"></plotly-line-chart>
+            <div class="text-center" v-if="active && traces.length > 0">
+                <button class="btn btn-default btn-xs" @click="traces.splice(0, traces.length)">Remove all traces</button>
+            </div>
         </div>
     </div>
 </template>
