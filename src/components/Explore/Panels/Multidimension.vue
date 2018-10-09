@@ -248,6 +248,10 @@
                     result += ".." + array[array.length - 1] + "]";
                 else
                     result += "]";
+
+                if (result.length > 60)
+                    result = "";
+
                 return result;
             },
             showLabel(index, array) {
