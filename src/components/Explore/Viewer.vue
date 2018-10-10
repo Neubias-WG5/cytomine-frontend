@@ -26,7 +26,7 @@
                 </vl-source-zoomify>
             </vl-layer-tile>
 
-            <annotation-layer v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
+            <annotation-layer v-for="userLayer in userLayers" :key="'layer-'+userLayer.id" ref="layers"
                               :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
                               :visible-no-term="visibleNoTerm" :selected-property="selectedProperty"
                               :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
@@ -45,14 +45,14 @@
                               :drawable-layer-ids="drawableUserLayerIds" :image="image" :current-user="currentUser"
                               :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                               :is-reviewing="isReviewing"
-                              @updateAnnotationIndexes="updateAnnotationIndexes"
+                              @updateAnnotationIndexes="updateAnnotationIndexes" @addFeature="addFeature"
                               @forceUpdateLayer="forceUpdateLayer" :viewer-id="id"></draw-interaction>
 
             <modify-interaction :active-tool.sync="activeTool" :image="image" :current-user="currentUser"
                                 :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                                 :is-reviewing="isReviewing" @updateAnnotationIndexes="updateAnnotationIndexes"
                                 @updateFeature="updateFeature" :selected-annotation.sync="selectedAnnotation"
-                                :viewer-id="id"></modify-interaction>
+                                :viewer-id="id" @removeFeature="removeFeature"></modify-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
@@ -197,7 +197,7 @@
                             @toogleAssociateTerm="toggleAssociateTerm" :associable-terms.sync="associableTerms"
                             :selected-annotation.sync="selectedAnnotation" :is-reviewing="isReviewing"
                             @updateAnnotationIndexes="updateAnnotationIndexes" @selectFeature="selectFeature"
-                            @forceUpdateLayer="forceUpdateLayer">
+                            @forceUpdateLayer="forceUpdateLayer" @addFeature="addFeature" @removeFeature="removeFeature">
         </annotation-details>
     </div>
 </template>
@@ -1017,14 +1017,16 @@
                 })
             },
             selectFeature(payload) {
-                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}${this.id}`);
                 let retries = 0;
+                let index = this.userLayers.findIndex(user => user.id == payload.layerId);
+                let layer = this.$refs.layers[index];
                 let interval = setInterval(() => {
                     retries++;
                     if (!layer)
-                        layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}${this.id}`);
-                    let feature = layer.getSource().getFeatureById(payload.featureId);
-                    if (feature != null) {
+                        layer = this.$refs.layers[index];
+
+                    let feature = layer.getFeatureById(payload.featureId);
+                    if (feature) {
                         clearInterval(interval);
                         this.selectedFeature = {
                             type: 'Feature',
@@ -1046,24 +1048,35 @@
                 }, 500);
             },
             updateFeature(payload) {
-                let layer = this.$refs.olmap.getLayerById(`layer${payload.layerId}${this.id}`);
                 let retries = 0;
+                let index = this.userLayers.findIndex(user => user.id == payload.layerId);
+                let layer = this.$refs.layers[index];
                 let interval = setInterval(() => {
                     retries++;
-                    let feature = layer.getSource().getFeatureById(payload.featureId);
+                    let feature = layer.getFeatureById(payload.featureId);
                     if (feature != null) {
                         clearInterval(interval);
                         if (payload.geometry)
                             feature.setGeometry(payload.geometry);
-
                         if (payload.terms)
                             feature.set('terms', payload.terms);
-
                         feature.changed();
                     }
                     else if (retries == 5)
                         clearInterval(interval);
                 }, 500);
+            },
+            addFeature(feature) {
+                let layerId = (feature.id) ? feature.properties.user : feature.get('user');
+                let index = this.userLayers.findIndex(user => user.id == layerId);
+                this.$refs.layers[index].addFeature(feature);
+            },
+            removeFeature(feature) {
+                let layerId = (feature.id) ? feature.properties.user : feature.get('user');
+                let index = this.userLayers.findIndex(user => user.id == layerId);
+                console.log(index);
+                this.$refs.layers[index].removeFeature(feature);
+
             },
             goToFeature(id) {
                 api.get(`api/annotation/${id}.json`).then(response => {

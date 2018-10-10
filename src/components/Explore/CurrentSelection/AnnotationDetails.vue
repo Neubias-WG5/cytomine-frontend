@@ -159,7 +159,9 @@
 
 <script>
     import mustBeShown from '../../../helpers/mustBeShown'
+    import clone from "lodash.clone";
     import VueDragResize from 'vue-drag-resize'
+    import WKT from 'ol/format/wkt';
 
     import Term from "../../Ontology/Term";
     import Username from "../../User/Username";
@@ -183,6 +185,7 @@
                 openCommentModal: false,
                 openSimilaritiesModal: false,
                 similarAnnotations: null,
+                format: new WKT(),
             }
         },
         props: [
@@ -291,12 +294,25 @@
                     });
                 })
             },
+            createFeature(annotation) {
+                let feature = this.format.readFeature(annotation.location);
+                feature.setId(annotation.count ? uuid() : annotation.id);
+                feature.set('class', annotation.class ? annotation.class : 'Cluster');
+                feature.set('id', annotation.count ? uuid() : annotation.id);
+                feature.set('terms', annotation.term ? annotation.term : []);
+                feature.set('user', annotation.user);
+                feature.set('clusterSize', annotation.count ? annotation.count : 0);
+                return feature;
+            },
             acceptReview() {
                 api.post(`api/annotation/${this.selectedAnnotation.id}/review.json`, {}).then(response => {
-                    let annotationId = response.data.reviewedannotation.id;
+                    let notReviewedAnnotation = this.selectedFeature;
+                    let reviewedAnnotation = response.data.reviewedannotation;
+                    reviewedAnnotation.user = -100;
                     this.$emit('updateAnnotationIndexes');
-                    this.$emit('selectFeature', {layerId: -100, featureId: annotationId});
-                    this.$emit('forceUpdateLayer', this.selectedAnnotation.user);
+                    this.$emit('addFeature', this.createFeature(reviewedAnnotation));
+                    this.$emit('selectFeature', {layerId: -100, featureId: reviewedAnnotation.id});
+                    this.$emit('removeFeature', notReviewedAnnotation);
                     this.$notify({
                         placement: 'bottom-right',
                         type: 'success',
@@ -313,8 +329,11 @@
             rejectReview() {
                 api.delete(`api/annotation/${this.selectedAnnotation.parentIdent}/review.json`).then(response => {
                     let annotationId = this.selectedAnnotation.parentIdent;
+                    let reviewedAnnotation = clone(this.selectedFeature);
+                    reviewedAnnotation.user = -100;
                     this.$emit('updateAnnotationIndexes');
                     this.$emit('forceUpdateLayer', this.selectedAnnotation.user);
+                    this.$emit('removeFeature', reviewedAnnotation);
                     this.$emit('selectFeature', {layerId: this.selectedAnnotation.user, featureId: annotationId});
                     this.$notify({
                         placement: 'bottom-right',

@@ -134,9 +134,19 @@
             }
         },
         methods: {
+            createFeature(annotation) {
+                let feature = this.format.readFeature(annotation.location);
+                feature.setId(annotation.count ? uuid() : annotation.id);
+                feature.set('class', annotation.class ? annotation.class : 'Cluster');
+                feature.set('id', annotation.count ? uuid() : annotation.id);
+                feature.set('terms', annotation.term ? annotation.term : []);
+                feature.set('user', annotation.user);
+                feature.set('clusterSize', annotation.count ? annotation.count : 0);
+                return feature;
+            },
             clean() {
                 this.features.splice(0, this.features.length);
-                this.$refs.olSourceVectorDraw.clear();
+                this.$refs.olSourceVectorDraw.clear(true);
                 this.$refs.olDrawInteraction.recreate();
             },
             onDrawStart(evt) {
@@ -188,32 +198,41 @@
                         });
                         break;
                     default:
-                        api.post(`/api/annotation.json`, this.drawableLayerIds.map(userId => {
-                            return {
+                        // Should send all annotations from "multi-draw" in one request.
+                        // But backend response contains no UI message and no created object(s).
+                        // For now, send one request by drawable layer....
+                        let currentUserDrawable = this.drawableLayerIds.includes(this.currentUser.id);
+                        this.drawableLayerIds.map((userId, index) => {
+                            api.post(`/api/annotation.json`, {
                                 location: this.format.writeFeature(evt.feature),
                                 image: this.image.id,
                                 roi: false,
                                 term: this.associableTerms,
                                 user: userId,
-                            }
-                        })).then(response => {
-                            let annotationId = response.data.message.split(" ")[1].split(",")[0]; // HORRIBLE HACK to get id
-                            this.$emit('updateAnnotationIndexes');
-                            this.$emit('selectFeature', {layerId: this.currentUser.id, featureId: annotationId});
-                            this.clean();
-                            this.$notify({
-                                placement: 'bottom-right',
-                                type: 'success',
-                                content: response.data.message
+                            }).then(response => {
+                                let annotation = response.data.annotation;
+                                annotation.term = this.associableTerms; // Backend does not send term in response...
+                                this.$emit('updateAnnotationIndexes');
+                                this.$emit('addFeature', this.createFeature(annotation));
+                                if ((currentUserDrawable && userId == this.currentUser.id)
+                                    || (!currentUserDrawable && index == 0)) {
+                                    this.$emit('selectFeature', {layerId: userId, featureId: annotation.id});
+                                }
+                                this.clean();
+                                this.$notify({
+                                    placement: 'bottom-right',
+                                    type: 'success',
+                                    content: response.data.message
+                                });
+                            }).catch(error => {
+                                this.clean();
+                                this.$notify({
+                                    placement: 'bottom-right',
+                                    type: 'danger',
+                                    content: error.response.data.errors
+                                });
                             });
-                        }).catch(error => {
-                            this.clean();
-                            this.$notify({
-                                placement: 'bottom-right',
-                                type: 'danger',
-                                content: error.response.data.errors
-                            });
-                        });
+                        })
                 }
             }
         }

@@ -121,6 +121,7 @@
                 }).then(() => {
                     api.delete(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
                         this.$emit('updateAnnotationIndexes');
+                        this.$emit('removeFeature', this.selectedFeature);
                         this.$emit('update:selectedFeature', null);
                         this.$emit('update:activeTool', 'Select');
                         this.$notify({

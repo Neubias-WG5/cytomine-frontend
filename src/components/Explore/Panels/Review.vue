@@ -146,6 +146,7 @@
                     api.post(`api/imageinstance/${this.image.id}/annotation/review.json?users=${this.visibleUserLayerIds.join(',')}&task=${this.taskReviewAll.id}`, {}).then(response => {
                         this.taskReviewAll = null;
                         this.$emit('updateAnnotationIndexes');
+                        this.$emit('forceUpdateLayer', this.reviewLayer.id);
                         this.visibleUserLayerIds.forEach(id => this.$emit('forceUpdateLayer', id));
                         this.$notify({
                             placement: 'bottom-right',
@@ -168,6 +169,7 @@
                         this.taskReviewAll = null;
                         this.$emit('updateAnnotationIndexes');
                         this.visibleUserLayerIds.forEach(id => this.$emit('forceUpdateLayer', id));
+                        this.$emit('forceUpdateLayer', this.reviewLayer.id);
                         this.$notify({
                             placement: 'bottom-right',
                             type: 'success',

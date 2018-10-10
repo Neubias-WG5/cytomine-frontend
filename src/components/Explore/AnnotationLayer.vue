@@ -1,35 +1,31 @@
 <template>
     <vl-layer-vector ref="olLayerVector"
-                     :visible="userLayer.visible && userLayer.selected"
-                     :id="'layer'+userLayer.id+viewerId" :z-index="zIndex"
-                     @mounted="rev++">
-        <vl-source-vector ref="olSourceVector" :features.sync="features" @mounted="rev++"></vl-source-vector>
-        <vl-style-func :factory="styleFuncFactoryProp" @mounted="rev++"></vl-style-func>
+                     :id="'layer'+userLayer.id+viewerId" :visible="visible" :z-index="zIndex"
+                     @mounted="++revisionStyle">
+        <vl-source-vector ref="olSourceVector"
+                          :features.sync="features" :loader-factory="loader" :strategy-factory="strategy"
+                          @mounted="++revisionStyle" >
+        </vl-source-vector>
+        <vl-style-func :factory="styleFuncFactoryProp" @mounted="++revisionStyle"></vl-style-func>
     </vl-layer-vector>
 
 </template>
 
 <script>
     import uuid from 'uuid'
-    import parse from 'wellknown'
-    import clone from 'lodash.clone'
     import { AnnotationStyleStatus } from '../../helpers/annotationStyleStatus'
-
-    import Text from 'ol/style/text';
-    import Fill from 'ol/style/fill';
-    import Stroke from 'ol/style/stroke';
+    import WKT from 'ol/format/wkt';
     import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
 
     export default {
         name: "AnnotationLayer",
         data() {
             return {
+                format: new WKT(),
                 features: [],
                 properties: {},
-                localExtent: [0, 0, 0, 0],
-
-                clearAllRev: 0,
-                rev: 0
+                revisionStyle: 0,
+                revisionLoader: 0,
             }
         },
         props: [
@@ -53,11 +49,7 @@
 
                 // Force computed property update.
                 // See https://github.com/ghettovoice/vuelayers/issues/68#issuecomment-404223423
-                let _ = this.visibleTerms;
-                _ = this.visibleNoTerm;
-                _ = this.layerOpacity;
-                _ = this.isReviewing;
-                _ = this.rev;
+                let _ = this.revisionStyle;
                 /////
 
                 let func = function() {
@@ -123,75 +115,116 @@
             },
             zIndex() {
                 return (this.userLayer.id < 0) ? 20 : 10;
+            },
+            visible() {
+                return this.userLayer.visible && this.userLayer.selected;
             }
         },
         watch: {
-            userLayer: {
-                handler: function(newValue, oldValue) {
-                    if (newValue.clearAllRev > this.clearAllRev) {
-                        this.clearAllRev = newValue.clearAllRev;
-                        this.features = [];
-                        this.loadAnnotations();
-                    }
-                    else if ((newValue.visible && newValue.selected /*&& (!oldValue.visible || !oldValue.selected)*/)
-                        || newValue.size != oldValue.size) {
-                        this.loadAnnotations()
-                    }
-                },
-                deep: true
-            },
-            extent(newValue) {
-                this.computeLocalExtent(newValue)
-            },
-            localExtent() {
-                if (this.userLayer.selected && this.userLayer.visible)
-                    this.loadAnnotations();
-            },
             selectedProperty() {
-                this.loadProperties(true);
+                this.loadProperties();
             },
+            'image.id'() {
+                ++this.revisionLoader;
+            },
+            isReviewing() {
+                ++this.revisionLoader;
+                ++this.revisionStyle;
+            },
+            'userLayer.clearAllRev'() {
+                this.features = [];
+                ++this.revisionLoader;
+            },
+            'userLayer.selected'(newValue, oldValue) {
+                if (newValue && !oldValue)
+                    ++this.revisionLoader;
+            },
+            visibleTerms() {
+                ++this.revisionStyle;
+            },
+            visibleNoTerm() {
+                ++this.revisionStyle;
+            },
+            layerOpacity() {
+                ++this.revisionStyle;
+            },
+            revisionLoader() {
+                this.$refs.olSourceVector.$source.clear();
+            }
         },
         methods:{
-            computeLocalExtent(newExtent) {
-                if (newExtent[0] <= this.imageExtent[0] && this.imageExtent[2] <= newExtent[2] &&
-                    newExtent[1] <= this.imageExtent[1] && this.imageExtent[3] <= newExtent[3]) {
-                    this.localExtent = this.imageExtent
-                }
-                else {
-                    this.localExtent = newExtent
-                }
+            strategy() {
+                let func = function(extent, resolution) {
+                    // NOT WORKING WITH ol 4.6.5 -> infinite reload
+                    // let source = this.$refs.olSourceVector.$source;
+                    // if(source.resolution && source.clustered != null && // if some features have already been loaded
+                    //     ((resolution != source.resolution && source.clustered) // zoom modification while clustering is performed
+                    //         || (resolution > source.resolution && !source.clustered && resolution > source.maxResolutionNoClusters))) { // re-cluster
+                    //     source.clear();
+                    // }
+
+                    [0, 1].forEach(index => { if (extent[index] < 0) extent[index] = 0; });
+                    [2, 3].forEach(index => { if (this.imageExtent[index] < extent[index]) extent[index] = this.imageExtent[index] });
+                    return [extent];
+                };
+                return func.bind(this);
             },
-            loadAnnotations() {
-                let user;
-                if (this.userLayer.id < 0) {
-                    user = `reviewed=true`
-                }
-                else {
-                    user = `user=${this.userLayer.id}&notReviewedOnly=${this.isReviewing}`
-                }
-                api.get(`api/annotation.json?${user}&image=${this.image.id}&showWKT=true&showTerm=true&kmeans=true&bbox=${this.extent.join(',')}`).then(response => {
-                    this.features = response.data.collection.map(annotation => {
-                            return {
-                                type: 'Feature',
-                                id: annotation.count ? uuid() : annotation.id,
-                                geometry: parse(annotation.location),
-                                properties: {
-                                    class: annotation.class ? annotation.class : 'Cluster',
-                                    id: annotation.count ? uuid() : annotation.id,
-                                    terms: annotation.term ? annotation.term : [],
-                                    user: this.userLayer.id,
-                                    clusterSize: annotation.count ? annotation.count : 0
-                                }
+            loader() {
+                let func = function (extent, resolution, projection) {
+                    console.log(`Load ${extent} at resolution ${resolution}`);
+                    let source = this.$refs.olSourceVector.$source;
+                    source.resolution = resolution;
+                    let bbox = (isFinite(extent[0])) ? extent.join() : [0, 0, this.image.width, this.image.height];
+                    let user = (this.userLayer.id < 0) ? `reviewed=true` : `user=${this.userLayer.id}&notReviewedOnly=${this.isReviewing}`;
+                    api.get(`api/annotation.json?${user}&image=${this.image.id}&showWKT=true&showTerm=true&kmeans=true&bbox=${bbox}`).then(response => {
+                        let annotations = response.data.collection;
+                        if (annotations.length == 0)
+                            return;
+
+                        if (annotations[0].count) {
+                            source.clustered = true;
+                            if (source.minResolutionClusters == null || resolution < source.minResolutionClusters) {
+                                source.minResolutionClusters = resolution;
                             }
-                    });
-                    this.loadProperties(true)
-                })
+                        }
+                        else {
+                            source.clustered = false;
+                            if (source.maxResolutionNoClusters == null || resolution > source.maxResolutionNoClusters) {
+                                source.maxResolutionNoClusters = resolution;
+                            }
+                        }
+
+                        source.addFeatures(this.createFeatures(annotations));
+                    })
+                };
+                return func.bind(this);
             },
-            loadProperties(incrementCounter = false) {
+            createFeatures(annotations) {
+                return annotations.map(annotation => this.createFeature(annotation))
+            },
+            createFeature(annotation) {
+                let feature = this.format.readFeature(annotation.location);
+                feature.setId(annotation.count ? uuid() : annotation.id);
+                feature.set('class', annotation.class ? annotation.class : 'Cluster');
+                feature.set('id', annotation.count ? uuid() : annotation.id);
+                feature.set('terms', annotation.term ? annotation.term : []);
+                feature.set('user', this.userLayer.id);
+                feature.set('clusterSize', annotation.count ? annotation.count : 0);
+                return feature;
+            },
+            addFeature(feature) {
+                this.$refs.olSourceVector.addFeature(feature);
+            },
+            getFeatureById(id) {
+                return this.$refs.olSourceVector.getFeatureById(id)
+            },
+            removeFeature(feature) {
+                this.$refs.olSourceVector.removeFeature(feature);
+            },
+            loadProperties() {
                 this.properties = {};
                 if (this.selectedProperty.key == "") {
-                    if (incrementCounter)
-                        ++this.rev;
+                    ++this.revisionStyle;
                 }
 
                 if (!this.selectedProperty.key || parseInt(this.userLayer.id) < 0)
@@ -200,16 +233,11 @@
                 api.get(`api/user/${this.userLayer.id}/imageinstance/${this.image.id}/annotationposition.json?key=${this.selectedProperty.key}`).then(response => {
                     response.data.collection.forEach(item => {
                         this.$set(this.properties, item.idAnnotation, item.value);
-                        if (incrementCounter)
-                           ++this.rev;
+                        ++this.revisionStyle;
                     })
                 });
             },
         },
-        mounted() {
-            this.computeLocalExtent(this.extent);
-            this.rev++;
-        }
     }
 </script>
 
