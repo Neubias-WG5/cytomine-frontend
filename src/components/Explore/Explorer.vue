@@ -119,8 +119,10 @@
             },
             updateImage(newImage) {
                 this.viewers.forEach(viewer => {
-                    if (viewer.image.id == newImage.id)
+                    if (viewer.image.id == newImage.id) {
                         viewer.image = newImage;
+                        this.images[this.imageIndex(newImage.id)] = newImage;
+                    }
                 })
             },
             setCurrentViewer(viewerId) {
