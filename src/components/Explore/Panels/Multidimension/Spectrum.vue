@@ -10,7 +10,8 @@
             </div>
             <plotly-line-chart :chart="chart" v-if="active"></plotly-line-chart>
             <div class="text-center" v-if="active && traces.length > 0">
-                <button class="btn btn-default btn-xs" @click="traces.splice(0, traces.length)">Remove all traces</button>
+                <button class="btn btn-default btn-xs" @click="traces.splice(0, traces.length)">Remove all traces
+                </button>
             </div>
         </div>
     </div>
@@ -29,7 +30,6 @@
             'coordinates',
             'imageGroup',
             'elementWidth'
-            // 'imageSequence',
         ],
         data() {
             return {
@@ -44,7 +44,7 @@
                     uuid: this.uuid,
                     traces: this.traces,
                     layout: {
-                        legend:{
+                        legend: {
                             orientation: "h"
                         },
                         width: this.elementWidth * 0.7,
@@ -79,7 +79,7 @@
                 handler() {
                     this.traces.splice(0, this.traces.length)
                 },
-                deep : true
+                deep: true
             },
             coordinates: {
                 handler(newCoordinates) {
@@ -104,48 +104,12 @@
                         showlegend: true,
                         name: `[x: ${x}; y: ${y}]`,
                         x: this.xAxis,
-                        y:response.data.spectra,
+                        y: response.data.spectra,
                         mode: 'lines+markers',
                     };
                     this.traces.push(trace)
                 })
             }
-            // updateSpectra(spectrum = this.yAxis) {
-            //     let xAxis = this.xAxis;
-            //     let trace = {
-            //         x: xAxis.values,
-            //         y: spectrum,
-            //         type: 'scatter',
-            //     };
-            //     let layout = {
-            //         title: `Spectral distribution for ${xAxis.legend.toLowerCase()}`,
-            //         xaxis: {
-            //             title: xAxis.legend,
-            //             showgrid: true,
-            //             tickformat: "",
-            //         },
-            //         yaxis: {
-            //             title: 'Pixel value',
-            //             showgrid: true,
-            //             tickformat: "",
-            //         }
-            //     };
-            //     Plotly.react('spectra-'+this.currentMap.id, [trace], layout)
-            // },
-            // getPixelData(event) {
-            //     let coord = this.$openlayers.getMap(this.currentMap.id).getCoordinateFromPixel(this.mousePosition);
-            //     if (coord[0] > 0 && coord[0] < this.currentMap.data.width
-            //         && coord[1] > 0 && coord[1] < this.currentMap.data.height) {
-            //         this.position = coord.map(value => Math.round(value));
-            //
-            //         let x = this.position[0];
-            //         let y = this.currentMap.data.height - this.position[1];
-            //         api.get(`/api/imagegroupHDF5/${this.hdf5.id}/${x}/${y}/pixel.json`).then(response => {
-            //             this.yAxis = response.data.spectra;
-            //             this.updateSpectra();
-            //         })
-            //     }
-            // }
         },
     }
 </script>

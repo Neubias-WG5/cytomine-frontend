@@ -23,7 +23,7 @@
         },
         methods: {
             toggleDigitalZoom() {
-                let increment = 4;
+                let increment = 4; // Max increment in project configuration ?
                 this.$emit('incrementMaxZoom', (this.digitalZoom) ? increment : (-1) * increment)
             }
         }

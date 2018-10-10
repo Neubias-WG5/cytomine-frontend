@@ -18,7 +18,8 @@
                     v-for="term in visibleTerms" :key="term.id + uuid()">
                 <term :size="sizeTerms[term.id]" :name="term.name" :color="term.color"></term>
             </button>
-            <button @click="setFilter('noterm')" :class="['btn', 'btn-default', {active: filter == 'noterm'}]" v-if="visibleNoTerm">
+            <button @click="setFilter('noterm')" :class="['btn', 'btn-default', {active: filter == 'noterm'}]"
+                    v-if="visibleNoTerm">
                 <span class="label label-default">No term</span>
             </button>
         </div>
@@ -27,7 +28,8 @@
                       :prev-text="'&laquo;'" :next-text="'&raquo;'"></paginate>
         </div>
         <div class="clearfix"></div>
-        <annotation-list :annotations="annotations" :is-reviewing="isReviewing" :users="users" :terms="terms" :loading="loading"></annotation-list>
+        <annotation-list :annotations="annotations" :is-reviewing="isReviewing" :users="users" :terms="terms"
+                         :loading="loading"></annotation-list>
     </div>
 </template>
 
@@ -81,7 +83,7 @@
         asyncComputed: {
             annotations() {
                 let _ = this.rev;
-                if ((this.visibleTermIds.length == 0 && !this.filter)|| this.visibleUserIds.length == 0) {
+                if ((this.visibleTermIds.length == 0 && !this.filter) || this.visibleUserIds.length == 0) {
                     this.totalPages = 0;
                     this.page = 1;
                     return [];

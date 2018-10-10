@@ -133,11 +133,8 @@
                 </dl>
             </div>
             <div class="clearfix"></div>
-            <!--<overlay :imageSequence="selectedSequence" :imageGroup="imageGroup" :selectedMap="selectedMap"-->
-            <!--:imsBaseUrl="imsBaseUrl" :filterUrl="filterUrl"></overlay>-->
-            <!--<spectra :imageSequence="selectedSequence" :imageGroup="selected" :mousePosition="mousePosition"-->
-            <!--:selectedMap="selectedMap"></spectra>-->
-            <spectrum :image-group="selectedImageGroup" :coordinates="clickCoordinate" :element-width="elementWidth" @activeStateChanged="refreshSliders"></spectrum>
+            <spectrum :image-group="selectedImageGroup" :coordinates="clickCoordinate" :element-width="elementWidth"
+                      @activeStateChanged="refreshSliders"></spectrum>
             <!--<overlay :image-group="selectedImageGroup" :image-sequence="selectedSequence"></overlay>-->
         </template>
 

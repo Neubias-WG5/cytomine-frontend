@@ -7,6 +7,7 @@
 
 <script>
     import ProgressBar from "uiv/src/components/progressbar/ProgressBar";
+
     export default {
         name: "Task",
         components: {ProgressBar},
@@ -16,7 +17,7 @@
             }
         },
         props: [
-            'task',
+            'task', // sync
             'timeout'
         ],
         computed: {
@@ -27,8 +28,7 @@
                 return this.task.comments[0]
             }
         },
-        watch: {
-        },
+        watch: {},
         methods: {
             getTask() {
                 if (this.task) {

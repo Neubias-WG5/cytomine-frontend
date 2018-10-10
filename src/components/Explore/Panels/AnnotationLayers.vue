@@ -10,10 +10,12 @@
                 </option>
             </select>
             <button class="btn btn-default" @click="addLayer()">Add</button>
-            <button class="btn btn-default" @click="addAllLayers()" v-if="notSelectedLayers.length < 10">Add all</button>
+            <button class="btn btn-default" @click="addAllLayers()" v-if="notSelectedLayers.length < 10">Add all
+            </button>
         </div>
         <ul class="list-group mt-4">
-            <li class="list-group-item clearfix" v-for="layer in selectedLayersSorted" :key="layer.id" v-if="layer.selected">
+            <li class="list-group-item clearfix" v-for="layer in selectedLayersSorted" :key="layer.id"
+                v-if="layer.selected">
                 {{userDisplayName(layer)}}
                 <div class="pull-right">
                     <template v-if="!isReviewing">
@@ -60,7 +62,7 @@
                 <span class="input-group-addon">Layer opacity</span>
                 <input class="form-control" :value="parseInt(layerOpacity * 100)"
                        @input="$emit('update:layerOpacity', parseFloat($event.target.value / 100))"
-                       type="number" step="1" :max="100" :min="0" name="layers-opacity" >
+                       type="number" step="1" :max="100" :min="0" name="layers-opacity">
                 <span class="input-group-addon">%</span>
             </div>
             <input class="range" :value="layerOpacity"
@@ -188,10 +190,6 @@
 </script>
 
 <style scoped>
-    .display-inline-block {
-        display: inline-block;
-    }
-
     .flex {
         display: flex;
         justify-content: center;

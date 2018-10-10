@@ -71,6 +71,7 @@
     import {Modal} from "uiv";
     import VoerroTagsInput from '@voerro/vue-tagsinput';
     import '@voerro/vue-tagsinput/dist/style.css';
+
     import DateItem from "../../Datatable/DateItem";
     import Username from "../../User/Username";
 

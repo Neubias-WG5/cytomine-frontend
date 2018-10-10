@@ -33,8 +33,8 @@
                         displayed (in total: {{nbVisibleAnnotations}} annotations).<br>
                         <div v-if="!taskReviewAll">
                             Review them one by one with Select tool or
-                            <div class="text-center" >
-                                <div class="btn-group" >
+                            <div class="text-center">
+                                <div class="btn-group">
                                     <button class="btn btn-success btn-xs" @click="acceptAll">
                                         <i class="fas fa-check-double"></i> Accept all
                                     </button>
@@ -181,7 +181,6 @@
                         });
                     })
                 })
-
             }
         }
     }

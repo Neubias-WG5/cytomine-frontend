@@ -1,8 +1,11 @@
 <template>
     <div>
         <div class="explorer-header">
-            <viewer-selector :project="project" :images="images" :nb-viewers="viewers.length"
-                             :nb-max-viewers="nbMaxViewers" @add-viewer="addViewer"></viewer-selector>
+            <viewer-selector :project="project"
+                             :images="images"
+                             :nb-viewers="viewers.length"
+                             :nb-max-viewers="nbMaxViewers"
+                             @add-viewer="addViewer"></viewer-selector>
         </div>
 
         <div class="maps-container" :style="`height: calc(100vh - ${paddingTop}px);`">
@@ -24,7 +27,6 @@
     import Vue from 'vue'
     import uuid from 'uuid'
     import hexToRgb from "../../helpers/hexToRgb";
-
 
     export default {
         name: 'app',

@@ -160,6 +160,7 @@
 <script>
     import mustBeShown from '../../../helpers/mustBeShown'
     import VueDragResize from 'vue-drag-resize'
+
     import Term from "../../Ontology/Term";
     import Username from "../../User/Username";
     import DateItem from "../../Datatable/DateItem";

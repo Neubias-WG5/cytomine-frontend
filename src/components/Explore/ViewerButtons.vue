@@ -88,12 +88,7 @@
         },
         methods: {
             setSelected(component) {
-                if (component == this.selected) {
-                    this.selected = "";
-                } else {
-                    this.selected = component;
-                }
-
+                this.selected = (component == this.selected) ? "" : component;
                 this.$emit('update:selectedComponent', this.selected);
             },
             mustBeShown(key) {

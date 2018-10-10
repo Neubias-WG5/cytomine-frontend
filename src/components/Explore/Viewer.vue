@@ -1,30 +1,43 @@
 <template>
     <div :style="`height:${elementHeightPercentage}%;width:${elementWidthPercentage}%;`" class="map">
-        <vl-map ref="olmap" :load-tiles-while-animating="true" :load-tiles-while-interacting="true"
-                @pointermove="mousePosition = $event.coordinate" @mounted="onMapMounted" @moveend="calculateViewExtent"
-                @click="setClickCoordinate"
-                data-projection="CYTO:FLAT">
+        <vl-map ref="olmap"
+                data-projection="CYTO:FLAT"
+                :load-tiles-while-animating="true"
+                :load-tiles-while-interacting="true"
+                @pointermove="mousePosition = $event.coordinate"
+                @mounted="onMapMounted"
+                @moveend="calculateViewExtent"
+                @click="setClickCoordinate">
 
-            <vl-view ref="olview" :center.sync="center" :zoom.sync="zoom" :max-zoom="maxZoom"
-                     :rotation.sync="rotation" :resolution.sync="resolution" projection="CYTO:FLAT"></vl-view>
+            <vl-view ref="olview"
+                     :center.sync="center"
+                     :zoom.sync="zoom"
+                     :max-zoom="maxZoom"
+                     :rotation.sync="rotation"
+                     projection="CYTO:FLAT"></vl-view>
 
             <vl-layer-tile :extent="imageExtent">
-                <vl-source-zoomify :url="baseLayerUrl()" :size="imageSize" projection="CYTO:FLAT"
-                                   :extent="imageExtent" :key="baseLayerUrl()"
-                                   v-if="imsServers.length > 0"></vl-source-zoomify>
+                <vl-source-zoomify projection="CYTO:FLAT"
+                                   :url="baseLayerUrl()"
+                                   :size="imageSize"
+                                   :extent="imageExtent"
+                                   :key="baseLayerUrl()"
+                                   v-if="imsServers.length > 0">
+                </vl-source-zoomify>
             </vl-layer-tile>
 
             <annotation-layer v-for="userLayer in userLayers" :key="'layer'+userLayer.id"
-                                      :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
-                                      :visible-no-term="visibleNoTerm" :selected-property="selectedProperty"
-                                      :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
-                                      :terms="allTerms" :layer-opacity="layersOpacity"
-                                      :styles="styles" :viewer-id="id"></annotation-layer>
+                              :image="image" :user-layer="userLayer" :visible-terms="visibleTerms"
+                              :visible-no-term="visibleNoTerm" :selected-property="selectedProperty"
+                              :is-reviewing="isReviewing" :extent="viewExtent" :image-extent="imageExtent"
+                              :terms="allTerms" :layer-opacity="layersOpacity"
+                              :styles="styles" :viewer-id="id"></annotation-layer>
 
             <select-interaction :active-tool="activeTool" :selected-feature.sync="selectedFeature" :styles="styles"
                                 :layer-opacity="layersOpacity" :visible-terms="visibleTerms"
                                 :visible-no-term="visibleNoTerm" :associable-terms="associableTerms"
-                                :is-reviewing="isReviewing" :point-radius="pointRadius" :viewer-id="id" :visible-user-ids="visibleUserLayerIds"></select-interaction>
+                                :is-reviewing="isReviewing" :point-radius="pointRadius" :viewer-id="id"
+                                :visible-user-ids="visibleUserLayerIds"></select-interaction>
 
             <measure-interaction :image="image" :active-tool="activeTool" :viewer-id="id"></measure-interaction>
 
@@ -38,7 +51,8 @@
             <modify-interaction :active-tool.sync="activeTool" :image="image" :current-user="currentUser"
                                 :selected-feature.sync="selectedFeature" @selectFeature="selectFeature"
                                 :is-reviewing="isReviewing" @updateAnnotationIndexes="updateAnnotationIndexes"
-                                @updateFeature="updateFeature" :selected-annotation.sync="selectedAnnotation" :viewer-id="id"></modify-interaction>
+                                @updateFeature="updateFeature" :selected-annotation.sync="selectedAnnotation"
+                                :viewer-id="id"></modify-interaction>
         </vl-map>
 
         <viewer-toolbar v-show="isCurrentViewer" :active-tool.sync="activeTool" :current-user="currentUser"
@@ -96,7 +110,7 @@
                 </filters>
 
                 <!--<color-maps v-show="selectedComponent == 'colormap' && mustBeShown('project-explore-colormap')"-->
-                            <!--:viewer-id="id"></color-maps>-->
+                <!--:viewer-id="id"></color-maps>-->
 
                 <annotation-layers v-show="selectedComponent == 'annotationLayers'"
                                    @updateLayer="updateLayer" :isReviewing="isReviewing" :project="project"
@@ -107,27 +121,33 @@
                 <ontology v-show="selectedComponent == 'ontology'" :project="project" :ontology="ontology"
                           :visible-terms="visibleTerms" :associable-terms="associableTerms" :size-terms="sizeTerms"
                           :visible-no-term.sync="visibleNoTerm" @toggleAssociateTerm="toggleAssociateTerm"
-                          @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms" :viewer-id="id"></ontology>
+                          @toggleVisibilityTerm="toggleVisibilityTerm" @showAllTerms="showAllTerms"
+                          :viewer-id="id"></ontology>
 
                 <annotations v-show="selectedComponent == 'annotationList'" :isReviewing="isReviewing"
                              :users="userLayers" :terms="allTerms" :image="image" :visible-term-ids="visibleTerms"
-                             :visible-user-ids="visibleUserLayerIds" :size-terms="sizeTerms" :visible-no-term="visibleNoTerm"
-                             :active="selectedComponent == 'annotationList'" :nb-visible-annotations="nbVisibleAnnotations" :has-review-layer="hasReviewLayer"></annotations>
+                             :visible-user-ids="visibleUserLayerIds" :size-terms="sizeTerms"
+                             :visible-no-term="visibleNoTerm" :active="selectedComponent == 'annotationList'"
+                             :nb-visible-annotations="nbVisibleAnnotations"
+                             :has-review-layer="hasReviewLayer"></annotations>
 
                 <review v-show="selectedComponent == 'review'" @changeReviewStatus="changeReviewStatus"
                         :image="image" :current-user="currentUser" :review-user="userById(image.reviewUser)"
                         :review-mode.sync="reviewMode" :user-layers="userLayers" :project="project"
-                        @forceUpdateLayer="forceUpdateLayer" @updateAnnotationIndexes="updateAnnotationIndexes"></review>
+                        @forceUpdateLayer="forceUpdateLayer"
+                        @updateAnnotationIndexes="updateAnnotationIndexes"></review>
 
                 <multidimension v-show="selectedComponent == 'multidimension' && hasImageSequences"
                                 :image-groups="imageGroups" :image-sequences="imageSequences"
                                 :selected-sequence.sync="selectedSequence" :viewer-id="id"
                                 @changeSequence="changeSequence" :click-coordinate="clickCoordinate"
-                                :element-width="elementWidth" :active="selectedComponent == 'multidimension'"></multidimension>
+                                :element-width="elementWidth"
+                                :active="selectedComponent == 'multidimension'"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
                                     && hasAnnotationProperties"
-                            :properties="availableAnnotationProperties" :selected-property.sync="selectedProperty" :viewer-id="id">
+                            :properties="availableAnnotationProperties"
+                            :selected-property.sync="selectedProperty" :viewer-id="id">
                 </properties>
 
                 <div v-show="selectedComponent == 'follow' && mustBeShown('project-explore-follow') && hasOnlineUsers">
@@ -176,7 +196,8 @@
                             :element-height="elementHeight" :element-width="elementWidth" @updateFeature="updateFeature"
                             @toogleAssociateTerm="toggleAssociateTerm" :associable-terms.sync="associableTerms"
                             :selected-annotation.sync="selectedAnnotation" :is-reviewing="isReviewing"
-                            @updateAnnotationIndexes="updateAnnotationIndexes" @selectFeature="selectFeature" @forceUpdateLayer="forceUpdateLayer">
+                            @updateAnnotationIndexes="updateAnnotationIndexes" @selectFeature="selectFeature"
+                            @forceUpdateLayer="forceUpdateLayer">
         </annotation-details>
     </div>
 </template>
@@ -198,7 +219,6 @@
     import MeasureInteraction from "./Interactions/MeasureInteraction";
     import DrawInteraction from "./Interactions/DrawInteraction";
     import ModifyInteraction from "./Interactions/ModifyInteraction";
-    import Interactions from './Interactions/Interactions';
 
     import Username from "../User/Username";
     import ScaleLine from './ScaleLine'
@@ -211,7 +231,7 @@
     import GeoJSON from 'ol/format/geojson';
     import OverviewMap from 'ol/control/overviewmap'
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
-    import { AnnotationStyleStatus } from "../../helpers/annotationStyleStatus";
+    import {AnnotationStyleStatus} from "../../helpers/annotationStyleStatus";
     import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
 
     import mustBeShown from '../../helpers/mustBeShown';
@@ -235,7 +255,6 @@
             Filters,
             ViewerButtons,
             AnnotationLayers,
-            Interactions,
             Informations,
             Ontology,
             AnnotationDetails,
@@ -290,14 +309,7 @@
                 mousePosition: [0, 0],
                 termsToShow: [],
                 showWithNoTerm: true,
-                featureSelected: undefined,
-                featureSelectedData: {},
-                layersSelected: [],
 
-                updateLayers: false,
-                updateAnnotationsIndex: false,
-                showPanel: true,
-                addLayer: '',
                 innerWidth: 0,
                 innerHeight: 0,
             }
@@ -507,10 +519,11 @@
                     maxHeight: '75%',
                 };
 
-                if (['digitalZoom', 'review', 'informations', 'linkmap', 'filter', 'properties', 'follow'].includes(this.selectedComponent)) {
+                if (['digitalZoom', 'review', 'informations', 'linkmap', 'filter',
+                    'properties', 'follow'].includes(this.selectedComponent)) {
                     style['maxWidth'] = '50%';
                 }
-                else if ([ 'ontology', 'annotationLayers'].includes(this.selectedComponent)) {
+                else if (['ontology', 'annotationLayers'].includes(this.selectedComponent)) {
                     style['maxWidth'] = '80%';
                 }
                 return style;
@@ -533,9 +546,7 @@
                     this.selectedSequence = {};
                 else if (newValue && newValue != {} && newValue.model) {
                     this.changeImage(newValue.model.id);
-
                 }
-
             },
             reviewMode() {
                 this.updateAnnotationIndexes();
@@ -561,10 +572,8 @@
                     this.linkedViewersBus.$emit('updateViewState', newValue);
             },
             onlineUsers(newValue) {
-                if (this.followedUser !== "") {
-                    if (!newValue.find(u => u.id == this.followedUser.id)) {
-                        this.stopUserTracking()
-                    }
+                if (this.followedUser !== "" && !newValue.find(u => u.id == this.followedUser.id)) {
+                    this.stopUserTracking()
                 }
             },
             activeTool(newValue) {
@@ -684,8 +693,7 @@
 
                 // Change maxZoom
                 this.maxZoom = (oldImage) ? (this.maxZoom - oldImage.depth + newImage.depth) : newImage.depth;
-                // Update feature layers
-                // Update annotation indexes
+
                 // Remove selected features
                 this.reviewMode = (this.reviewMode && this.image.inReview
                     && this.image.reviewUser == this.currentUser.id);
@@ -1131,7 +1139,6 @@
                 window.addEventListener('resize', this.getWindowHeight);
                 window.addEventListener('resize', this.getWindowWidth);
             });
-
 
             this.visibleTerms = clone(this.allTermIds);
             this.allTermIds.forEach(term => {

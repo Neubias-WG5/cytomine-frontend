@@ -27,7 +27,6 @@
                             </li>
                         </ol>
                     </dd>
-
                 </dl>
             </div>
         </div>
@@ -55,7 +54,6 @@
         data() {
             return {
                 openModal: this.open,
-
             }
         },
         props: [

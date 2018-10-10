@@ -1,16 +1,23 @@
 <template>
     <span v-if="modifyToolActive">
-        <vl-interaction-modify v-if="activeTool == 'Edit'" ref="olModifyInteraction" :source="'select-target'+viewerId" @modifyend="edit">
+        <vl-interaction-modify v-if="activeTool == 'Edit'"
+                               ref="olModifyInteraction"
+                               :source="'select-target'+viewerId"
+                               @modifyend="edit">
         </vl-interaction-modify>
-        <vl-interaction-translate v-if="activeTool == 'Drag'" :source="'select-target'+viewerId" @translateend="edit"></vl-interaction-translate>
-        <vl-interaction-rotate v-if="activeTool == 'Rotate'" :source="'select-target'+viewerId" @rotateend="edit"></vl-interaction-rotate>
+        <vl-interaction-translate v-if="activeTool == 'Drag'"
+                                  :source="'select-target'+viewerId"
+                                  @translateend="edit">
+        </vl-interaction-translate>
+        <vl-interaction-rotate v-if="activeTool == 'Rotate'"
+                               :source="'select-target'+viewerId"
+                               @rotateend="edit">
+        </vl-interaction-rotate>
     </span>
 </template>
 
 <script>
     import parse from 'wellknown'
-    import Draw from 'ol/interaction/draw';
-    import Polygon from 'ol/geom/polygon';
     import WKT from 'ol/format/wkt';
 
     export default {
@@ -33,7 +40,6 @@
             modifyToolActive() {
                 return ['Fill', 'Edit', 'Drag', 'Resize', 'Rotate', 'Remove'].includes(this.activeTool)
             },
-
         },
         watch: {
             activeTool() {
@@ -43,13 +49,6 @@
                 else if (this.activeTool == 'Remove') {
                     this.remove()
                 }
-                else if (this.activeTool == 'Edit') {
-                    // this.$refs.olModifyInteraction.recreate();
-                }
-                else if (this.activeTool == 'Drag') {
-                    // this.translate();
-                }
-                // else if (this.activeTool)
             }
         },
         methods: {
@@ -119,8 +118,7 @@
                     okType: 'danger',
                     okText: 'Delete',
                     content: `This annotation #${this.selectedFeature.properties.id} will be permanently deleted. Continue?`
-                })
-                .then(() => {
+                }).then(() => {
                     api.delete(`api/annotation/${this.selectedFeature.properties.id}.json`).then(response => {
                         this.$emit('updateAnnotationIndexes');
                         this.$emit('update:selectedFeature', null);

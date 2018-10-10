@@ -16,7 +16,8 @@
             <template slot="sidebar" slot-scope="{ node }">
                 <div class="btn-group" v-if="!node.data.root">
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: isAssociable(node.data.id)}]"
-                            @click="toggleAssociate(node.data.id)" title="Associate this term to new annotations" v-if="node.isLeaf">
+                            @click="toggleAssociate(node.data.id)" title="Associate this term to new annotations"
+                            v-if="node.isLeaf">
                         <i class="fas fa-thumbtack"></i>
                         Associate
                     </button>
@@ -28,8 +29,11 @@
                 </div>
 
                 <div class="btn-group" v-if="node.data.root">
-                    <button class="btn btn-default btn-xs" @click="showAll(true)"><i class="fas fa-eye"></i> Show all</button>
-                    <button class="btn btn-default btn-xs" @click="showAll(false)"><i class="fas fa-eye-slash"></i> Hide all</button>
+                    <button class="btn btn-default btn-xs" @click="showAll(true)"><i class="fas fa-eye"></i> Show all
+                    </button>
+                    <button class="btn btn-default btn-xs" @click="showAll(false)"><i class="fas fa-eye-slash"></i> Hide
+                        all
+                    </button>
                 </div>
             </template>
         </sl-vue-tree>
@@ -126,11 +130,6 @@
 </script>
 
 <style>
-
-
-    .sl-vue-tree.sl-vue-tree-root {
-    }
-
     .sl-vue-tree {
         position: relative;
         cursor: default;
@@ -170,5 +169,4 @@
         margin-left: auto;
         padding-left: 5px;
     }
-
 </style>

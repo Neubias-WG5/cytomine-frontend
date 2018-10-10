@@ -15,9 +15,13 @@
             <!--<dt>Uploaded on</dt>-->
             <!--<dd><date-item :value="abstractImage.created"></date-item></dd>-->
             <dt>Uploaded by</dt>
-            <dd><username :user="creator"></username></dd>
+            <dd>
+                <username :user="creator"></username>
+            </dd>
             <dt>Added in project on</dt>
-            <dd><date-item :value="image.created"></date-item></dd>
+            <dd>
+                <date-item :value="image.created"></date-item>
+            </dd>
             <!--<dt>Added in project by</dt>-->
             <!--<dd></dd>-->
 
@@ -26,7 +30,7 @@
 
             <template v-if="vendor">
                 <dt>Vendor</dt>
-                <dd><img :src="'images/brands/'+vendor+'.png'" /></dd>
+                <dd><img :src="'images/brands/'+vendor+'.png'"/></dd>
             </template>
         </dl>
 

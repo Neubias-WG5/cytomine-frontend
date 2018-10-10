@@ -75,7 +75,6 @@
             'users',
             'terms',
             'isReviewing',
-            // 'sizeTerms',
             'annotation'
         ],
         methods: {
@@ -133,5 +132,3 @@
     }
 
 </style>
-
-

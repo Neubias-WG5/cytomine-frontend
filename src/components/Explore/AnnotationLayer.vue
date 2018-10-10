@@ -60,8 +60,6 @@
                 _ = this.rev;
                 /////
 
-                console.log("update");
-
                 let func = function() {
                     const cache = {};
                     return (feature, resolution) => {

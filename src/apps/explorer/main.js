@@ -22,21 +22,15 @@ Vue.use(TranslateInteraction);
 Vue.use(RotateInteraction);
 
 
+/* Multiple explore instances in old Backbone code base */
 window.exploreInstances = {};
-
 window.addExploreInstance = function(id) {
-    console.log("TRY TO ADD");
-    let vm = new Vue({
+    window.exploreInstances[id] = new Vue({
         el: `#explorer-vue-${id}`,
         render: h => h(App)
     });
-    window.exploreInstances[id] = vm;
 };
-
 window.removeExploreInstance = function(id) {
     window.exploreInstances[id].$destroy();
     window.exploreInstances[id] = null;
-
-}
-
-
+};

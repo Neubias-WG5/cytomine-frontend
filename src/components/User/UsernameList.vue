@@ -1,9 +1,7 @@
 <template>
     <span>
         <template v-for="(user, index) in users">
-            <span :class="{ 'online-user': online && isOnline(user.id)}">
-                <username :user="user"></username><span v-if="index+1 < users.length">, </span>
-            </span>
+            <username :user="user" :online="online && isOnline(user.id)"></username><span v-if="index+1 < users.length">, </span>
         </template>
     </span>
 </template>
@@ -14,7 +12,10 @@
     export default {
         name: "UsernameList",
         components: {Username},
-        props: ['users', 'online'],
+        props: [
+            'users',
+            'online'
+        ],
         methods: {
             isOnline(id) {
                 return this.online && this.online.find(o => {
@@ -26,8 +27,5 @@
 </script>
 
 <style scoped>
-    .online-user {
-        color: green;
-        font-weight: bold;
-    }
+
 </style>

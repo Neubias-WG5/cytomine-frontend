@@ -62,7 +62,6 @@
             },
             drawGeometryFunc() {
                 let _ = this.activeTool;
-                console.log("change");
                 switch(this.activeTool) {
                     case 'Rectangle':
                         return Draw.createBox();
@@ -135,6 +134,11 @@
             }
         },
         methods: {
+            clean() {
+                this.features.splice(0, this.features.length);
+                this.$refs.olSourceVectorDraw.clear();
+                this.$refs.olDrawInteraction.recreate();
+            },
             onDrawStart(evt) {
                 this.features = [];
 
@@ -168,18 +172,14 @@
                             this.$emit('updateAnnotationIndexes');
                             this.$emit('forceUpdateLayer', user);
                             this.$emit('selectFeature', {layerId: user, featureId: annotation.id});
-                            this.features.splice(0, this.features.length);
-                            this.$refs.olSourceVectorDraw.clear();
-                            this.$refs.olDrawInteraction.recreate();
+                            this.clean();
                             this.$notify({
                                 placement: 'bottom-right',
                                 type: 'success',
                                 content: response.data.message
                             });
                         }).catch(error => {
-                            this.features.splice(0, this.features.length);
-                            this.$refs.olSourceVectorDraw.clear();
-                            this.$refs.olDrawInteraction.recreate();
+                            this.clean();
                             this.$notify({
                                 placement: 'bottom-right',
                                 type: 'danger',
@@ -188,28 +188,26 @@
                         });
                         break;
                     default:
-                        api.post(`/api/annotation.json`, this.drawableLayerIds.map(userId => { return {
-                            location: this.format.writeFeature(evt.feature),
-                            image: this.image.id,
-                            roi: false,
-                            term: this.associableTerms,
-                            user: userId,
-                        }})).then(response => {
+                        api.post(`/api/annotation.json`, this.drawableLayerIds.map(userId => {
+                            return {
+                                location: this.format.writeFeature(evt.feature),
+                                image: this.image.id,
+                                roi: false,
+                                term: this.associableTerms,
+                                user: userId,
+                            }
+                        })).then(response => {
                             let annotationId = response.data.message.split(" ")[1].split(",")[0]; // HORRIBLE HACK to get id
                             this.$emit('updateAnnotationIndexes');
                             this.$emit('selectFeature', {layerId: this.currentUser.id, featureId: annotationId});
-                            this.features.splice(0, this.features.length);
-                            this.$refs.olSourceVectorDraw.clear();
-                            this.$refs.olDrawInteraction.recreate();
+                            this.clean();
                             this.$notify({
                                 placement: 'bottom-right',
                                 type: 'success',
                                 content: response.data.message
                             });
                         }).catch(error => {
-                            this.features.splice(0, this.features.length);
-                            this.$refs.olSourceVectorDraw.clear();
-                            this.$refs.olDrawInteraction.recreate();
+                            this.clean();
                             this.$notify({
                                 placement: 'bottom-right',
                                 type: 'danger',
@@ -219,7 +217,6 @@
                 }
             }
         }
-
     }
 </script>
 
