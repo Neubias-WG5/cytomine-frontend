@@ -85,14 +85,18 @@
                     <button
                         :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Union'}, {disabled: !canDraw}]"
                         @click="setInteraction('Union')" title="Correct an annotation by adding a freehand area">
-                        <i class="far fa-object-group"></i>
+                        <!--<i class="far fa-object-group"></i>-->
+                        <i class="fas fa-pencil-alt"></i>
+                        <i class="far fa-plus-square"></i>
                     </button>
                 </template>
                 <template v-if="mustBeShown('project-tools-difference')">
                     <button
                         :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Difference'}, {disabled: !canDraw}]"
                         @click="setInteraction('Difference')" title="Correct an annotation by removing a freehand area">
-                        <i class="far fa-object-ungroup"></i>
+                        <!--<i class="far fa-object-ungroup"></i>-->
+                        <i class="fas fa-pencil-alt"></i>
+                        <i class="far fa-minus-square"></i>
                     </button>
                 </template>
             </template>
