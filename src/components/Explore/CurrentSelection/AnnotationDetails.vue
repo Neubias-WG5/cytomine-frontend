@@ -125,13 +125,27 @@
                                 Retrieval is disabled.
                             </template>
                         </section>
-                        <!--<section v-if="mustBeShown('project-explore-annotation-properties')">-->
-                        <!--<h5>Properties</h5>-->
-                        <!--<div class="text-center">-->
-                        <!--<a :href="'#tabs-annotationproperties-'+ selectedAnnotation.image +'-'+selectedAnnotation.id"-->
-                        <!--class="btn btn-default">Add a property</a>-->
-                        <!--</div>-->
-                        <!--</section>-->
+                        <section v-if="mustBeShown('project-explore-annotation-properties')">
+                            <h5><i class="fas fa-tags"></i> Properties</h5>
+                            <table v-if="properties && properties.length > 0" class="table table-condensed">
+                                <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr v-for="property in properties">
+                                    <td>{{property.key}}</td>
+                                    <td>{{property.value}}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        <div class="text-center">
+                        <a :href="'#tabs-annotationproperties-'+ selectedAnnotation.project +'-'+selectedAnnotation.id"
+                        class="btn btn-default">Add a property</a>
+                        </div>
+                        </section>
                         <!--<section v-if="mustBeShown('project-explore-annotation-description')">-->
                         <!--<h5>Description</h5>-->
                         <!--<div class="text-center">-->
@@ -239,6 +253,14 @@
                     return toReturn;
                 }).catch(errors => {
                     return -1
+                })
+            },
+            properties() {
+                if (!this.selectedAnnotation)
+                    return [];
+
+                return api.get(`api/annotation/${this.selectedAnnotation.id}/property.json`).then(response => {
+                    return response.data.collection;
                 })
             }
         },
