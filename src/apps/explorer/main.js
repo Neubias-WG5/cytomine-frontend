@@ -1,5 +1,6 @@
 import Vue from 'vue'
-import App from '../../components/Explore/Explorer.vue'
+import Explorer from '../../components/Explore/Explorer.vue'
+import ImageGroupList from '../../components/ImageGroup/ImageGroupList'
 import Axios from 'axios';
 import * as uiv from 'uiv'
 import SlVueTree from 'sl-vue-tree'
@@ -27,10 +28,20 @@ window.exploreInstances = {};
 window.addExploreInstance = function(id) {
     window.exploreInstances[id] = new Vue({
         el: `#explorer-vue-${id}`,
-        render: h => h(App)
+        render: h => h(Explorer)
     });
 };
 window.removeExploreInstance = function(id) {
     window.exploreInstances[id].$destroy();
     window.exploreInstances[id] = null;
+};
+
+
+/* Image Group tab instance */
+window.imageGroupTabInstance = {};
+window.setImageGroupTabInstance = function(id) {
+    window.imageGroupTabInstance = new Vue({
+        el:`#image-group-tab-${id}`,
+        render: h => h(ImageGroupList)
+    })
 };

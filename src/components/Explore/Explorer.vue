@@ -29,7 +29,7 @@
     import hexToRgb from "../../helpers/hexToRgb";
 
     export default {
-        name: 'app',
+        name: 'Explorer',
         components: {
             ViewerSelector,
             Viewer,
