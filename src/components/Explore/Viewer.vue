@@ -233,6 +233,7 @@
     import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
     import {AnnotationStyleStatus} from "../../helpers/annotationStyleStatus";
     import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
+    import WKT from 'ol/format/wkt';
 
     import mustBeShown from '../../helpers/mustBeShown';
     import clone from "lodash.clone";
@@ -1024,7 +1025,6 @@
                     retries++;
                     if (!layer)
                         layer = this.$refs.layers[index];
-
                     let feature = layer.getFeatureById(payload.featureId);
                     if (feature) {
                         clearInterval(interval);
@@ -1086,6 +1086,12 @@
                     layer.selected = true;
                     layer.visible = true;
                     this.userLayers.splice(index, 1, layer);
+                    let geometry = new WKT().readGeometry(annotation.location);
+                    if (geometry.getType() == 'Point') {
+                        annotation.centroid = {};
+                        annotation.centroid.x = geometry.getFirstCoordinate()[0];
+                        annotation.centroid.y = geometry.getFirstCoordinate()[1];
+                    }
                     this.center = [annotation.centroid.x, annotation.centroid.y];
                     this.selectFeature({layerId: annotation.user, featureId: annotation.id, centerOn: true})
                 })

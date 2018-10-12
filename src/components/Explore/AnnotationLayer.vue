@@ -149,7 +149,8 @@
                 ++this.revisionStyle;
             },
             revisionLoader() {
-                this.$refs.olSourceVector.$source.clear();
+                if (this.$refs.olSourceVector.$source)
+                    this.$refs.olSourceVector.$source.clear();
             }
         },
         methods:{
