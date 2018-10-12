@@ -45,7 +45,12 @@
                 imageGroups: [],
                 onlineUsers: [],
                 currentUser: {},
-                ontology: {},
+                ontology: {
+                    id: 0,
+                    name: "",
+                    allTerms: [],
+                    children: []
+                },
                 paddingTop: 50 + 42 + 40,
                 lastEventMapId: null,
                 linkedViewersBus: new Vue(),

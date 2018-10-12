@@ -597,6 +597,9 @@
                         this.associableTerms = clone(this.selectedAnnotation.term)
                     })
             },
+            allTermIds(newList) {
+                this.visibleTerms = clone(newList);
+            },
             associableTerms(newList) {
                 if (!this.selectedAnnotation)
                     return;
