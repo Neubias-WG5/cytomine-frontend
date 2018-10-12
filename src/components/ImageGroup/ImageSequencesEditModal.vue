@@ -106,9 +106,9 @@
                     api.get(`api/project/${this.group.project}/imageinstance.json`).then(response => {
                         this.images.splice(0, this.images.length);
                         response.data.collection.map(image => {
-                            let c = image.instanceFilename.match(/(?:-|_)c[0-9]*/i);
-                            let z = image.instanceFilename.match(/(?:-|_)z[0-9]*/i);
-                            let t = image.instanceFilename.match(/(?:-|_)t[0-9]*/i);
+                            let c = image.instanceFilename.match(/[-_]c[0-9]+/i);
+                            let z = image.instanceFilename.match(/[-_]z[0-9]+/i);
+                            let t = image.instanceFilename.match(/[-_]t[0-9]+/i);
 
                             image.c = (c) ? c[0].substr(2) : c;
                             image.z = (z) ? z[0].substr(2) : z;
