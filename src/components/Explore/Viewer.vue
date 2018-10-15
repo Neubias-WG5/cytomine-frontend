@@ -16,7 +16,7 @@
                      :rotation.sync="rotation"
                      projection="CYTO:FLAT"></vl-view>
 
-            <vl-layer-tile :extent="imageExtent">
+            <vl-layer-tile :extent="imageExtent" ref="olImageLayer">
                 <vl-source-zoomify projection="CYTO:FLAT"
                                    :url="baseLayerUrl()"
                                    :size="imageSize"
@@ -999,15 +999,18 @@
                         child.classList.add('btn-default');
                     });
 
-                    this.$refs.olmap.$map.addControl(new OverviewMap({
-                        label: '«',
-                        collapseLabel: '»',
-                        collapsed: false,
-                        view: new View({projection: this.projection})
-                    }));
+                    this.$refs.olImageLayer.$createPromise.then(() => {
+                        this.$refs.olmap.$map.addControl(new OverviewMap({
+                            label: '«',
+                            collapseLabel: '»',
+                            collapsed: false,
+                            view: new View({projection: this.projection}),
+                            layers: [this.$refs.olImageLayer.$layer]
+                        }));
 
-                    this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
-                    this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
+                        this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
+                        this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
+                    });
 
                     this.checkCurrentRoute();
                 });
