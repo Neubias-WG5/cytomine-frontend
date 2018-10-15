@@ -1,24 +1,21 @@
-import { pick } from 'vuelayers/lib/_esm/util/minilo'
-
-/** @module rotate-interaction */
+import { pick } from 'vuelayers/lib/util/minilo'
 import Interaction from './interaction.vue'
 
-/**
- * @alias module:rotate-interaction
- */
-export default {
-    /**
-     * @alias module:rotate-interaction/interaction
-     */
-    Interaction,
-    /**
-     * @param {Vue} Vue
-     * @param {VueLayersOptions} [options]
-     */
-    install (Vue, options = {}) {
-        options = pick(options, 'dataProjection')
-        Object.assign(Interaction, options)
+function plugin (Vue, options = {}) {
+    if (plugin.installed) {
+        return
+    }
+    plugin.installed = true
 
-        Vue.component(Interaction.name, Interaction)
-    },
+    options = pick(options, 'dataProjection')
+    Object.assign(Interaction, options)
+
+    Vue.component(Interaction.name, Interaction)
+}
+
+export default plugin
+
+export {
+    Interaction,
+    plugin as install,
 }

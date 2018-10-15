@@ -18,7 +18,7 @@
 
 <script>
     import parse from 'wellknown'
-    import WKT from 'ol/format/wkt';
+    import WKT from 'ol/format/WKT';
 
     export default {
         name: "ModifyInteraction",

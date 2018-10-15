@@ -1,16 +1,15 @@
 <script>
     /** @module rotate-interaction/interaction */
     import RotateFeatureInteraction from 'ol-rotate-feature'
-    import condition from 'ol/events/condition'
-    import observableFromOlEvent from 'vuelayers/lib/_esm/rx-ext/from-ol-event'
-    import interaction from 'vuelayers/lib/_esm/mixin/interaction'
-    import stylesContainer from 'vuelayers/lib/_esm/mixin/styles-container'
-    import { defaultEditStyle, createStyle } from 'vuelayers/lib/_esm/ol-ext/style'
-    import { isCollection, isVectorSource } from 'vuelayers/lib/_esm/ol-ext/util'
-    import { mapValues, isFunction } from 'vuelayers/lib/_esm/util/minilo'
-    import mergeDescriptors from 'vuelayers/lib/_esm/util/multi-merge-descriptors'
-    import { hasInteraction } from 'vuelayers/lib/_esm/util/assert'
-    import { makeWatchers } from 'vuelayers/lib/_esm/util/vue-helpers'
+    import observableFromOlEvent from 'vuelayers/lib/rx-ext/from-ol-event'
+    import interaction from 'vuelayers/lib/mixin/interaction'
+    import stylesContainer from 'vuelayers/lib/mixin/styles-container'
+    import { defaultEditStyle, createStyle } from 'vuelayers/lib/ol-ext/style'
+    import { isCollection, isVectorSource } from 'vuelayers/lib/ol-ext/util'
+    import { mapValues, isFunction } from 'vuelayers/lib/util/minilo'
+    import mergeDescriptors from 'vuelayers/lib/util/multi-merge-descriptors'
+    import { hasInteraction } from 'vuelayers/lib/util/assert'
+    import { makeWatchers } from 'vuelayers/lib/util/vue-helpers'
 
     /**
      * @vueProps

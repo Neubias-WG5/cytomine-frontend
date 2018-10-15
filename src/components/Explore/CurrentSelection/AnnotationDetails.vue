@@ -175,7 +175,7 @@
     import mustBeShown from '../../../helpers/mustBeShown'
     import clone from "lodash.clone";
     import VueDragResize from 'vue-drag-resize'
-    import WKT from 'ol/format/wkt';
+    import WKT from 'ol/format/WKT';
 
     import Term from "../../Ontology/Term";
     import Username from "../../User/Username";

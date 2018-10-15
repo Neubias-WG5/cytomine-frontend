@@ -1,26 +1,26 @@
-import { pick } from 'vuelayers/lib/_esm/util/minilo'
-
-/**
- * @module zoomify-source
- */
+import { pick } from 'vuelayers/lib/util/minilo'
 import Source from './source.vue'
 
+
 /**
- * @alias module:zoomify-source
+ * @param {Vue} Vue
+ * @param {VueLayersOptions} [options]
  */
-export default {
-  /**
-   * @alias module:zoomify-source/source
-   */
-  Source,
-  /**
-   * @param {Vue} Vue
-   * @param {VueLayersOptions} [options]
-   */
-  install (Vue, options = {}) {
+function plugin (Vue, options = {}) {
+    if (plugin.installed) {
+        return
+    }
+    plugin.installed = true
+
     options = pick(options, 'dataProjection')
     Object.assign(Source, options)
 
     Vue.component(Source.name, Source)
-  },
+}
+
+export default plugin
+
+export {
+    Source,
+    plugin as install,
 }

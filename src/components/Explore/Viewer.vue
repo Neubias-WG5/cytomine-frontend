@@ -227,14 +227,15 @@
     import AnnotationLayer from "./AnnotationLayer";
     import AnnotationDetails from './CurrentSelection/AnnotationDetails';
 
-    import View from 'ol/view';
-    import GeoJSON from 'ol/format/geojson';
-    import OverviewMap from 'ol/control/overviewmap'
-    import {addProj, createProj} from "vuelayers/lib/_esm/ol-ext";
-    import {AnnotationStyleStatus} from "../../helpers/annotationStyleStatus";
-    import {createStyle} from "vuelayers/lib/_esm/ol-ext/style";
-    import WKT from 'ol/format/wkt';
+    import {createStyle} from "vuelayers/lib/ol-ext/style";
+    import {addProj, createProj} from "vuelayers/lib/ol-ext";
 
+    import View from 'ol/View';
+    import GeoJSON from 'ol/format/GeoJSON';
+    import OverviewMap from 'ol/control/OverviewMap';
+    import WKT from 'ol/format/WKT';
+
+    import {AnnotationStyleStatus} from "../../helpers/annotationStyleStatus";
     import mustBeShown from '../../helpers/mustBeShown';
     import clone from "lodash.clone";
     import difference from "lodash.difference"

@@ -14,8 +14,8 @@
 <script>
     import uuid from 'uuid'
     import { AnnotationStyleStatus } from '../../helpers/annotationStyleStatus'
-    import WKT from 'ol/format/wkt';
-    import { createStyle } from 'vuelayers/lib/_esm/ol-ext'
+    import WKT from 'ol/format/WKT';
+    import { createStyle } from 'vuelayers/lib/ol-ext'
 
     export default {
         name: "AnnotationLayer",
@@ -26,6 +26,11 @@
                 properties: {},
                 revisionStyle: 0,
                 revisionLoader: 0,
+
+                resolution: null,
+                clustered: false,
+                maxResolutionNoClusters: null,
+                minResolutionClusters: null
             }
         },
         props: [
@@ -156,13 +161,12 @@
         methods:{
             strategy() {
                 let func = function(extent, resolution) {
-                    // NOT WORKING WITH ol 4.6.5 -> infinite reload
-                    // let source = this.$refs.olSourceVector.$source;
-                    // if(source.resolution && source.clustered != null && // if some features have already been loaded
-                    //     ((resolution != source.resolution && source.clustered) // zoom modification while clustering is performed
-                    //         || (resolution > source.resolution && !source.clustered && resolution > source.maxResolutionNoClusters))) { // re-cluster
-                    //     source.clear();
-                    // }
+                    let source = this.$refs.olSourceVector.$source;
+                    if(this.resolution && this.clustered != null && // if some features have already been loaded
+                        ((resolution != this.resolution && this.clustered) // zoom modification while clustering is performed
+                            || (resolution > this.resolution && !this.clustered && resolution > this.maxResolutionNoClusters))) { // re-cluster
+                        source.clear();
+                    }
 
                     [0, 1].forEach(index => { if (extent[index] < 0) extent[index] = 0; });
                     [2, 3].forEach(index => { if (this.imageExtent[index] < extent[index]) extent[index] = this.imageExtent[index] });
@@ -172,9 +176,8 @@
             },
             loader() {
                 let func = function (extent, resolution, projection) {
-                    console.log(`Load ${extent} at resolution ${resolution}`);
                     let source = this.$refs.olSourceVector.$source;
-                    source.resolution = resolution;
+                    this.resolution = resolution;
                     let bbox = (isFinite(extent[0])) ? extent.join() : [0, 0, this.image.width, this.image.height];
                     let user = (this.userLayer.id < 0) ? `reviewed=true` : `user=${this.userLayer.id}&notReviewedOnly=${this.isReviewing}`;
                     api.get(`api/annotation.json?${user}&image=${this.image.id}&showWKT=true&showTerm=true&kmeans=true&bbox=${bbox}`).then(response => {
@@ -183,15 +186,15 @@
                             return;
 
                         if (annotations[0].count) {
-                            source.clustered = true;
-                            if (source.minResolutionClusters == null || resolution < source.minResolutionClusters) {
-                                source.minResolutionClusters = resolution;
+                            this.clustered = true;
+                            if (this.minResolutionClusters == null || resolution < this.minResolutionClusters) {
+                                this.minResolutionClusters = resolution;
                             }
                         }
                         else {
-                            source.clustered = false;
-                            if (source.maxResolutionNoClusters == null || resolution > source.maxResolutionNoClusters) {
-                                source.maxResolutionNoClusters = resolution;
+                            this.clustered = false;
+                            if (this.maxResolutionNoClusters == null || resolution > this.maxResolutionNoClusters) {
+                                this.maxResolutionNoClusters = resolution;
                             }
                         }
 

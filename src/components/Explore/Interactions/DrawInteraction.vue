@@ -11,9 +11,10 @@
 </template>
 
 <script>
-    import Draw from 'ol/interaction/draw';
-    import Polygon from 'ol/geom/polygon';
-    import WKT from 'ol/format/wkt';
+    import { createBox, createRegularPolygon } from 'ol/interaction/Draw';
+    import Polygon from 'ol/geom/Polygon';
+    import WKT from 'ol/format/WKT';
+    import Feature from 'ol/Feature';
 
     export default {
         name: "DrawInteraction",
@@ -64,7 +65,7 @@
                 let _ = this.activeTool;
                 switch(this.activeTool) {
                     case 'Rectangle':
-                        return Draw.createBox();
+                        return createBox();
                     case 'Arrow':
                         return function (coord, geometry) {
                             if (!geometry) {
@@ -119,7 +120,7 @@
                             return geometry;
                         };
                     case 'Circle':
-                        return Draw.createRegularPolygon();
+                        return createRegularPolygon();
                     default:
                         return undefined;
                 }

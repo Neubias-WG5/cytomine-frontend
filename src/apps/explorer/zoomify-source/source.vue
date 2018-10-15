@@ -2,9 +2,9 @@
     /**
      * @module zoomify-source/source
      */
-    import ZoomifySource from 'ol/source/zoomify'
-    import tileSource from 'vuelayers/lib/_esm/mixin/tile-source'
-    import TileGrid from 'ol/tilegrid/tilegrid'
+    import ZoomifySource from 'ol/source/Zoomify'
+    import tileSource from 'vuelayers/lib/mixin/tile-source'
+    import TileGrid from 'ol/tilegrid/TileGrid'
 
     const props = {
         tierSizeCalculation: {

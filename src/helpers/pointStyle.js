@@ -1,6 +1,6 @@
-import Circle from 'ol/style/circle';
-import Fill from 'ol/style/fill';
-import Stroke from 'ol/style/stroke';
+import Circle from 'ol/style/Circle';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
 
 export default function(fillColor, strokeColor, radius = 7) {
     return new Circle({
