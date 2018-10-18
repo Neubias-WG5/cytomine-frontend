@@ -15,6 +15,7 @@ import Datatable from 'vue2-datatable-component'
 import Explorer from '../../components/Explore/Explorer.vue'
 import ImageGroupList from '../../components/ImageGroup/ImageGroupList'
 import Software from '../../components/Software/Software.vue'
+import SoftwareAdmin from '../../components/Software/SoftwareAdmin.vue'
 
 window.api = Axios.create({});
 
@@ -59,5 +60,15 @@ window.setSoftwareTabInstance = function () {
     new Vue({
         el: '#app-software',
         render: h => h(Software)
+    });
+};
+
+
+/* Software admin tab instance */
+window.softwareAdminTabInstance = {};
+window.setSoftwareAdminTabInstance = function () {
+    new Vue({
+        el: '#admin-softwares-tab',
+        render: h => h(SoftwareAdmin)
     });
 };
