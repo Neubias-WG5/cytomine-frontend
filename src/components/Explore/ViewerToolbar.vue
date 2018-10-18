@@ -1,5 +1,5 @@
 <template>
-    <div class="toolbar-annotations btn-toolbar" role="toolbar">
+    <div class="toolbar-annotations btn-toolbar" role="toolbar" v-if="mustBeShown('project-tools-main')">
         <div class="btn-group" role="group">
             <template v-if="mustBeShown('project-tools-select')">
                 <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Select'}]"
@@ -64,7 +64,7 @@
                         Polygon
                     </button>
                 </template>
-                <!-- <template v-if="mustBeShown('project-tools-magicwand')"> TODO MAGICWAND
+                <!-- <template v-if="mustBeShown('project-tools-magic')"> TODO MAGICWAND
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'MagicWand'}]"
                     @click="setInteraction('MagicWand')" title="Add a new annotation with magic wand">
                         <i class="fas fa-magic"></i>
@@ -159,7 +159,7 @@
                 <!-- <template v-if="mustBeShown('project-tools-resize') && canResize> TODO RESIZE
                     <button :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Resize'}]"
                     @click="setInteraction('Resize')" title="Resize the selected annotation">
-                        <span class="glyphicon glyphicon-resize-full"></span>
+                        <i class="fas fa-expand-arrows-alt"></i>
                         Resize
                     </button>
                 </template> -->

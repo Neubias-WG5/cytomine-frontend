@@ -1,12 +1,12 @@
 <template>
-    <div>
+    <div v-if="mustBeShown('project-explore-annotation-main')">
         <vue-drag-resize :parentLimitation="true" :isResizable="false"
                          :w="300" :h="300" :x="2 * this.elementWidth / 3" :y="150"
                          :isActive="this.focus" :parentW="this.elementWidth" :parentH="this.elementHeight"
                          @dragstop="setFocus(false)" @clicked="setFocus(true)">
             <div class="panel component-panel" :style="`width: 300px; height:300px;`">
                 <div class="panel-body">
-                    <section v-if="this.selectedAnnotation && mustBeShown('project-explore-annotation-main')">
+                    <section v-if="this.selectedAnnotation">
                         <h4><i class="fas fa-mouse-pointer"></i> Current selection</h4>
                         <section v-if="isReviewing">
                             <h5><i class="fas fa-check-circle"></i> Review</h5>
@@ -147,7 +147,7 @@
                         </div>
                         </section>
                         <!--<section v-if="mustBeShown('project-explore-annotation-description')">-->
-                        <!--<h5>Description</h5>-->
+                        <!--<h5><i class="fas fa-align-left"></i> Description</h5>-->
                         <!--<div class="text-center">-->
                         <!--<a :href="'#descriptionModal'+selectedAnnotation.id" class="btn btn-default">Add description</a>-->
                         <!--</div>-->

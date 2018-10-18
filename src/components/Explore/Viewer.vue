@@ -69,7 +69,7 @@
                             :project-config="projectConfig" :has-online-users="hasOnlineUsers"
                             :review-mode="reviewMode"></viewer-buttons>
 
-            <div class="scale-line-panel">
+            <div class="scale-line-panel" v-if="mustBeShown('project-explore-scaleline')">
                 <scale-line :image="image" :mousePosition="mousePosition"
                             :currentZoom="zoom" :maxZoom="maxZoom"></scale-line>
             </div>
@@ -1001,17 +1001,20 @@
                     });
 
                     this.$refs.olImageLayer.$createPromise.then(() => {
-                        this.$refs.olmap.$map.addControl(new OverviewMap({
-                            label: '«',
-                            collapseLabel: '»',
-                            collapsed: false,
-                            view: new View({projection: this.projection}),
-                            layers: [this.$refs.olImageLayer.$layer]
-                        }));
+                        if (this.mustBeShown('project-explore-overview')) {
+                            this.$refs.olmap.$map.addControl(new OverviewMap({
+                                label: '«',
+                                collapseLabel: '»',
+                                collapsed: false,
+                                view: new View({projection: this.projection}),
+                                layers: [this.$refs.olImageLayer.$layer]
+                            }));
 
-                        this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
-                        this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
-                    });
+                            this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn');
+                            this.$refs.olmap.$map.getControls().getArray()[3].element.childNodes[1].classList.add('btn-default');
+
+                        }
+                        });
 
                     this.checkCurrentRoute();
                 });

@@ -1,5 +1,5 @@
 <template>
-    <div class="bottom-panel btn-group" role="group">
+    <div class="bottom-panel btn-group" role="group" v-if="mustBeShown('project-explore-hide-tools')">
         <button v-if="mustBeShown('project-explore-info')" @click="setSelected('informations')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'informations' }]" title="Informations">
             <i class="fas fa-info-circle"></i>
@@ -9,7 +9,7 @@
                 :class="['btn', 'btn-default', {active: selectedComponent == 'linkmap' }]" title="Vue link">
             <i class="fas fa-link"></i>
         </button>
-        <button v-if="mustBeShown('project-explore-image-layers') && hasFilters"
+        <button v-if="mustBeShown('project-explore-filter') && hasFilters"
                 @click="setSelected('filter')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'filter' }]" title="Image filters">
             <i class="fas fa-filter"></i>
@@ -22,12 +22,12 @@
                 <!--:class="['btn', 'btn-default', {active: selectedComponent == 'colormap' }]" title="Color maps">-->
             <!--<i class="fas fa-adjust"></i>-->
         <!--</button>-->
-        <button @click="setSelected('annotationLayers')"
+        <button v-if="mustBeShown('project-explore-image-layers')" @click="setSelected('annotationLayers')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'annotationLayers' }]"
                 title="Annotation layers">
             <i class="fas fa-layer-group"></i>
         </button>
-        <button @click="setSelected('ontology')"
+        <button v-if="mustBeShown('project-explore-ontology')" @click="setSelected('ontology')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'ontology' }]"
                 title="Ontology">
             <i class="fas fa-palette"></i>
@@ -38,12 +38,13 @@
                 title="User annotations list">
             <i class="fas fa-shapes"></i>
         </button>
-        <button v-if="hasImageSequences" @click="setSelected('multidimension')"
+        <button v-if="mustBeShown('project-explore-multidim') && hasImageSequences"
+                @click="setSelected('multidimension')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'multidimension' }]"
                 title="Multidimension">
             <i class="fas fa-images"></i>
         </button>
-        <button @click="setSelected('review')"
+        <button v-if="mustBeShown('project-explore-review')" @click="setSelected('review')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'review' },
                 {'text-primary': reviewMode}]" title="Review">
             <i class="fas fa-check-circle"></i>
@@ -54,7 +55,7 @@
                 title="Annotation properties">
             <i class="fas fa-tags"></i>
         </button>
-        <button v-if="hasOnlineUsers" @click="setSelected('follow')"
+        <button v-if="hasOnlineUsers && mustBeShown('project-explore-follow')" @click="setSelected('follow')"
                 :class="['btn', 'btn-default', {active: selectedComponent == 'follow' }]" title="Follow user">
             <i class="fas fa-chess-rook"></i>
         </button>
