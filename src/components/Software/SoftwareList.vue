@@ -21,15 +21,15 @@
             SoftwareDeprecatedItem,
             SoftwareActionItem
         },
-        props: ['refresh'],
+        props: ['refresh', 'isAdmin'],
         data() {
             return {
                 columns: [
-                    { title: 'ID', field: 'id', group: 'General', sortable: true },
-                    { title: 'Full name', field: 'fullName', group: 'General', sortable: true, visible: 'true'},
-                    { title: 'Version', field: 'softwareVersion', group: 'General', sortable: true },
-                    { title: 'Status', field: 'deprecated', group: 'General', sortable: true, tdComp: 'SoftwareDeprecatedItem' },
-                    { title: 'Executable', field: 'executable', group: 'General', sortable: true, tdComp: 'BooleanItem' },
+                    { title: 'ID', field: 'id', group: 'General', /*sortable: true*/ },
+                    { title: 'Full name', field: 'fullName', group: 'General',/*sortable: true,*/ visible: 'true'},
+                    { title: 'Version', field: 'softwareVersion', group: 'General',/*sortable: true*/ },
+                    { title: 'Status', field: 'deprecated', group: 'General',/*sortable: true,*/ tdComp: 'SoftwareDeprecatedItem' },
+                    { title: 'Executable', field: 'executable', group: 'General',/*sortable: true,*/ tdComp: 'BooleanItem' },
                     { title: '# Jobs', field: 'numberOfJob', group: 'Statistics', tdComp: 'SoftwareStatItem'},
                     { title: '# In queue', field: 'numberOfInQueue', group: 'Statistics', tdComp: 'SoftwareStatItem', visible: false},
                     { title: '# Running', field: 'numberOfRunning', group: 'Statistics', tdComp: 'SoftwareStatItem', visible: false},

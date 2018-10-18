@@ -3,13 +3,13 @@
         <tabs v-model="currentTabIndex">
             <tab title="Software list">
                 <p class="tab-content">
-                    <software-list @addSoftwareTab="goToSoftwareTab"
+                    <software-list @addSoftwareTab="goToSoftwareTab" :is-admin="isAdmin"
                                    v-bind:refresh.sync="refreshDatatable"></software-list>
                 </p>
             </tab>
             <tab v-for="software in softwareTabs" :key="software.id" :title="software.fullName">
                 <button class="btn pull-right" @click="removeSoftwareTab(software)">Close</button>
-                <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories"
+                <software-detail :software="software" :softwareUserRepositories="softwareUserRepositories" :is-admin="isAdmin"
                                  :parameterConstraints="parameterConstraints" @delete-software="deleteSoftware"
                                  @update-software="updateSoftware"></software-detail>
             </tab>
@@ -24,7 +24,7 @@
     import SoftwareDetail from "./SoftwareDetail"
 
     export default {
-        name: 'app-software',
+        name: 'Software',
         components: {
             SoftwareList,
             SoftwareDetail,
@@ -37,6 +37,8 @@
                 maxTabs: 6,
                 currentTabIndex: 0,
                 refreshDatatable: false,
+
+                isAdmin: false,
 
                 // TODO: externalize in VueX.
                 softwareUserRepositories: [],
@@ -82,6 +84,10 @@
                 // DEPENDS ON [BACKBONE]
                 this.currentRoute = Backbone.history.getFragment();
             },
+            checkAdmin() {
+                // DEPENDS ON [BACKBONE]
+                this.isAdmin = window.app.status.user.model.get("adminByNow");
+            }
         },
         created() {
             // TODO: externalize in VueX
@@ -94,7 +100,8 @@
             });
 
             // DEPENDS ON [BACKBONE]
-            setInterval(this.checkRoute, 1000)
+            setInterval(this.checkRoute, 1000);
+            setInterval(this.checkAdmin, 1000)
         },
     }
 </script>

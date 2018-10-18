@@ -12,7 +12,7 @@
                     <div class="panel panel-default">
                         <div class="panel-heading clearfix">
                             <h3 class="panel-title pull-left">General information</h3>
-                            <div class="btn-group pull-right">
+                            <div class="btn-group pull-right" v-if="isAdmin">
                                 <button class="btn btn-default btn-xs" @click="openEditModal=true">
                                     <i class="fa fa-edit" aria-hidden="true"></i>
                                 </button>
@@ -98,22 +98,28 @@
                     </div>
                 </div>
 
-                <!-- Statistics -->
+                <!-- Software projects -->
                 <div class="col-md-4">
                     <div class="panel panel-default">
-                        <div class="panel-heading clearfix">
-                            <h3 class="panel-title pull-left">Statistics</h3>
-                            <div class="pull-right">
-                                <button class="btn btn-default btn-xs" @click="openStatsModal=true">
-                                    <i class="fa fa-info-circle" aria-hidden="true"></i>
-                                </button>
-                            </div>
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Projects using {{software.fullName}}</h3>
                         </div>
-                        <div class="panel-body">
-                            <software-statistics-chart :chartData="statisticsData"
-                                                       :options="statisticsOptions"></software-statistics-chart>
-                            <p class="text-center">Status distribution for {{software.numberOfJob}} jobs</p>
+                        <ul class="list-group" v-if="projects.length > 0">
+                            <li class="list-group-item" v-for="(project, index) in projects" :key="project.id">
+                                <div class="btn-group pull-right">
+                                    <button class="btn btn-default btn-xs" @click="openInfoProjectModalByIndex(index)">
+                                        <i class="fa fa-info-circle" aria-hidden="true"></i> Info
+                                    </button>
+                                    <a class="btn btn-default btn-xs" :href="'#tabs-dashboard-'+project.id">
+                                        <i class="fa fa-eye" aria-hidden="true"></i> Explore</a>
+                                </div>
+                                <a :href="'#tabs-algos-'+project.id+'-'+software.id+'-'">{{project.name}}</a>
+                            </li>
+                        </ul>
+                        <div class="panel-body" v-else>
+                            <p class="text-center">No project yet.</p>
                         </div>
+
                     </div>
                 </div>
 
@@ -131,7 +137,7 @@
                                         <h4 class="panel-title pull-left">
                                             {{parameter.humanName}} (<code>{{parameter.name}}</code>)
                                         </h4>
-                                        <div class="btn-group pull-right">
+                                        <div class="btn-group pull-right" v-if="isAdmin">
                                             <button class="btn btn-default btn-xs"
                                                     @click="openEditParameterModalByIndex(index)">
                                                 <i class="fa fa-edit" aria-hidden="true"></i>
@@ -208,24 +214,26 @@
                     </div>
                 </div>
 
-                <!-- Software projects -->
+                <!-- Statistics -->
                 <div class="col-md-4">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Projects using {{software.fullName}}</h3>
+                        <div class="panel-heading clearfix">
+                            <h3 class="panel-title pull-left">Statistics</h3>
+                            <div class="pull-right">
+                                <button class="btn btn-default btn-xs" @click="openStatsModal=true">
+                                    <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
-                        <ul class="list-group">
-                            <li class="list-group-item" v-for="(project, index) in projects" :key="project.id">
-                                <div class="btn-group pull-right">
-                                    <button class="btn btn-default btn-xs" @click="openInfoProjectModalByIndex(index)">
-                                        <i class="fa fa-info-circle" aria-hidden="true"></i> Info
-                                    </button>
-                                    <a class="btn btn-default btn-xs" :href="'#tabs-dashboard-'+project.id">
-                                        <i class="fa fa-eye" aria-hidden="true"></i> Explore</a>
-                                </div>
-                                <a :href="'#tabs-algos-'+project.id+'-'+software.id+'-'">{{project.name}}</a>
-                            </li>
-                        </ul>
+                        <div class="panel-body">
+                            <p class="text-center" v-if="software.numberOfJob == 0">No launched job yet.</p>
+                            <template v-else>
+                                <software-statistics-chart :chartData="statisticsData"
+                                                           :options="statisticsOptions"></software-statistics-chart>
+                                <p class="text-center">Status distribution for {{software.numberOfJob}} jobs</p>
+                            </template>
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -325,7 +333,8 @@
         props: [
             'software',
             'softwareUserRepositories',
-            'parameterConstraints'
+            'parameterConstraints',
+            'isAdmin'
         ],
         data() {
             return {
