@@ -1091,7 +1091,7 @@
             goToFeature(id) {
                 api.get(`api/annotation/${id}.json`).then(response => {
                     let annotation = response.data;
-                    let index = this.userLayers.findIndex(user => user.id == this.currentUser.id);
+                    let index = this.userLayers.findIndex(user => user.id == annotation.user);
                     let layer = this.userLayers[index];
                     layer.selected = true;
                     layer.visible = true;
