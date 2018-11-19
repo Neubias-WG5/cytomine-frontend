@@ -27,6 +27,8 @@
         props: ['software', 'softwareRepository'],
         computed: {
             sourceCodeProvider() {
+                if (!this.softwareRepository)
+                    return "";
                 let provider = this.softwareRepository.provider.toLowerCase();
                 if (provider.includes("github"))
                     return "github";
@@ -36,6 +38,8 @@
                     return "bitbucket";
             },
             sourceCodeUrl() {
+                if (!this.softwareRepository)
+                    return "";
                 let provider = this.softwareRepository.provider.toLowerCase();
                 if (provider.includes("github")) {
                     let url = `https://github.com/${this.softwareRepository.username}/${this.softwareRepository.prefix}${this.software.name}`;
@@ -50,6 +54,8 @@
                     return "#";
             },
             environmentUrl() {
+                if (!this.softwareRepository)
+                    return "";
                 return `https://hub.docker.com/r/${this.softwareRepository.dockerUsername}/${this.softwareRepository.prefix.toLowerCase()}${this.software.name.toLowerCase()}`
             }
         }

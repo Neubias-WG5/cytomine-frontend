@@ -59,13 +59,15 @@
                                 <dt>Software source</dt>
                                 <dd>
                                     <software-repository-name
-                                        :softwareRepository="findSoftwareRepositoryById(software.softwareUserRepository)">
+                                        :softwareRepository="findSoftwareRepositoryById(software.softwareUserRepository)"
+                                        v-if="software.softwareUserRepository">
                                     </software-repository-name>
                                 </dd>
                             </dl>
                             <div class="pull-right">
                                 <software-source-buttons :software="software"
-                                                         :softwareRepository="findSoftwareRepositoryById(software.softwareUserRepository)">
+                                                         :softwareRepository="findSoftwareRepositoryById(software.softwareUserRepository)"
+                                                         v-if="software.softwareUserRepository">
                                 </software-source-buttons>
                                 <button class="btn" @click="showSoftwareMoreInfo=!showSoftwareMoreInfo">
                                     <template v-if="showSoftwareMoreInfo">
