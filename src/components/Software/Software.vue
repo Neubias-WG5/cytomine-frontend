@@ -45,10 +45,26 @@
                 parameterConstraints: [],
             }
         },
+        watch: {
+            currentTabIndex(newValue) {
+                console.log(newValue);
+                if (newValue == 0) {
+                    history.pushState({}, "Cytomine", "#software");
+                    window.app.status.currentSoftwareId = null
+                }
+                else {
+                    let idSoftware = this.softwareTabs[newValue-1].id;
+                    console.log("push" + idSoftware);
+                    history.pushState({}, "Cytomine", "#software-" + idSoftware);
+                    window.app.status.currentSoftwareId = idSoftware
+                }
+
+            }
+        },
         methods: {
             findSoftwareIndex(software) {
                 return this.softwareTabs.findIndex(s => {
-                    return s.id === software.id;
+                    return s.id == software.id;
                 });
             },
             goToSoftwareTab(software) {
@@ -59,9 +75,19 @@
                     this.addSoftwareTab(software);
             },
             addSoftwareTab(software) {
-                this.softwareTabs.push(software);
-                this.softwareTabs.splice(0, this.softwareTabs.length - this.maxTabs);
-                this.currentTabIndex = this.softwareTabs.length;
+                if (software && !software.name) {
+                    api.get(`api/software/${software.id}.json`).then(response => {
+                        software = response.data;
+                        this.softwareTabs.push(software);
+                        this.softwareTabs.splice(0, this.softwareTabs.length - this.maxTabs);
+                        this.currentTabIndex = this.softwareTabs.length;
+                    })
+                } else {
+                    this.softwareTabs.push(software);
+                    this.softwareTabs.splice(0, this.softwareTabs.length - this.maxTabs);
+                    this.currentTabIndex = this.softwareTabs.length;
+                }
+
             },
             removeSoftwareTab(software) {
                 let index = this.findSoftwareIndex(software);
@@ -87,9 +113,18 @@
             checkAdmin() {
                 // DEPENDS ON [BACKBONE]
                 this.isAdmin = window.app.status.user.model.get("adminByNow");
+            },
+            checkCurrentSoftwareId() {
+                let idSoftware = window.app.status.currentSoftwareId;
+                console.log("cvjedsc" + idSoftware)
+                if (!idSoftware)
+                    this.currentTabIndex = 0;
+                else
+                    this.goToSoftwareTab({id: idSoftware})
             }
         },
         created() {
+            this.checkCurrentSoftwareId();
             // TODO: externalize in VueX
             api.get(`api/software_user_repository.json`).then(response => {
                 this.softwareUserRepositories = response.data.collection;
@@ -100,8 +135,9 @@
             });
 
             // DEPENDS ON [BACKBONE]
-            setInterval(this.checkRoute, 1000);
-            setInterval(this.checkAdmin, 1000)
+            setInterval(this.checkRoute.bind(this), 1000);
+            setInterval(this.checkAdmin.bind(this), 1000);
+            setInterval(this.checkCurrentSoftwareId.bind(this), 1000);
         },
     }
 </script>
