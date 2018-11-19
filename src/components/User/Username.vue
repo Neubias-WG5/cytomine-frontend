@@ -1,7 +1,7 @@
 <template>
     <span v-if="user" :class="{'online-user': online}">
         <span v-if="!user.algo">{{user.firstname}} {{user.lastname}} ({{user.username}})</span>
-        <span v-else>{{user.softwareName}} ({{user.username}})</span>
+        <span v-else><a style="color: inherit;" :href="'#tabs-useralgo-'+user.id">{{user.softwareName}} ({{user.username}})</a></span>
     </span>
 </template>
 
