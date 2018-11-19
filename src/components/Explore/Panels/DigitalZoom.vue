@@ -18,7 +18,7 @@
         ],
         data() {
             return {
-                digitalZoom: false,
+                digitalZoom: true,
             }
         },
         methods: {
