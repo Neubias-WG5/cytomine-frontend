@@ -1029,12 +1029,21 @@
             },
             selectFeature(payload) {
                 let retries = 0;
-                let index = this.userLayers.findIndex(user => user.id == payload.layerId);
-                let layer = this.$refs.layers[index];
+                let layer = null;
                 let interval = setInterval(() => {
                     retries++;
-                    if (!layer)
+                    if (!layer) {
+                        let index = this.userLayers.findIndex(user => user.id == annotation.user);
+                        if (index < 0)
+                            return;
+
+                        let userLayer = this.userLayers[index];
+                        userLayer.selected = true;
+                        userLayer.visible = true;
+                        this.userLayers.splice(index, 1, userLayer);
                         layer = this.$refs.layers[index];
+                    }
+
                     let feature = layer.getFeatureById(payload.featureId);
                     if (feature) {
                         clearInterval(interval);
@@ -1053,7 +1062,7 @@
                         if (payload.centerOn)
                             this.$refs.olview.fit(feature.getGeometry());
                     }
-                    else if (retries == 5)
+                    else if (retries == 15)
                         clearInterval(interval);
                 }, 500);
             },
@@ -1091,11 +1100,6 @@
             goToFeature(id) {
                 api.get(`api/annotation/${id}.json`).then(response => {
                     let annotation = response.data;
-                    let index = this.userLayers.findIndex(user => user.id == annotation.user);
-                    let layer = this.userLayers[index];
-                    layer.selected = true;
-                    layer.visible = true;
-                    this.userLayers.splice(index, 1, layer);
                     let geometry = new WKT().readGeometry(annotation.location);
                     if (geometry.getType() == 'Point') {
                         annotation.centroid = {};
