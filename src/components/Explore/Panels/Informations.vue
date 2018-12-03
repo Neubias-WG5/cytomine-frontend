@@ -31,7 +31,7 @@
                 <!--<div class="btn-group" v-if="!project.blindMode">-->
                 <!--<button class="btn btn-default btn-xs"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Rename</button>-->
                 <!--</div>-->
-                <a :href="`/api/imageinstance/${image.id}/download`" class="btn btn-default btn-xs">
+                <a :href="`/api/imageinstance/${image.id}/download?parent=true`" class="btn btn-default btn-xs">
                     <i class="fas fa-download" aria-hidden="true"></i> Download
                 </a>
                 <div class="btn-group">
