@@ -16,6 +16,7 @@ import Explorer from '../../components/Explore/Explorer.vue'
 import ImageGroupList from '../../components/ImageGroup/ImageGroupList'
 import Software from '../../components/Software/Software.vue'
 import SoftwareAdmin from '../../components/Software/SoftwareAdmin.vue'
+import Benchmark from '../../components/Benchmark/Benchmark.vue'
 
 window.api = Axios.create({});
 
@@ -71,4 +72,13 @@ window.setSoftwareAdminTabInstance = function () {
         el: '#admin-softwares-tab',
         render: h => h(SoftwareAdmin)
     });
+};
+
+/* Benchmark tab instance */
+window.benchmarkTabInstance = {};
+window.setBenchmarkTabInstance = function(id) {
+    window.benchmarkTabInstance = new Vue({
+        el:`#benchmark-tab-${id}`,
+        render: h => h(Benchmark)
+    })
 };
