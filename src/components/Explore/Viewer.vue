@@ -1033,7 +1033,7 @@
                 let interval = setInterval(() => {
                     retries++;
                     if (!layer) {
-                        let index = this.userLayers.findIndex(user => user.id == annotation.user);
+                        let index = this.userLayers.findIndex(user => user.id == payload.layerId);
                         if (index < 0)
                             return;
 
