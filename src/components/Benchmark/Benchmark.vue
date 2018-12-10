@@ -156,9 +156,18 @@
 
             </div>
         </div>
-        <div class="row">
-            {{metricResults}}<br>
-            {{aggregatedMetricResults}}
+        <div class="row" v-if="showResults">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><i class="fas fa-chart-line"></i> Results</h3>
+                    </div>
+                    <div class="panel-body">
+                        <benchmark-table-per-image v-for="image in displayedImages" :image="image"
+                                                   :metrics="selectedMetrics" :jobs="displayedJobs"></benchmark-table-per-image>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -168,10 +177,12 @@
     import 'vue-multiselect/dist/vue-multiselect.min.css'
     import uniqby from 'lodash.uniqby'
     import DateItem from "../Datatable/DateItem";
+    import BenchmarkTablePerImage from "./BenchmarkTablePerImage";
 
     export default {
         name: "Benchmark",
         components: {
+            BenchmarkTablePerImage,
             DateItem,
             Multiselect
         },
@@ -186,16 +197,20 @@
                     ],
                 project: {},
                 metrics: [],
-                softwares: [],
-                selectedSoftwares: [],
-                jobs: [],
-                selectedJobs: [],
-                imageGroups: [],
-                imageInstances: [],
-                selectedImages: [],
+                softwares: [], // All software in project
+                selectedSoftwares: [], // Selected software in the dropdown list
+                displayedSoftwares: [], // Displayed software in the report
+                jobs: [], // All jobs in project
+                selectedJobs: [], // Selected jobs in the dropdown list
+                displayedJobs: [], // Displayed jobs in the report
+                imageGroups: [], // All image groups in project
+                imageInstances: [], // All image instances in project
+                selectedImages: [], // Selected images (instance or group) in the dropdown list
+                displayedImages: [], // Displayed images in the report
                 selectType: 'software',
                 metricResults: [],
-                aggregatedMetricResults: []
+                aggregatedMetricResults: [],
+                showResults: false,
             }
         },
         computed: {
@@ -240,6 +255,9 @@
                     (this.selectType == 'software' && this.selectedSoftwares.length > 0) ||
                     (this.selectType == 'job' && this.selectedJobs.length > 0)
                 )
+            },
+            selectedMetrics() {
+                return this.metrics.filter(metric => metric.selected)
             }
         },
         methods: {
@@ -282,6 +300,18 @@
 
                 api.get(`api/metricresult.json?project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
                     this.metricResults = response.data.collection;
+                    this.showResults = true;
+                    this.displayedImages = this.selectedImages;
+                    if (this.selectType == 'software') {
+                        let ids = this.selectedSoftwares.map(software => software.id);
+                        this.displayedJobs = this.successfulJobs.filter(job => ids.includes(job.software));
+                        this.displayedSoftwares = this.selectedSoftwares;
+                    }
+                    else {
+                        let ids = uniqby(this.selectedJobs.map(job => job.software));
+                        this.softwares.filter(software => ids.includes(software.id))
+                        this.displayedJobs = this.selectedJobs;
+                    }
                 });
 
                 api.get(`api/metricresult.json?aggregate=true&project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
