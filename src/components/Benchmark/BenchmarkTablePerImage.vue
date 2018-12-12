@@ -1,10 +1,13 @@
 <template>
     <div>
         <div>
-            <button class="pull-right option-desc btn btn-default" @click="show=!show">
-                <span v-if="show">Hide</span>
-                <span v-else>Show</span>
-            </button>
+            <div class="pull-right align-chevron">
+                <button class=" option-desc btn btn-link" @click="show=!show">
+                    <span v-if="show"><i class="fas fa-chevron-up"></i></span>
+                    <span v-else><i class="fas fa-chevron-down"></i></span>
+                </button>
+            </div>
+
             <img class="option-image" :src="image.thumb">
             <h4 class="option-desc">
                 {{ image.instanceFilename }}
@@ -96,5 +99,10 @@
     .option-desc {
         display: inline-block;
         vertical-align: middle;
+    }
+
+    .align-chevron {
+        top: 100%;
+        transform: translateY(50%);
     }
 </style>
