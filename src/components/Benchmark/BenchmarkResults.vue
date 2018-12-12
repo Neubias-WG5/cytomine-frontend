@@ -71,7 +71,7 @@
             headerColumn() {
                 let params = this.parameters.map(parameter => {
                     return {
-                        id: parameter.id,
+                        id: parameter.name,
                         type: 'parameter',
                         data: parameter
                     }
@@ -97,8 +97,8 @@
                     });
 
                     job.jobParameters.forEach(p => {
-                        j[p.softwareParameter] = p.value;
-                        j[`${p.softwareParameter}-object`] = p
+                        j[p.name] = p.value;
+                        j[`${p.name}-object`] = p
                     });
 
                     this.aggregatedMetricResults.filter(r => r.job == job.id).forEach(r => {

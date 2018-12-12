@@ -271,8 +271,7 @@
             },
             displayedSoftwareParameters() {
                 let params = this.displayedSoftwares.map(software => software.parameters).reduce((a, b) => a.concat(b), []);
-                // TODO: unique
-                return params;
+                return uniqby(params, 'name');
             }
         },
         methods: {
