@@ -19,6 +19,7 @@
                 <tr>
                     <th class="border-right"></th>
                     <th v-for="job in jobColumns">
+                        <button type="button" class="close pull-right" @click="removeJob(job.id)"><span aria-hidden="true">&times;</span></button>
                         <a :href="`#tabs-algos-${job.project}-${job.software}-${job.id}`">Job #{{job.number}} ({{job.id}})</a><br>
                         <a :href="`#software-${job.software}`">{{softwareById(job.software).fullName}}</a><br>
                         by {{job.username}}<br>
@@ -92,6 +93,9 @@
             },
             changeSort(payload) {
                 this.$emit('changeSort', payload)
+            },
+            removeJob(id) {
+                this.$emit('removeJob', id)
             }
         }
     }

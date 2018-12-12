@@ -12,14 +12,14 @@
                             <benchmark-table :aggregates="aggregates" :parameters="parameters"
                                              :header-column="headerColumn" :job-columns="filteredJobColumns"
                                              :softwares="softwares" :sort="sort" @changeSort="changeSort"
-                                             :show-parameters="showParameters"></benchmark-table>
+                                             :show-parameters="showParameters" @removeJob="removeJob"></benchmark-table>
                         </tab>
                         <tab title="Detailed results by image">
                             <div class="benchmark-per-image-tab">
                                 <benchmark-table-per-image v-for="image in images" :image="image" :parameters="parameters"
                                                            :header-column="headerColumn" :job-columns="filteredJobColumns"
                                                            :softwares="softwares" :sort="sort" @changeSort="changeSort"
-                                                           :show-parameters="showParameters"></benchmark-table-per-image>
+                                                           :show-parameters="showParameters" @removeJob="removeJob"></benchmark-table-per-image>
                             </div>
 
 
@@ -63,7 +63,8 @@
                 sort: {
                     field: '',
                     order: ''
-                }
+                },
+                hiddenJobs: []
             }
         },
         computed: {
@@ -87,7 +88,7 @@
                 return params.concat(metrics)
             },
             jobColumns() {
-                return this.jobs.map(job => {
+                return this.filteredJobs.map(job => {
                     let j = Vue.util.extend({}, job);
 
                     this.metricResults.filter(r => r.job == job.id).forEach(r => {
@@ -110,12 +111,18 @@
             },
             filteredJobColumns() {
                 return orderby(this.jobColumns, [this.sort.field], [this.sort.order])
+            },
+            filteredJobs() {
+                return this.jobs.filter(job => !this.hiddenJobs.includes(job.id))
             }
         },
         methods: {
             changeSort(payload) {
                 this.sort.field = payload.field;
                 this.sort.order = payload.order;
+            },
+            removeJob(id) {
+                this.hiddenJobs.push(id)
             }
         }
     }
