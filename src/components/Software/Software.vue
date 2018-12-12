@@ -116,7 +116,6 @@
             },
             checkCurrentSoftwareId() {
                 let idSoftware = window.app.status.currentSoftwareId;
-                console.log("cvjedsc" + idSoftware)
                 if (!idSoftware)
                     this.currentTabIndex = 0;
                 else

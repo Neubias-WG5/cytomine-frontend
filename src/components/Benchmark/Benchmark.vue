@@ -292,7 +292,7 @@
                         this.imageGroups = response.data.collection;
 
                         if (this.imageGroups.length == 0) {
-                            api.get(`api/project/${this.project.id}/imageinstance.json`).then(response => {
+                            api.get(`api/project/${this.project.id}/imageinstance.json?withoutLabel=true`).then(response => {
                                 this.imageInstances = response.data.collection;
                             })
                         }
