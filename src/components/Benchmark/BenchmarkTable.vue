@@ -15,10 +15,13 @@
                 </thead>
                 <tbody>
                 <tr v-for="header in headerColumn" v-if="header.type == 'parameter'">
-                    <th colspan="2">{{header.data.humanName}}</th>
+                    <th colspan="2">
+                        <sort-button :sort="sort" :field="header.id" @changeSort="changeSort"></sort-button>
+                        {{header.data.humanName}}
+                    </th>
                     <td v-for="job in filteredJobColumns">
                         <span v-if="job[header.id] != undefined">
-                            {{job[header.id].value}}
+                            {{job[header.id]}}
                         </span>
                         <span class="no-parameter-cell" v-else>*</span>
                     </td>
@@ -26,7 +29,10 @@
                 <template v-for="header in headerColumn" v-if="header.type == 'metric'">
                     <tr v-for="(aggregate, index) in aggregates">
                         <th v-if="index == 0" :rowspan="aggregates.length">{{header.data.name}} ({{header.data.shortName}})</th>
-                        <th>{{aggregate.name}}</th>
+                        <th>
+                            <sort-button :sort="sort" :field="'aggregate-'+header.data.id+'-'+aggregate.code" @changeSort="changeSort"></sort-button>
+                            {{aggregate.name}}
+                        </th>
 
                         <td v-for="job in filteredJobColumns">
                             <span v-if="job['aggregate-'+header.id+'-'+aggregate.code] != undefined">
@@ -46,15 +52,20 @@
 
 <script>
     import DateItem from "../Datatable/DateItem";
+    import SortButton from "./SortButton";
     export default {
         name: "BenchmarkTable",
-        components: {DateItem},
+        components: {
+            DateItem,
+            SortButton
+        },
         props: [
             'parameters',
             'headerColumn',
             'jobColumns',
             'softwares',
-            'aggregates'
+            'aggregates',
+            'sort'
         ],
         data() {
             return {
@@ -70,6 +81,9 @@
             softwareById(termId) {
                 return this.softwares.find(term => term.id == termId);
             },
+            changeSort(payload) {
+                this.$emit('changeSort', payload)
+            }
         }
     }
 </script>

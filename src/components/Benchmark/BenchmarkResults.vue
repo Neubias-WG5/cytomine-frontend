@@ -10,22 +10,19 @@
                     <tabs>
                         <tab title="Aggregated results">
                             <benchmark-table :aggregates="aggregates" :parameters="parameters"
-                                             :header-column="headerColumn" :job-columns="jobColumns"
-                                             :softwares="softwares" ></benchmark-table>
+                                             :header-column="headerColumn" :job-columns="filteredJobColumns"
+                                             :softwares="softwares" :sort="sort" @changeSort="changeSort"></benchmark-table>
                         </tab>
                         <tab title="Detailed results by image">
                             <div class="benchmark-per-image-tab">
                                 <benchmark-table-per-image v-for="image in images" :image="image" :parameters="parameters"
-                                                           :header-column="headerColumn" :job-columns="jobColumns"
-                                                           :softwares="softwares"></benchmark-table-per-image>
+                                                           :header-column="headerColumn" :job-columns="filteredJobColumns"
+                                                           :softwares="softwares" :sort="sort" @changeSort="changeSort"></benchmark-table-per-image>
                             </div>
 
 
                         </tab>
                     </tabs>
-
-
-
                 </div>
             </div>
         </div>
@@ -37,6 +34,8 @@
     import {Tabs, Tab} from 'uiv'
     import BenchmarkTablePerImage from "./BenchmarkTablePerImage";
     import BenchmarkTable from "./BenchmarkTable";
+    import orderby from 'lodash.orderby'
+
     export default {
         name: "BenchmarkResults",
         components: {
@@ -58,7 +57,10 @@
         ],
         data() {
             return {
-                filters: []
+                sort: {
+                    field: '',
+                    order: ''
+                }
             }
         },
         computed: {
@@ -86,11 +88,13 @@
                     let j = Vue.util.extend({}, job);
 
                     this.metricResults.filter(r => r.job == job.id).forEach(r => {
-                        j[`${r.image}-${r.metric}`] = r
+                        j[`${r.image}-${r.metric}`] = r.value;
+                        j[`${r.image}-${r.metric}-object`] = r
                     });
 
                     job.jobParameters.forEach(p => {
-                        j[p.softwareParameter] = p
+                        j[p.softwareParameter] = p.value;
+                        j[`${p.softwareParameter}-object`] = p
                     });
 
                     this.aggregatedMetricResults.filter(r => r.job == job.id).forEach(r => {
@@ -100,6 +104,15 @@
                     });
                     return j;
                 })
+            },
+            filteredJobColumns() {
+                return orderby(this.jobColumns, [this.sort.field], [this.sort.order])
+            }
+        },
+        methods: {
+            changeSort(payload) {
+                this.sort.field = payload.field;
+                this.sort.order = payload.order;
             }
         }
     }

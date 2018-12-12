@@ -18,7 +18,7 @@
                 <thead>
                 <tr>
                     <th></th>
-                    <th v-for="job in filteredJobColumns">
+                    <th v-for="job in jobColumns">
                         <a :href="`#tabs-algos-${job.project}-${job.software}-${job.id}`">Job #{{job.number}} ({{job.id}})</a><br>
                         <a :href="`#software-${job.software}`">{{softwareById(job.software).fullName}}</a><br>
                         by {{job.username}}<br>
@@ -29,22 +29,28 @@
                 <tbody>
                 <tr v-for="header in headerColumn">
                     <template v-if="header.type == 'parameter'">
-                        <th>{{header.data.humanName}}</th>
+                        <th>
+                            <sort-button :sort="sort" :field="header.id" @changeSort="changeSort"></sort-button>
+                            {{header.data.humanName}}
+                        </th>
                     </template>
                     <template v-else>
-                        <th>{{header.data.name}} ({{header.data.shortName}})</th>
+                        <th>
+                            <sort-button :sort="sort" :field="image.id+'-'+header.id" @changeSort="changeSort"></sort-button>
+                            {{header.data.name}} ({{header.data.shortName}})
+                        </th>
                     </template>
 
-                    <td v-for="job in filteredJobColumns">
+                    <td v-for="job in jobColumns">
                         <template v-if="header.type == 'parameter'">
                             <span v-if="job[header.id] != undefined">
-                                {{job[header.id].value}}
+                                {{job[header.id]}}
                             </span>
                             <span class="no-parameter-cell" v-else>*</span>
                         </template>
                         <template v-else>
                             <span v-if="job[image.id+'-'+header.id] != undefined">
-                                {{job[image.id+'-'+header.id].value}}
+                                {{job[image.id+'-'+header.id]}}
                             </span>
                             <span class="no-metric-cell" v-else>N/A</span>
                         </template>
@@ -59,15 +65,17 @@
 
 <script>
     import DateItem from "../Datatable/DateItem";
+    import SortButton from "./SortButton";
     export default {
         name: "BenchmarkTablePerImage",
-        components: {DateItem},
+        components: {SortButton, DateItem},
         props: [
             'image',
             'parameters',
             'headerColumn',
             'jobColumns',
-            'softwares'
+            'softwares',
+            'sort'
         ],
         data() {
             return {
@@ -75,14 +83,15 @@
             }
         },
         computed: {
-            filteredJobColumns() {
-                return this.jobColumns
-            }
+
         },
         methods: {
             softwareById(termId) {
                 return this.softwares.find(term => term.id == termId);
             },
+            changeSort(payload) {
+                this.$emit('changeSort', payload)
+            }
         }
     }
 </script>
