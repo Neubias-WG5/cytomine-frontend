@@ -31,7 +31,7 @@
                                             </span>
                                         </template>
                                         <template slot="option" slot-scope="props">
-                                            <span v-if="props.option.$isLabel">
+                                            <span v-if="props.option && props.option.$isLabel">
                                                 {{props.option.$groupLabel}}
                                             </span>
                                             <div v-else>
@@ -64,11 +64,11 @@
                                                  group-values="items" :group-select="true">
                                         <template slot="selection" slot-scope="{ values, search, isOpen }">
                                             <span class="multiselect__single" v-if="values.length && !isOpen">
-                                                {{values.length}}/{{softwares.length}} software selected
+                                                {{values.length}}/{{softwareWithSuccessfulJobs.length}} software selected
                                             </span>
                                         </template>
                                         <template slot="option" slot-scope="props">
-                                            <span v-if="props.option.$isLabel">
+                                            <span v-if="props.option && props.option.$isLabel">
                                                 {{props.option.$groupLabel}}
                                             </span>
                                             <div v-else>
@@ -102,7 +102,7 @@
                                             </span>
                                         </template>
                                         <template slot="option" slot-scope="props">
-                                            <span v-if="props.option.$isLabel">
+                                            <span v-if="props.option && props.option.$isLabel">
                                                 {{props.option.$groupLabel.fullName}}
                                             </span>
                                             <div v-else>
@@ -156,19 +156,11 @@
 
             </div>
         </div>
-        <div class="row" v-if="showResults">
-            <div class="col-md-12">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title"><i class="fas fa-chart-line"></i> Results</h3>
-                    </div>
-                    <div class="panel-body">
-                        <benchmark-table-per-image v-for="image in displayedImages" :image="image"
-                                                   :metrics="selectedMetrics" :jobs="displayedJobs"></benchmark-table-per-image>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+        <benchmark-results v-if="showResults" :images="displayedImages" :parameters="displayedSoftwareParameters" :metrics="selectedMetrics"
+                           :jobs="displayedJobs" :metric-results="metricResults" :softwares="displayedSoftwares"
+                           :aggregated-metric-results="aggregatedMetricResults" :aggregates="selectedAggregates" :all-aggregates="aggregates"></benchmark-results>
+
     </div>
 </template>
 
@@ -178,10 +170,12 @@
     import uniqby from 'lodash.uniqby'
     import DateItem from "../Datatable/DateItem";
     import BenchmarkTablePerImage from "./BenchmarkTablePerImage";
+    import BenchmarkResults from "./BenchmarkResults";
 
     export default {
         name: "Benchmark",
         components: {
+            BenchmarkResults,
             BenchmarkTablePerImage,
             DateItem,
             Multiselect
@@ -189,11 +183,11 @@
         data() {
             return {
                 aggregates: [
-                    {name: 'Minimum', selected: true},
-                    {name: 'Maximum', selected:true},
-                    {name: 'Mean', selected: true},
-                    {name: 'Standard deviation', selected: true},
-                    {name: 'Median', selected: true},
+                    {name: 'Minimum', code: 'minimum', selected: true},
+                    {name: 'Maximum', code: 'maximum', selected:true},
+                    {name: 'Mean', code: 'average', selected: true},
+                    {name: 'Standard deviation', code: 'stddev', selected: true},
+                    {name: 'Median', code: 'median', selected: true},
                     ],
                 project: {},
                 metrics: [],
@@ -258,6 +252,14 @@
             },
             selectedMetrics() {
                 return this.metrics.filter(metric => metric.selected)
+            },
+            selectedAggregates() {
+                return this.aggregates.filter(aggregate => aggregate.selected)
+            },
+            displayedSoftwareParameters() {
+                let params = this.displayedSoftwares.map(software => software.parameters).reduce((a, b) => a.concat(b), []);
+                // TODO: unique
+                return params;
             }
         },
         methods: {
@@ -295,10 +297,10 @@
             },
             generate() {
                 let imageIds = (this.selectedImages.length != this.images.length) ? `&images=${this.selectedImages.map(image => image.id).join(",")}` : "";
-                let jobIds = (this.selectedJobs.length != this.jobs.length && this.selectType == 'job') ? `&jobs=${this.selectedJobs.map(job => job.id).join(",")}` : "";
-                let softwareIds = (this.selectedSoftwares.length != this.softwares.length && this.selectType == 'software') ? `&softwares=${this.selectedSoftwares.map(software => software.id).join(",")}` : "";
+                let jobIds = (this.selectedJobs.length != this.successfulJobs.length && this.selectType == 'job') ? `&jobs=${this.selectedJobs.map(job => job.id).join(",")}` : "";
+                let softwareIds = (this.selectedSoftwares.length != this.softwareWithSuccessfulJobs.length && this.selectType == 'software') ? `&softwares=${this.selectedSoftwares.map(software => software.id).join(",")}` : "";
 
-                api.get(`api/metricresult.json?project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
+                api.get(`api/imageinstancemetricresult.json?project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
                     this.metricResults = response.data.collection;
                     this.showResults = true;
                     this.displayedImages = this.selectedImages;
@@ -309,12 +311,12 @@
                     }
                     else {
                         let ids = uniqby(this.selectedJobs.map(job => job.software));
-                        this.softwares.filter(software => ids.includes(software.id))
+                        this.displayedSoftwares = this.softwareWithSuccessfulJobs.filter(software => ids.includes(software.id));
                         this.displayedJobs = this.selectedJobs;
                     }
                 });
 
-                api.get(`api/metricresult.json?aggregate=true&project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
+                api.get(`api/imageinstancemetricresult.json?aggregate=true&project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
                     this.aggregatedMetricResults = response.data.collection;
                 })
             }

@@ -1,20 +1,10 @@
 <template>
     <div>
-        <div>
-            <button class="pull-right option-desc btn btn-default" @click="show=!show">
-                <span v-if="show">Hide</span>
-                <span v-else>Show</span>
-            </button>
-            <img class="option-image" :src="image.thumb">
-            <h4 class="option-desc">
-                {{ image.instanceFilename }}
-            </h4>
-        </div>
         <div v-if="show" class="table-responsive">
             <table class="table table-condensed table-hover table-bordered">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th colspan="2"></th>
                     <th v-for="job in filteredJobColumns">
                         <a :href="`#tabs-algos-${job.project}-${job.software}-${job.id}`">Job #{{job.number}} ({{job.id}})</a><br>
                         <a :href="`#software-${job.software}`">{{softwareById(job.software).fullName}}</a><br>
@@ -24,29 +14,29 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="header in headerColumn">
-                    <template v-if="header.type == 'parameter'">
-                        <th>{{header.data.humanName}}</th>
-                    </template>
-                    <template v-else>
-                        <th>{{header.data.name}} ({{header.data.shortName}})</th>
-                    </template>
-
+                <tr v-for="header in headerColumn" v-if="header.type == 'parameter'">
+                    <th colspan="2">{{header.data.humanName}}</th>
                     <td v-for="job in filteredJobColumns">
-                        <template v-if="header.type == 'parameter'">
-                            <span v-if="job[header.id] != undefined">
-                                {{job[header.id].value}}
-                            </span>
-                            <span class="no-parameter-cell" v-else>*</span>
-                        </template>
-                        <template v-else>
-                            <span v-if="job[image.id+'-'+header.id] != undefined">
-                                {{job[image.id+'-'+header.id].value}}
-                            </span>
-                            <span class="no-metric-cell" v-else>N/A</span>
-                        </template>
+                        <span v-if="job[header.id] != undefined">
+                            {{job[header.id].value}}
+                        </span>
+                        <span class="no-parameter-cell" v-else>*</span>
                     </td>
                 </tr>
+                <template v-for="header in headerColumn" v-if="header.type == 'metric'">
+                    <tr v-for="(aggregate, index) in aggregates">
+                        <th v-if="index == 0" :rowspan="aggregates.length">{{header.data.name}} ({{header.data.shortName}})</th>
+                        <th>{{aggregate.name}}</th>
+
+                        <td v-for="job in filteredJobColumns">
+                            <span v-if="job['aggregate-'+header.id+'-'+aggregate.code] != undefined">
+                                {{job['aggregate-'+header.id+'-'+aggregate.code]}}
+                            </span>
+                            <span class="no-metric-cell" v-else>N/A</span>
+                        </td>
+                    </tr>
+
+                </template>
                 </tbody>
             </table>
         </div>
@@ -57,14 +47,14 @@
 <script>
     import DateItem from "../Datatable/DateItem";
     export default {
-        name: "BenchmarkTablePerImage",
+        name: "BenchmarkTable",
         components: {DateItem},
         props: [
-            'image',
             'parameters',
             'headerColumn',
             'jobColumns',
-            'softwares'
+            'softwares',
+            'aggregates'
         ],
         data() {
             return {
