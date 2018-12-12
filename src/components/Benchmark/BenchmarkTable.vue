@@ -1,10 +1,10 @@
 <template>
     <div>
         <div v-if="show" class="table-responsive">
-            <table class="table table-condensed table-hover table-bordered">
+            <table class="table table-condensed table-hover table-bordered table-striped">
                 <thead>
                 <tr>
-                    <th colspan="2"></th>
+                    <th colspan="2" class="border-right"></th>
                     <th v-for="job in filteredJobColumns">
                         <a :href="`#tabs-algos-${job.project}-${job.software}-${job.id}`">Job #{{job.number}} ({{job.id}})</a><br>
                         <a :href="`#software-${job.software}`">{{softwareById(job.software).fullName}}</a><br>
@@ -15,7 +15,7 @@
                 </thead>
                 <tbody>
                 <tr v-for="header in headerColumn" v-if="header.type == 'parameter'">
-                    <th colspan="2">
+                    <th colspan="2" class="border-right">
                         <sort-button :sort="sort" :field="header.id" @changeSort="changeSort"></sort-button>
                         {{header.data.humanName}}
                     </th>
@@ -23,13 +23,13 @@
                         <span v-if="job[header.id] != undefined">
                             {{job[header.id]}}
                         </span>
-                        <span class="no-parameter-cell" v-else>*</span>
+                        <span class="no-parameter-cell text-muted" v-else><small>*</small></span>
                     </td>
                 </tr>
                 <template v-for="header in headerColumn" v-if="header.type == 'metric'">
                     <tr v-for="(aggregate, index) in aggregates">
                         <th v-if="index == 0" :rowspan="aggregates.length">{{header.data.name}} ({{header.data.shortName}})</th>
-                        <th>
+                        <th class="border-right">
                             <sort-button :sort="sort" :field="'aggregate-'+header.data.id+'-'+aggregate.code" @changeSort="changeSort"></sort-button>
                             {{aggregate.name}}
                         </th>
@@ -38,7 +38,7 @@
                             <span v-if="job['aggregate-'+header.id+'-'+aggregate.code] != undefined">
                                 {{job['aggregate-'+header.id+'-'+aggregate.code]}}
                             </span>
-                            <span class="no-metric-cell" v-else>N/A</span>
+                            <span class="no-metric-cell text-muted" v-else><small>N/A</small></span>
                         </td>
                     </tr>
 
@@ -100,5 +100,13 @@
     .option-desc {
         display: inline-block;
         vertical-align: middle;
+    }
+
+    .border-right {
+        border-right-width: 2px;
+    }
+
+    .border-top {
+        border-top-width: 2px;
     }
 </style>

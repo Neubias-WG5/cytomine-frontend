@@ -14,10 +14,10 @@
             </h4>
         </div>
         <div v-if="show" class="table-responsive">
-            <table class="table table-condensed table-hover table-bordered">
+            <table class="table table-condensed table-hover table-bordered table-striped">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th class="border-right"></th>
                     <th v-for="job in jobColumns">
                         <a :href="`#tabs-algos-${job.project}-${job.software}-${job.id}`">Job #{{job.number}} ({{job.id}})</a><br>
                         <a :href="`#software-${job.software}`">{{softwareById(job.software).fullName}}</a><br>
@@ -29,7 +29,7 @@
                 <tbody>
                 <tr v-for="header in headerColumn">
                     <template v-if="header.type == 'parameter'">
-                        <th>
+                        <th class="border-right">
                             <sort-button :sort="sort" :field="header.id" @changeSort="changeSort"></sort-button>
                             {{header.data.humanName}}
                         </th>
@@ -46,13 +46,13 @@
                             <span v-if="job[header.id] != undefined">
                                 {{job[header.id]}}
                             </span>
-                            <span class="no-parameter-cell" v-else>*</span>
+                            <span class="no-parameter-cell text-muted" v-else><small>*</small></span>
                         </template>
                         <template v-else>
                             <span v-if="job[image.id+'-'+header.id] != undefined">
                                 {{job[image.id+'-'+header.id]}}
                             </span>
-                            <span class="no-metric-cell" v-else>N/A</span>
+                            <span class="no-metric-cell text-muted" v-else><small>N/A</small></span>
                         </template>
                     </td>
                 </tr>
@@ -113,5 +113,13 @@
     .align-chevron {
         top: 100%;
         transform: translateY(50%);
+    }
+
+    .border-right {
+        border-right-width: 2px;
+    }
+
+    .border-top {
+        border-top-width: 2px;
     }
 </style>
