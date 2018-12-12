@@ -11,13 +11,15 @@
                         <tab title="Aggregated results">
                             <benchmark-table :aggregates="aggregates" :parameters="parameters"
                                              :header-column="headerColumn" :job-columns="filteredJobColumns"
-                                             :softwares="softwares" :sort="sort" @changeSort="changeSort"></benchmark-table>
+                                             :softwares="softwares" :sort="sort" @changeSort="changeSort"
+                                             :show-parameters="showParameters"></benchmark-table>
                         </tab>
                         <tab title="Detailed results by image">
                             <div class="benchmark-per-image-tab">
                                 <benchmark-table-per-image v-for="image in images" :image="image" :parameters="parameters"
                                                            :header-column="headerColumn" :job-columns="filteredJobColumns"
-                                                           :softwares="softwares" :sort="sort" @changeSort="changeSort"></benchmark-table-per-image>
+                                                           :softwares="softwares" :sort="sort" @changeSort="changeSort"
+                                                           :show-parameters="showParameters"></benchmark-table-per-image>
                             </div>
 
 
@@ -53,7 +55,8 @@
             'parameters',
             'softwares',
             'aggregates',
-            'allAggregates'
+            'allAggregates',
+            'showParameters'
         ],
         data() {
             return {

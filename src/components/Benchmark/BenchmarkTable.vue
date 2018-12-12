@@ -14,7 +14,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="header in headerColumn" v-if="header.type == 'parameter'">
+                <tr v-for="header in headerColumn" v-if="header.type == 'parameter' && showParameters">
                     <th colspan="2" class="border-right">
                         <sort-button :sort="sort" :field="header.id" @changeSort="changeSort"></sort-button>
                         {{header.data.humanName}}
@@ -65,7 +65,8 @@
             'jobColumns',
             'softwares',
             'aggregates',
-            'sort'
+            'sort',
+            'showParameters'
         ],
         data() {
             return {

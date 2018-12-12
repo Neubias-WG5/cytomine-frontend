@@ -27,14 +27,14 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr v-for="header in headerColumn">
+                <tr v-for="header in headerColumn" v-if="(header.type == 'parameter' && showParameters) || header.type == 'metric'">
                     <template v-if="header.type == 'parameter'">
                         <th class="border-right">
                             <sort-button :sort="sort" :field="header.id" @changeSort="changeSort"></sort-button>
                             {{header.data.humanName}}
                         </th>
                     </template>
-                    <template v-else>
+                    <template v-else-if="header.type == 'metric'">
                         <th>
                             <sort-button :sort="sort" :field="image.id+'-'+header.id" @changeSort="changeSort"></sort-button>
                             {{header.data.name}} ({{header.data.shortName}})
@@ -48,7 +48,7 @@
                             </span>
                             <span class="no-parameter-cell text-muted" v-else><small>*</small></span>
                         </template>
-                        <template v-else>
+                        <template v-else-if="header.type == 'metric'">
                             <span v-if="job[image.id+'-'+header.id] != undefined">
                                 {{job[image.id+'-'+header.id]}}
                             </span>
@@ -75,7 +75,8 @@
             'headerColumn',
             'jobColumns',
             'softwares',
-            'sort'
+            'sort',
+            'showParameters'
         ],
         data() {
             return {

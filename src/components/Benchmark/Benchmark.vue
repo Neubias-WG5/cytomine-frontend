@@ -141,13 +141,25 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label class="col-sm-2 control-label">Aggregate functions</label>
-                                <div class="col-sm-10 aggregates-checkboxes">
+                                <label class="col-sm-3 control-label">Aggregate functions</label>
+                                <div class="col-sm-9 aggregates-checkboxes">
                                     <div class="checkbox" v-for="aggregate in aggregates">
                                         <label>
                                             <input type="checkbox" v-model="aggregate.selected"> {{aggregate.name}}
                                         </label>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">Parameters</label>
+                                <div class="col-sm-9">
+                                    <label class="radio-inline">
+                                        <input type="radio" name="show-parameters" :value="true" v-model="showParameters"> Show
+                                    </label>
+                                    <label class="radio-inline">
+                                        <input type="radio" name="show-parameters" :value="false" v-model="showParameters"> Hide
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -158,7 +170,7 @@
         </div>
 
         <benchmark-results v-if="showResults" :images="displayedImages" :parameters="displayedSoftwareParameters" :metrics="selectedMetrics"
-                           :jobs="displayedJobs" :metric-results="metricResults" :softwares="displayedSoftwares"
+                           :jobs="displayedJobs" :metric-results="metricResults" :softwares="displayedSoftwares" :show-parameters="showParameters"
                            :aggregated-metric-results="aggregatedMetricResults" :aggregates="selectedAggregates" :all-aggregates="aggregates"></benchmark-results>
 
     </div>
@@ -205,6 +217,7 @@
                 metricResults: [],
                 aggregatedMetricResults: [],
                 showResults: false,
+                showParameters: true
             }
         },
         computed: {
