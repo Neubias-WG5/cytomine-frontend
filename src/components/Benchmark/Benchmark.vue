@@ -225,6 +225,12 @@
                 // DEPENDS ON [BACKBONE]
                 return window.app.status.currentProject;
             },
+            imageGroupsWithFilename() {
+                return this.imageGroups.map(group => {
+                    group.instanceFilename = group.name;
+                    return group;
+                })
+            },
             successfulJobs() {
                 return this.jobs.filter(job => job.status == 3)
             },
@@ -233,12 +239,12 @@
                 return this.softwares.filter(software => ids.includes(software.id))
             },
             images() {
-                return (this.imageGroups.length > 0) ? this.imageGroups : this.imageInstances
+                return (this.imageGroups.length > 0) ? this.imageGroupsWithFilename : this.imageInstances
             },
             imageOptions() {
                 return [{
                     group: 'All images',
-                    items: (this.imageGroups.length > 0) ? this.imageGroups : this.imageInstances
+                    items: (this.imageGroups.length > 0) ? this.imageGroupsWithFilename : this.imageInstances
                 }]
             },
             softwareOptions() {
@@ -312,7 +318,8 @@
                 let jobIds = (this.selectedJobs.length != this.successfulJobs.length && this.selectType == 'job') ? `&jobs=${this.selectedJobs.map(job => job.id).join(",")}` : "";
                 let softwareIds = (this.selectedSoftwares.length != this.softwareWithSuccessfulJobs.length && this.selectType == 'software') ? `&softwares=${this.selectedSoftwares.map(software => software.id).join(",")}` : "";
 
-                api.get(`api/imageinstancemetricresult.json?project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
+                let resource = (this.imageGroups.length > 0) ? 'imagegroupmetricresult' : 'imageinstancemetricresult';
+                api.get(`api/${resource}.json?project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
                     this.metricResults = response.data.collection;
                     this.showResults = true;
                     this.displayedImages = this.selectedImages;
@@ -328,7 +335,7 @@
                     }
                 });
 
-                api.get(`api/imageinstancemetricresult.json?aggregate=true&project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
+                api.get(`api/${resource}.json?aggregate=true&project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
                     this.aggregatedMetricResults = response.data.collection;
                 })
             }
