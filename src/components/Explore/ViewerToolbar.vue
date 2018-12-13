@@ -90,7 +90,7 @@
                         <i class="far fa-plus-square"></i>
                     </button>
                 </template>
-                <template v-if="mustBeShown('project-tools-difference')">
+                <template v-if="mustBeShown('project-tools-diff')">
                     <button
                         :class="['btn', 'btn-default', 'btn-xs', {active: activeTool == 'Difference'}, {disabled: !canDraw}]"
                         @click="setInteraction('Difference')" title="Correct an annotation by removing a freehand area">
