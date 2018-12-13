@@ -1,8 +1,13 @@
 <template>
     <div class="cytomine-container">
         <div class="add-new">
-            <button class="btn btn-primary" @click="add()"><i class="fa fa-plus"></i> Add new image group</button>
+            <button class="btn btn-primary" @click="add()" v-if="!isGuest"><i class="fa fa-plus"></i> Add new image group</button>
             <button class="btn btn-primary" @click="loadData()"><i class="fas fa-sync-alt"></i> Refresh</button>
+
+            <button :class="['btn', 'btn-default']" @click="showLabel=!showLabel">
+                <template v-if="!showLabel">Show</template>
+                <template v-else>Hide</template> labeled images
+            </button>
         </div>
         <table class="table table-striped table-bordered">
             <thead>
@@ -13,7 +18,7 @@
                 <th>Channel (c)</th>
                 <th>Slice (z)</th>
                 <th>Time (t)</th>
-                <th>Spectral distribution (HDF5)</th>
+                <!--<th>Spectral distribution (HDF5)</th>-->
                 <th>Action(s)</th>
             </tr>
             </thead>
@@ -31,37 +36,37 @@
                 <td>{{prettyPrintDimensions(imageGroup.channels)}}</td>
                 <td>{{prettyPrintDimensions(imageGroup.zStacks)}}</td>
                 <td>{{prettyPrintDimensions(imageGroup.times)}}</td>
-                <td>
-                    <span class="label label-success" v-if="imageGroup.hdf5 && imageGroup.hdf5.status == 3">Available</span>
-                    <span class="label label-warning" v-else-if="imageGroup.hdf5 && imageGroup.hdf5.status == 2">In conversion ({{imageGroup.hdf5.progress}}%)</span>
-                    <span class="label label-danger" v-else-if="imageGroup.hdf5 && imageGroup.hdf5.status == 4">Failed</span>
-                    <span class="label label-default" v-else-if="imageGroup.hdf5 && imageGroup.hdf5.status == 0">Waiting</span>
-                    <span class="label label-info" v-else-if="isHDF5Convertable(imageGroup)">Convertable</span>
-                    <span class="label label-default" v-else>Unavailable</span>
-                </td>
-                <td>
+                <!--<td>-->
+                    <!--<span class="label label-success" v-if="imageGroup.hdf5 && imageGroup.hdf5.status == 3">Available</span>-->
+                    <!--<span class="label label-warning" v-else-if="imageGroup.hdf5 && imageGroup.hdf5.status == 2">In conversion ({{imageGroup.hdf5.progress}}%)</span>-->
+                    <!--<span class="label label-danger" v-else-if="imageGroup.hdf5 && imageGroup.hdf5.status == 4">Failed</span>-->
+                    <!--<span class="label label-default" v-else-if="imageGroup.hdf5 && imageGroup.hdf5.status == 0">Waiting</span>-->
+                    <!--<span class="label label-info" v-else-if="isHDF5Convertable(imageGroup)">Convertable</span>-->
+                    <!--<span class="label label-default" v-else>Unavailable</span>-->
+                <!--</td>-->
+                <td style="min-width: 130px;">
                     <dropdown>
                         <a role="button" :class="['btn', 'btn-info', 'btn-xs', {disabled: !hasAtLeastOneImage(imageGroup)}]"
                            :href="`#tabs-imagegroup-${project.id}-${imageGroup.id}`"><i class="fas fa-eye"></i> Explore</a>
                         <button class="btn btn-info btn-xs dropdown-toggle"><span class="caret"></span></button>
                         <template slot="dropdown">
-                            <li v-if="isHDF5Convertable(imageGroup)">
-                                <a role="button" style="cursor: pointer;" @click="convert(imageGroup)">
-                                    <i class="fas fa-file-archive"></i> Convert to HDF5
-                                </a>
-                            </li>
-                            <li role="separator" class="divider" v-if="isHDF5Convertable(imageGroup)"></li>
-                            <li>
+                            <!--<li v-if="isHDF5Convertable(imageGroup)">-->
+                                <!--<a role="button" style="cursor: pointer;" @click="convert(imageGroup)">-->
+                                    <!--<i class="fas fa-file-archive"></i> Convert to HDF5-->
+                                <!--</a>-->
+                            <!--</li>-->
+                            <!--<li role="separator" class="divider" v-if="isHDF5Convertable(imageGroup)"></li>-->
+                            <li v-if="!isGuest">
                                 <a role="button" style="cursor: pointer;" @click="editSequences(imageGroup)">
                                     <i class="fas fa-images"></i> Manage sequences
                                 </a>
                             </li>
-                            <li>
+                            <li v-if="!isGuest">
                                 <a role="button" style="cursor: pointer;" @click="edit(imageGroup)">
                                     <i class="fas fa-edit"></i> Rename
                                 </a>
                             </li>
-                            <li>
+                            <li v-if="!isGuest">
                                 <a role="button" style="cursor: pointer;" @click="remove(imageGroup)">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </a>
@@ -76,12 +81,6 @@
             </tr>
             </tbody>
         </table>
-        <div class="text-center">
-            <button :class="['btn', 'btn-default']" @click="showLabel=!showLabel">
-                <template v-if="!showLabel"><i class="fa fa-eye"></i> Show</template>
-                <template v-else><i class="fa fa-eye-slash"></i> Hide</template> labeled images
-            </button>
-        </div>
         <image-group-edit-modal :open.sync="openModal" :group.sync="currentImageGroup" @updateList="loadData" :project="project"></image-group-edit-modal>
         <image-sequences-edit-modal :open.sync="openModalSequences" :group.sync="currentImageGroup" @updateList="loadData"></image-sequences-edit-modal>
     </div>
@@ -112,6 +111,10 @@
             }
         },
         computed: {
+            isGuest() {
+                // DEPENDS ON [BACKBONE]
+                return window.app.status.user.model.get('guest');
+            },
             projectId() {
                 // DEPENDS ON [BACKBONE]
                 return window.app.status.currentProject;
