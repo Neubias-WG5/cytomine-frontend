@@ -76,6 +76,12 @@
             </tr>
             </tbody>
         </table>
+        <div class="text-center">
+            <button :class="['btn', 'btn-default']" @click="showLabel=!showLabel">
+                <template v-if="!showLabel"><i class="fa fa-eye"></i> Show</template>
+                <template v-else><i class="fa fa-eye-slash"></i> Hide</template> labeled images
+            </button>
+        </div>
         <image-group-edit-modal :open.sync="openModal" :group.sync="currentImageGroup" @updateList="loadData" :project="project"></image-group-edit-modal>
         <image-sequences-edit-modal :open.sync="openModalSequences" :group.sync="currentImageGroup" @updateList="loadData"></image-sequences-edit-modal>
     </div>
@@ -101,7 +107,8 @@
                 currentImageGroup: null,
                 openModal: false,
                 openModalSequences: false,
-                timers: {}
+                timers: {},
+                showLabel: false
             }
         },
         computed: {
@@ -116,6 +123,11 @@
                 return this.imageGroups.sort((a, b) => {
                     return b.id - a.id
                 })
+            }
+        },
+        watch: {
+            showLabel() {
+                this.loadData();
             }
         },
         methods: {
@@ -245,7 +257,8 @@
                         this.project.admins = response.data.collection;
                     });
 
-                    api.get(`api/project/${this.projectId}/imagegroup.json`).then(response => {
+                    let label = (!this.showLabel) ? '?withoutLabel=true' : '';
+                    api.get(`api/project/${this.projectId}/imagegroup.json${label}`).then(response => {
                         this.imageGroups.splice(0, this.imageGroups.length);
                         let groups = response.data.collection;
                         groups.forEach(group => {
