@@ -37,7 +37,7 @@
 
                         <td v-for="job in filteredJobColumns">
                             <span v-if="job['aggregate-'+header.id+'-'+aggregate.code] != undefined">
-                                {{job['aggregate-'+header.id+'-'+aggregate.code]}}
+                                {{job['aggregate-'+header.id+'-'+aggregate.code].toFixed(2)}}
                             </span>
                             <span class="no-metric-cell text-muted" v-else><small>N/A</small></span>
                         </td>
