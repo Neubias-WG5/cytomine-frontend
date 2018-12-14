@@ -17,6 +17,7 @@ import ImageGroupList from '../../components/ImageGroup/ImageGroupList'
 import Software from '../../components/Software/Software.vue'
 import SoftwareAdmin from '../../components/Software/SoftwareAdmin.vue'
 import Benchmark from '../../components/Benchmark/Benchmark.vue'
+import BenchmarkTablePerJob from '../../components/Benchmark/BenchmarkTablePerJob'
 
 window.api = Axios.create({});
 
@@ -80,5 +81,14 @@ window.setBenchmarkTabInstance = function(id) {
     window.benchmarkTabInstance = new Vue({
         el:`#benchmark-tab-${id}`,
         render: h => h(Benchmark)
+    })
+};
+
+/* Benchmark job panel instance */
+window.jobMetricResultPanel = {};
+window.setJobMetricResultPanel = function(id) {
+    window.jobMetricResultPanel = new Vue({
+        el: `#job-metric-result-${id}`,
+        render: h => h(BenchmarkTablePerJob)
     })
 };
