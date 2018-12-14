@@ -1,20 +1,17 @@
 <template>
-    <div class="form-inline" v-if="nbViewers < nbMaxViewers">
-        <div class="form-group">
-            <label for="images" class="sr-only">Image</label>
-            <select class="form-control" v-model="selectedImage" name="images" id="images"
-                    title="Add image in a new viewer">
-                <option value="">Select an image to add</option>
-                <option v-for="image in images" :key="image.id" :value="image.id">
-                    <template v-if="project.blindMode">
-                        [BLIND] {{image.id}}
-                    </template>
-                    <template v-else>
-                        {{image.instanceFilename}}
-                    </template>
-                </option>
-            </select>
-        </div>
+    <div class="btn-group" style="display:flex;" v-if="nbViewers < nbMaxViewers">
+        <select class="btn btn-default" v-model="selectedImage" name="images" id="images"
+                title="Add image in a new viewer">
+            <option value="">Select an image to add</option>
+            <option v-for="image in images" :key="image.id" :value="image.id">
+                <template v-if="project.blindMode">
+                    [BLIND] {{image.id}}
+                </template>
+                <template v-else>
+                    {{image.instanceFilename}}
+                </template>
+            </option>
+        </select>
 
         <button class="btn btn-default" @click="addViewer">Add a viewer</button>
     </div>
@@ -44,7 +41,7 @@
 </script>
 
 <style scoped>
-    .form-inline {
+    .btn-group {
         padding: 3px;
     }
 </style>
