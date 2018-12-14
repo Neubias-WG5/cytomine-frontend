@@ -23,6 +23,16 @@
             </div>
 
             <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" v-model="localData.deprecated"> Deprecated
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label for="softwareUserRepository" class="col-sm-3 control-label">Software source</label>
                 <div class="col-sm-9">
                     <input v-model="localData.softwareUserRepository" type="text" class="form-control"
