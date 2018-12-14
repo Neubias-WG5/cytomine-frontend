@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="explorer-header">
+        <div class="explorer-header" ref="explorerHeader">
             <viewer-selector :project="project"
                              :images="images"
                              :nb-viewers="viewers.length"
@@ -51,11 +51,13 @@
                     allTerms: [],
                     children: []
                 },
-                paddingTop: 50 + 42 + 40,
                 lastEventMapId: null,
                 linkedViewersBus: new Vue(),
                 currentRoute: '',
                 pointRadius: 8,
+
+                navbarHeight: 50,
+                explorerTabHeight: 42,
             }
         },
         computed: {
@@ -70,6 +72,12 @@
             baseImage() {
                 // DEPENDS ON [BACKBONE]
                 return window.app.status.currentImages[this.backboneTabIndex].image;
+            },
+            explorerHeaderHeight() {
+                return (this.$refs.explorerHeight) ? this.$refs.explorerHeader.clientHeight : 40;
+            },
+            paddingTop() {
+                return this.navbarHeight + this.explorerTabHeight + this.explorerHeaderHeight
             },
         },
         methods: {
@@ -137,6 +145,17 @@
                 // DEPENDS ON [BACKBONE]
                 this.currentRoute = Backbone.history.getFragment();
             },
+            getNavbarHeight() {
+                this.navbarHeight = document.getElementById("navbar-header").offsetHeight;
+            },
+            getExplorerTabHeight() {
+                this.explorerTabHeight = document.getElementById("explorer-tab").offsetHeight;
+            },
+        },
+        watch: {
+            explorerTabHeight(newValue) {
+                document.getElementById("explorer-tab-content").style.paddingTop = newValue + 'px';
+            }
         },
         created() {
             api.get(`api/user/current.json`).then(response => {
@@ -211,6 +230,18 @@
         },
         mounted() {
             this.pointRadius = localStorage.getItem(`point_radius${this.project.id}`) || 8;
+
+            this.getNavbarHeight();
+            this.getExplorerTabHeight();
+
+            this.$nextTick(function () {
+                window.addEventListener('resize', this.getNavbarHeight);
+                window.addEventListener('resize', this.getExplorerTabHeight);
+            });
+        },
+        beforeDestroy() {
+            window.removeEventListener('resize', this.getNavbarHeight);
+            window.removeEventListener('resize', this.getExplorerTabHeight);
         }
     }
 </script>
