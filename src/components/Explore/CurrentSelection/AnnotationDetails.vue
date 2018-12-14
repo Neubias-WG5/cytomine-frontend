@@ -39,6 +39,12 @@
                                 <dd>
                                     <username :user="userById(selectedAnnotation.user)"></username>
                                 </dd>
+                                <dt v-if="isJob">Job results</dt>
+                                <dd v-if="isJob">
+                                    <button class="btn btn-default- btn-xs" @click="openJobResultModal = true">
+                                        <i class="fas fa-chart-line"></i> See results
+                                    </button>
+                                </dd>
                                 <template v-if="isAnnotationReviewed">
                                     <dt>Reviewer</dt>
                                     <dd>
@@ -167,6 +173,12 @@
                                        :users="users" :terms="terms" :suggested-terms="suggestedTerms">
 
         </annotation-similarities-modal>
+
+        <modal v-model="openJobResultModal" v-if="isJob" title="Job results">
+            <h3><username :user="userById(selectedAnnotation.user)"></username></h3>
+            <benchmark-table-per-job :parent-job-id="job.id" :highlight-image="selectedAnnotation.image"
+                                     v-if="isJob && job && job.id > 0"></benchmark-table-per-job>
+        </modal>
     </div>
 
 </template>
@@ -182,10 +194,14 @@
     import DateItem from "../../Datatable/DateItem";
     import AnnotationCommentsModal from "./AnnotationCommentsModal";
     import AnnotationSimilaritiesModal from "./AnnotationSimilaritiesModal";
+    import Modal from "uiv/src/components/modal/Modal";
+    import BenchmarkTablePerJob from "../../Benchmark/BenchmarkTablePerJob";
 
     export default {
         name: 'AnnotationDetails',
         components: {
+            BenchmarkTablePerJob,
+            Modal,
             AnnotationSimilaritiesModal,
             AnnotationCommentsModal,
             VueDragResize,
@@ -198,6 +214,7 @@
                 focus: false,
                 openCommentModal: false,
                 openSimilaritiesModal: false,
+                openJobResultModal: false,
                 similarAnnotations: null,
                 format: new WKT(),
             }
@@ -228,7 +245,10 @@
             },
             isAnnotationReviewed() {
                 return this.selectedAnnotation.class == "be.cytomine.ontology.ReviewedAnnotation"
-            }
+            },
+            isJob() {
+                return this.selectedAnnotation && this.userById(this.selectedAnnotation.user).algo;
+            },
         },
         asyncComputed: {
             suggestedTerms() {
@@ -261,6 +281,17 @@
 
                 return api.get(`api/annotation/${this.selectedAnnotation.id}/property.json`).then(response => {
                     return response.data.collection;
+                })
+            },
+            job() {
+                if (!this.isJob)
+                    return { id: -1 };
+                let user = this.userById(this.selectedAnnotation.user);
+                return api.get(`api/user/${user.id}.json`).then(response => {
+                    let job = response.data.job;
+                    return api.get(`api/job/${job}.json`).then(response => {
+                        return response.data;
+                    })
                 })
             }
         },

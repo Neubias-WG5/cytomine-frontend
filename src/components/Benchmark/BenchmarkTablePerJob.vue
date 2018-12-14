@@ -36,8 +36,8 @@
                 </thead>
                 <tbody>
                 <tr v-for="image in sortedImagesWithResults">
-                    <th>{{image.instanceFilename}}</th>
-                    <td v-for="metric in metrics">
+                    <th :class="[{info: highlightImage == image.id}]">{{image.instanceFilename}}</th>
+                    <td :class="[{info: highlightImage == image.id}]" v-for="metric in metrics">
                         <span v-if="image[metric.id] != undefined">
                                 {{image[metric.id]}}
                             </span>
@@ -67,6 +67,10 @@
     export default {
         name: "BenchmarkTablePerJob",
         components: {SortButton},
+        props: [
+            'parentJobId',
+            'highlightImage'
+        ],
         data() {
             return {
                 aggregates: [
@@ -85,6 +89,7 @@
                 imageInstances: [], // All image instances in project
                 metricResults: [],
                 aggregatedMetricResults: [],
+                job: {}
             }
         },
         computed: {
@@ -92,8 +97,8 @@
                 // DEPENDS ON [BACKBONE]
                 return window.app.status.currentProjectModel.attributes;
             },
-            job() {
-                return window.app.status.currentJobModel.attributes;
+            currentJobId() {
+                return (this.parentJobId == undefined) ?  window.app.status.currentJobModel.attributes.id : this.parentJobId;
             },
             imageGroupsWithFilename() {
                 return this.imageGroups.map(group => {
@@ -119,17 +124,10 @@
             }
         },
         watch: {
-            job: {
-                handler(newValue) {
-                    if (newValue.status == 3)
-                        this.loadData()
-                },
-                deep: true
-            }
+
         },
         methods: {
             loadData() {
-                console.log("load");
                 api.get(`api/discipline/${this.project.discipline}/metric.json`).then(response => {
                     this.metrics = response.data.collection.map(metric => {
                         metric.selected = true;
@@ -137,23 +135,27 @@
                     });
                 });
 
-                api.get(`api/project/${this.project.id}/imagegroup.json`).then(response => {
-                    this.imageGroups = response.data.collection;
+                api.get(`api/job/${this.currentJobId}.json`).then(response => {
+                    this.job = response.data;
 
-                    if (this.imageGroups.length == 0) {
-                        api.get(`api/project/${this.project.id}/imageinstance.json?withoutLabel=true`).then(response => {
-                            this.imageInstances = response.data.collection;
+                    api.get(`api/project/${this.project.id}/imagegroup.json`).then(response => {
+                        this.imageGroups = response.data.collection;
+
+                        if (this.imageGroups.length == 0) {
+                            api.get(`api/project/${this.project.id}/imageinstance.json?withoutLabel=true`).then(response => {
+                                this.imageInstances = response.data.collection;
+                            })
+                        }
+
+                        let resource = (this.imageGroups.length > 0) ? 'imagegroupmetricresult' : 'imageinstancemetricresult';
+                        api.get(`api/job/${this.job.id}/${resource}.json`).then(response => {
+                            this.metricResults = response.data.collection;
+                        });
+
+                        api.get(`api/job/${this.job.id}/${resource}.json?aggregate=true`).then(response => {
+                            this.aggregatedMetricResults = response.data.collection;
                         })
-                    }
-
-                    let resource = (this.imageGroups.length > 0) ? 'imagegroupmetricresult' : 'imageinstancemetricresult';
-                    api.get(`api/job/${this.job.id}/${resource}.json`).then(response => {
-                        this.metricResults = response.data.collection;
                     });
-
-                    api.get(`api/job/${this.job.id}/${resource}.json?aggregate=true`).then(response => {
-                        this.aggregatedMetricResults = response.data.collection;
-                    })
                 });
             },
             aggregateMetricById(metricId) {
