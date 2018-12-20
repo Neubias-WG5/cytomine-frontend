@@ -16,6 +16,7 @@
     import { AnnotationStyleStatus } from '../../helpers/annotationStyleStatus'
     import WKT from 'ol/format/WKT';
     import { createStyle } from 'vuelayers/lib/ol-ext'
+    import hexToRgb from "../../helpers/hexToRgb";
 
     export default {
         name: "AnnotationLayer",
@@ -24,6 +25,7 @@
                 format: new WKT(),
                 features: [],
                 properties: {},
+                colorCodedProperties: {},
                 revisionStyle: 0,
                 revisionLoader: 0,
 
@@ -80,29 +82,40 @@
                             styles.push(styleText)
                         }
                         else {
-                            let terms = feature.get('terms');
-                            if (this.isReviewing && !this.userLayer.review) {
-                                if ((terms.length > 0 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
-                                    || (terms.length == 0 && this.visibleNoTerm))
-                                    styles.push(this.styles[AnnotationStyleStatus.NOT_REVIEWED]);
-                                else
-                                    return [this.styles[AnnotationStyleStatus.HIDDEN]];
+                            if (this.colorCodedProperties && this.colorCodedProperties != {} && this.colorCodedProperties.hasOwnProperty(feature.getId())) {
+                                let color = hexToRgb(this.colorCodedProperties[feature.getId()],this.layerOpacity);
+                                styles.push(createStyle({
+                                    strokeColor: color,
+                                    strokeWidth: 2,
+                                    fillColor: [238, 238, 238, this.layerOpacity],
+                                    imageRadius: 7
+                                }))
                             }
                             else {
-                                if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
-                                    styles.push(this.styles[AnnotationStyleStatus.MULTIPLE_TERMS]);
-                                else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
-                                    styles.push(this.styles[terms[0]]);
-                                else if (terms.length == 0 && this.visibleNoTerm)
-                                    styles.push(this.styles[AnnotationStyleStatus.NO_TERM]);
-                                else
-                                    return [this.styles[AnnotationStyleStatus.HIDDEN]];
+                                let terms = feature.get('terms');
+                                if (this.isReviewing && !this.userLayer.review) {
+                                    if ((terms.length > 0 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
+                                        || (terms.length == 0 && this.visibleNoTerm))
+                                        styles.push(this.styles[AnnotationStyleStatus.NOT_REVIEWED]);
+                                    else
+                                        return [this.styles[AnnotationStyleStatus.HIDDEN]];
+                                }
+                                else {
+                                    if (terms.length > 1 && this.visibleTerms.filter(t => terms.includes(t)).length > 0)
+                                        styles.push(this.styles[AnnotationStyleStatus.MULTIPLE_TERMS]);
+                                    else if (terms.length == 1 && this.visibleTerms.includes(terms[0]))
+                                        styles.push(this.styles[terms[0]]);
+                                    else if (terms.length == 0 && this.visibleNoTerm)
+                                        styles.push(this.styles[AnnotationStyleStatus.NO_TERM]);
+                                    else
+                                        return [this.styles[AnnotationStyleStatus.HIDDEN]];
 
-                                if (this.userLayer.review)
-                                    styles.push(this.styles[AnnotationStyleStatus.REVIEWED])
+                                    if (this.userLayer.review)
+                                        styles.push(this.styles[AnnotationStyleStatus.REVIEWED])
+                                }
                             }
 
-                            if (this.properties && this.properties != {}) {
+                            if (this.properties && this.properties != {} && this.properties.hasOwnProperty(feature.getId())) {
                                 styles.push(createStyle({
                                     text: this.properties[feature.getId()],
                                     textFillColor: this.selectedProperty.color,
@@ -154,6 +167,7 @@
                 ++this.revisionStyle;
             },
             revisionLoader() {
+                this.loadColorCodedProperties();
                 if (this.$refs.olSourceVector.$source)
                     this.$refs.olSourceVector.$source.clear();
             }
@@ -241,6 +255,20 @@
                     })
                 });
             },
+            loadColorCodedProperties() {
+                this.colorCodedProperties = {};
+
+                if (!this.userLayer.selected || parseInt(this.userLayer.id) < 0)
+                    return;
+
+                let key = "CUSTOM_ANNOTATION_DEFAULT_COLOR";
+                api.get(`api/user/${this.userLayer.id}/imageinstance/${this.image.id}/annotationposition.json?key=${key}`).then(response => {
+                    response.data.collection.forEach(item => {
+                        this.$set(this.colorCodedProperties, item.idAnnotation, item.value);
+                        ++this.revisionStyle;
+                    })
+                });
+            }
         },
     }
 </script>
