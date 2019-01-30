@@ -72,7 +72,7 @@
                                                 {{props.option.$groupLabel}}
                                             </span>
                                             <div v-else>
-                                                {{props.option.fullName}}
+                                                {{props.option.fullName}} <software-deprecated-item :value="props.option.deprecated" :row="props.option"></software-deprecated-item>
                                             </div>
                                         </template>
                                     </multiselect>
@@ -183,10 +183,12 @@
     import DateItem from "../Datatable/DateItem";
     import BenchmarkTablePerImage from "./BenchmarkTablePerImage";
     import BenchmarkResults from "./BenchmarkResults";
+    import SoftwareDeprecatedItem from "../Software/SoftwareDeprecatedItem";
 
     export default {
         name: "Benchmark",
         components: {
+            SoftwareDeprecatedItem,
             BenchmarkResults,
             BenchmarkTablePerImage,
             DateItem,

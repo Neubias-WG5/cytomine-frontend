@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <span>
         <span v-if="!row.softwareVersion">
             <span class="label label-default">
                 No info
@@ -15,7 +15,7 @@
                 Last release
             </span>
         </span>
-    </div>
+    </span>
 
 </template>
 
