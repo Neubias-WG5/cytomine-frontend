@@ -23,7 +23,7 @@
                                     <multiselect v-model="selectedImages" :options="imageOptions"
                                                  :multiple="true" :close-on-select="false" :clear-on-select="false"
                                                  :preserve-search="true" placeholder="Pick some" :option-height="69"
-                                                 track-by="instanceFilename" :preselect-first="true" group-label="group"
+                                                 track-by="instanceFilename"  group-label="group"
                                                  group-values="items" :group-select="true">
                                         <template slot="selection" slot-scope="{ values, search, isOpen }">
                                             <span class="multiselect__single" v-if="values.length && !isOpen">
@@ -31,7 +31,7 @@
                                             </span>
                                         </template>
                                         <template slot="option" slot-scope="props">
-                                            <span v-if="props.option && props.option.$isLabel">
+                                            <span v-if="props.option != undefined && props.option.$isLabel">
                                                 {{props.option.$groupLabel}}
                                             </span>
                                             <div v-else>
@@ -60,7 +60,7 @@
                                     <multiselect v-model="selectedSoftwares" :options="softwareOptions"
                                                  :multiple="true" :close-on-select="false" :clear-on-select="false"
                                                  :preserve-search="true" placeholder="Pick some" :option-height="69"
-                                                 track-by="fullName" :preselect-first="true" group-label="group"
+                                                 track-by="fullName"  group-label="group"
                                                  group-values="items" :group-select="true">
                                         <template slot="selection" slot-scope="{ values, search, isOpen }">
                                             <span class="multiselect__single" v-if="values.length && !isOpen">
@@ -68,7 +68,7 @@
                                             </span>
                                         </template>
                                         <template slot="option" slot-scope="props">
-                                            <span v-if="props.option && props.option.$isLabel">
+                                            <span v-if="props.option != undefined && props.option.$isLabel">
                                                 {{props.option.$groupLabel}}
                                             </span>
                                             <div v-else>
@@ -94,7 +94,7 @@
                                     <multiselect v-model="selectedJobs" :options="jobOptions"
                                                  :multiple="true" :close-on-select="false" :clear-on-select="false"
                                                  :preserve-search="true" placeholder="Pick some" :option-height="69"
-                                                 track-by="id" :preselect-first="true" group-label="software"
+                                                 track-by="id"  group-label="software"
                                                  group-values="jobs" :group-select="true">
                                         <template slot="selection" slot-scope="{ values, search, isOpen }">
                                             <span class="multiselect__single" v-if="values.length && !isOpen">
@@ -102,7 +102,7 @@
                                             </span>
                                         </template>
                                         <template slot="option" slot-scope="props">
-                                            <span v-if="props.option && props.option.$isLabel">
+                                            <span v-if="props.option != undefined && props.option.$isLabel">
                                                 {{props.option.$groupLabel.fullName}}
                                             </span>
                                             <div v-else>
@@ -296,10 +296,12 @@
 
                     api.get(`api/project/${this.project.id}/imagegroup.json?withoutLabel=true`).then(response => {
                         this.imageGroups = response.data.collection;
+                        this.selectedImages = this.imageGroupsWithFilename;
 
                         if (this.imageGroups.length == 0) {
                             api.get(`api/project/${this.project.id}/imageinstance.json?withoutLabel=true`).then(response => {
                                 this.imageInstances = response.data.collection;
+                                this.selectedImages = this.imageInstances;
                             })
                         }
                     });
