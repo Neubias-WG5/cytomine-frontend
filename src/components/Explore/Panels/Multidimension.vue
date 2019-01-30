@@ -143,6 +143,7 @@
 
 <script>
     import vueSlider from 'vue-slider-component'
+    import debounce from "lodash.debounce";
 
     import Overlay from './Multidimension/Overlay'
     import Spectrum from "./Multidimension/Spectrum";
@@ -161,7 +162,10 @@
             'selectedSequence',
             'clickCoordinate',
             'elementWidth',
-            'active'
+            'active',
+            'selectedChannel',
+            'selectedZStack',
+            'selectedTime'
         ],
         data() {
             return {}
@@ -180,26 +184,29 @@
             },
             currentChannel: {
                 get: function () {
-                    return this.selected.channel;
+                    return this.selectedChannel;
                 },
                 set: function (newValue) {
-                    this.$emit('changeSequence', {c: newValue, z: this.currentZStack, t: this.currentTime})
+                    console.log(newValue);
+                    this.debouncedChangeSequence({c: newValue, z: this.currentZStack, t: this.currentTime})
                 }
             },
             currentZStack: {
                 get: function () {
-                    return this.selected.zStack;
+                    return this.selectedZStack;
                 },
                 set: function (newValue) {
-                    this.$emit('changeSequence', {c: this.currentChannel, z: newValue, t: this.currentTime})
+                    console.log(newValue);
+                    this.debouncedChangeSequence({c: this.currentChannel, z: newValue, t: this.currentTime})
                 }
             },
             currentTime: {
                 get: function () {
-                    return this.selected.time;
+                    return this.selectedTime;
                 },
                 set: function (newValue) {
-                    this.$emit('changeSequence', {c: this.currentChannel, z: this.currentZStack, t: newValue})
+                    console.log(newValue);
+                    this.debouncedChangeSequence({c: this.currentChannel, z: this.currentZStack, t: newValue})
                 }
             },
         },
@@ -210,7 +217,7 @@
             active(newValue) {
                 if (newValue)
                     this.refreshSliders();
-            }
+            },
         },
         methods: {
             getImageGroupById(imageGroupId) {
@@ -261,18 +268,18 @@
             },
             addToCurrentChannel(value) {
                 let index = this.$refs.channelslider.getIndex();
-                this.currentChannel = this.selectedImageGroup.channels[index + value];
-                this.$refs.channelslider.setValue(this.currentChannel)
+                this.$refs.channelslider.setIndex(index + value)
             },
             addToCurrentZstack(value) {
                 let index = this.$refs.zstackslider.getIndex();
-                this.currentZStack = this.selectedImageGroup.zStacks[index + value];
-                this.$refs.zstackslider.setValue(this.currentZStack)
+                this.$refs.zstackslider.setIndex(index + value)
             },
             addToCurrentTime(value) {
                 let index = this.$refs.timeslider.getIndex();
-                this.currentTime = this.selectedImageGroup.times[index + value];
-                this.$refs.timeslider.setValue(this.currentTime)
+                this.$refs.timeslider.setIndex(index + value)
+            },
+            changeSequence(newSequence) {
+                this.$emit('changeSequence', newSequence)
             },
             refreshSliders() {
                 // Use an interval as we don't know when Plotly graph object has been erased (happens X ms after active=false)
@@ -293,6 +300,9 @@
 
             }
         },
+        created() {
+            this.debouncedChangeSequence = debounce(this.changeSequence, 100);
+        }
     }
 </script>
 

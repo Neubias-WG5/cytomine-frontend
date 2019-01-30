@@ -141,7 +141,8 @@
                                 :image-groups="imageGroups" :image-sequences="imageSequences"
                                 :selected-sequence.sync="selectedSequence" :viewer-id="id"
                                 @changeSequence="changeSequence" :click-coordinate="clickCoordinate"
-                                :element-width="elementWidth"
+                                :element-width="elementWidth" :selected-channel="selectedSequence.channel"
+                                :selected-z-stack="selectedSequence.zStack" :selected-time="selectedSequence.time"
                                 :active="selectedComponent == 'multidimension'"></multidimension>
 
                 <properties v-show="selectedComponent == 'properties' && mustBeShown('project-explore-property')
