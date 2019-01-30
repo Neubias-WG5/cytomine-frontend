@@ -731,6 +731,10 @@
                     }
                 });
 
+                if (this.hasImageSequences) {
+                    this.selectedComponent = 'multidimension'
+                }
+
                 this.getOnlineUsers();
 
                 // Add new image consultation
