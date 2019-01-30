@@ -50,6 +50,11 @@
                            :href="`#tabs-imagegroup-${project.id}-${imageGroup.id}`"><i class="fas fa-eye"></i> Explore</a>
                         <button class="btn btn-info btn-xs dropdown-toggle"><span class="caret"></span></button>
                         <template slot="dropdown">
+                            <li>
+                                <a :href="`api/imagegroup/${imageGroup.id}/download`" role="button" style="cursor:pointer;">
+                                    <i class="fas fa-file-download"></i> Download
+                                </a>
+                            </li>
                             <!--<li v-if="isHDF5Convertable(imageGroup)">-->
                                 <!--<a role="button" style="cursor: pointer;" @click="convert(imageGroup)">-->
                                     <!--<i class="fas fa-file-archive"></i> Convert to HDF5-->
