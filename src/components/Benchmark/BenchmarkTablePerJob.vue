@@ -138,7 +138,7 @@
                 api.get(`api/job/${this.currentJobId}.json`).then(response => {
                     this.job = response.data;
 
-                    api.get(`api/project/${this.project.id}/imagegroup.json`).then(response => {
+                    api.get(`api/project/${this.project.id}/imagegroup.json?withoutLabel=true`).then(response => {
                         this.imageGroups = response.data.collection;
 
                         if (this.imageGroups.length == 0) {
