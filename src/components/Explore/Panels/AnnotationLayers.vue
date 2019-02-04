@@ -6,7 +6,12 @@
                     style="width: 100%;">
                 <option :value="{}">Choose an annotation layer</option>
                 <option v-for="layer in notSelectedLayersSorted" :key="layer.id" :value="layer">
-                    {{userDisplayName(layer)}}
+                    <template v-if="layer.algo">
+                        {{layer.softwareName}} ({{layer.username}}) ({{layer.size == undefined ? '0' : layer.size}})
+                    </template>
+                    <template v-else>
+                        {{userDisplayName(layer)}}
+                    </template>
                 </option>
             </select>
             <button class="btn btn-default" @click="addLayer()">Add</button>
@@ -16,7 +21,12 @@
         <ul class="list-group mt-4">
             <li class="list-group-item clearfix" v-for="layer in selectedLayersSorted" :key="layer.id"
                 v-if="layer.selected">
-                {{userDisplayName(layer)}}
+                <template v-if="layer.algo">
+                    <i class="fas fa-star" v-if="layer.favorite"> </i><a style="color: inherit;" :href="'#tabs-useralgo-'+layer.id">{{layer.softwareName}} ({{layer.username}})</a> ({{layer.size == undefined ? '0' : layer.size}})
+                </template>
+                <template v-else>
+                    {{userDisplayName(layer)}}
+                </template>
                 <div class="pull-right">
                     <template v-if="!isReviewing">
                         <template v-if="isEditable(layer)">
