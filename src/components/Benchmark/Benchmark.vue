@@ -49,7 +49,11 @@
                                 <div class="col-sm-offset-2 col-sm-10">
                                     <div class="radio">
                                         <label for="type-filter-software">
-                                            <input type="radio" name="select-type" class="input-radio" id="type-filter-software" value="software" v-model="selectType"> All jobs of specified software
+                                            <input type="radio" name="select-type" class="input-radio" id="type-filter-software" value="software" v-model="selectType">
+                                            <template v-if="selectType == 'software'">
+                                                All jobs from specified software ({{selectedSoftwares.length}}/{{softwareWithSuccessfulJobs.length}}) in the list
+                                            </template>
+                                            <template v-else>All jobs of specified software in the list </template>
                                         </label>
                                     </div>
                                 </div>
@@ -83,7 +87,9 @@
                                 <div class="col-sm-offset-2 col-sm-10">
                                     <div class="radio">
                                         <label for="type-filter-job">
-                                            <input type="radio" name="select-type" class="input-radio" id="type-filter-job" value="job" v-model="selectType"> All specified jobs
+                                            <input type="radio" name="select-type" class="input-radio" id="type-filter-job" value="job" v-model="selectType">
+                                            <template v-if="selectType == 'job'">All specified jobs ({{selectedJobs.length}}/{{successfulJobs.length}}) in the list</template>
+                                            <template v-else>All specified jobs in the list</template>
                                         </label>
                                     </div>
                                 </div>
@@ -106,7 +112,7 @@
                                                 {{props.option.$groupLabel.fullName}}
                                             </span>
                                             <div v-else>
-                                                Job #{{props.option.number}} launched by {{props.option.username}} on <date-item :value="props.option.created"></date-item>
+                                                <i class="fas fa-star" v-if="props.option.favorite"></i> Job #{{props.option.number}} launched by {{props.option.username}} on <date-item :value="props.option.created"></date-item>
                                             </div>
                                         </template>
                                     </multiselect>
@@ -126,7 +132,7 @@
             <div class="col-md-5">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title"><i class="fas fa-star"></i> Options</h3>
+                        <h3 class="panel-title"><i class="fas fa-cogs"></i> Options</h3>
                     </div>
                     <div class="panel-body">
                         <div class="form-horizontal">
@@ -171,7 +177,7 @@
 
         <benchmark-results v-if="showResults" :images="displayedImages" :parameters="displayedSoftwareParameters" :metrics="selectedMetrics"
                            :jobs="displayedJobs" :metric-results="metricResults" :softwares="displayedSoftwares" :show-parameters="showParameters"
-                           :aggregated-metric-results="aggregatedMetricResults" :aggregates="selectedAggregates" :all-aggregates="aggregates"></benchmark-results>
+                           :aggregated-metric-results="aggregatedMetricResults" :aggregates="selectedAggregates" :all-aggregates="aggregates" :click-generate="clickGenerate"></benchmark-results>
 
     </div>
 </template>
@@ -215,11 +221,12 @@
                 imageInstances: [], // All image instances in project
                 selectedImages: [], // Selected images (instance or group) in the dropdown list
                 displayedImages: [], // Displayed images in the report
-                selectType: 'software',
+                selectType: 'job',
                 metricResults: [],
                 aggregatedMetricResults: [],
                 showResults: false,
-                showParameters: true
+                showParameters: true,
+                clickGenerate: 0,
             }
         },
         computed: {
@@ -280,6 +287,9 @@
             displayedSoftwareParameters() {
                 let params = this.displayedSoftwares.map(software => software.parameters).reduce((a, b) => a.concat(b), []);
                 return uniqby(params, 'name');
+            },
+            favoriteJobs() {
+                return this.jobs.filter(item => item.favorite)
             }
         },
         methods: {
@@ -314,6 +324,7 @@
 
                     api.get(`api/job.json?project=${this.project.id}`).then(response => {
                         this.jobs = response.data.collection;
+                        this.selectedJobs = this.favoriteJobs;
                     })
                 })
             },
@@ -341,7 +352,9 @@
 
                 api.get(`api/${resource}.json?aggregate=true&project=${this.project.id}${imageIds}${jobIds}${softwareIds}`).then(response => {
                     this.aggregatedMetricResults = response.data.collection;
-                })
+                });
+
+                this.clickGenerate++;
             }
         },
         created() {

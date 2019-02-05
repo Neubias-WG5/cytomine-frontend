@@ -3,7 +3,7 @@
         <div class="col-md-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><i class="fas fa-chart-line"></i> Results</h3>
+                    <h3 class="panel-title"><i class="fas fa-chart-line"></i> Results ({{filteredJobs.length}} job<span v-if="filteredJobs.length > 1">s</span> shown on {{images.length}} image<span v-if="images.length > 1">s</span>)</h3>
                 </div>
                 <div class="panel-body">
 
@@ -56,7 +56,8 @@
             'softwares',
             'aggregates',
             'allAggregates',
-            'showParameters'
+            'showParameters',
+            'clickGenerate'
         ],
         data() {
             return {
@@ -123,6 +124,11 @@
             },
             removeJob(id) {
                 this.hiddenJobs.push(id)
+            }
+        },
+        watch: {
+            clickGenerate() {
+                this.hiddenJobs.splice(0, this.hiddenJobs.length);
             }
         }
     }
