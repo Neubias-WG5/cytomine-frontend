@@ -1,11 +1,23 @@
 <template>
     <div>
         <datatable v-bind="$data">
-            <button :class="['btn', 'btn-default']" @click="showNotExecutable=!showNotExecutable">
+            <div class="form-inline">
+                <div class="pull-right form-search">
+                    <div class="form-group">
+                        <label class="sr-only">Search</label>
+                        <input type="text" class="form-control" placeholder="Search..." v-model="search">
+                    </div>
+                </div>
 
-                <template v-if="showNotExecutable"><i class="fa fa-eye-slash"></i> Hide</template>
-                <template v-else><i class="fa fa-eye"></i> Show</template> not executable software
-            </button>
+                <label class="checkbox-inline">
+                    <input type="checkbox" v-model="showOnlyLastReleases"> Only last releases
+                </label>
+                <label class="checkbox-inline">
+                    <input type="checkbox" v-model="showExecutable"> Only executables
+                </label>
+            </div>
+
+
         </datatable>
     </div>
 </template>
@@ -51,7 +63,9 @@
                     eventbus: new Vue() // only for the current Datatable instance
                 },
                 query: {},
-                showNotExecutable: false
+                showExecutable: true,
+                showOnlyLastReleases: false,
+                search: ""
             }
         },
         watch: {
@@ -67,15 +81,25 @@
                     this.$emit('update:refresh', false);
                 }
             },
-            showNotExecutable(value) {
+            showExecutable(value) {
                 this.query.offset = 0;
-                this.$set(this.query, 'showNotExecutable', value)
+                this.$set(this.query, 'showExecutable', value)
+            },
+            search(value) {
+                this.query.offset = 0;
+                this.$set(this.query, 'search', value)
+            },
+            showOnlyLastReleases(value) {
+                this.query.offset = 0;
+                this.$set(this.query, 'showOnlyLastReleases', value)
             }
         },
         methods: {
             callAPI(query) {
-                let executableOnly = (query.showNotExecutable) ? '' : '&executableOnly=true';
-                api.get(`api/software.json?max=${query.limit}&offset=${query.offset}&sort=${query.sort}&order=${query.order}${executableOnly}`).then(response => {
+                let executableOnly = (query.showExecutable) ? '&executableOnly=true' : '';
+                let lastReleaseOnly = (query.showOnlyLastReleases) ? '&lastReleaseOnly=true' : '';
+                let search= (query.search && query != "") ? `&search=${query.search}` : '';
+                api.get(`api/software.json?max=${query.limit}&offset=${query.offset}&sort=${query.sort}&order=${query.order}${executableOnly}${lastReleaseOnly}${search}`).then(response => {
                     this.data = response.data.collection;
                     this.total = response.data.size;
                 });
@@ -83,10 +107,14 @@
         },
         created () {
             this.xprops.eventbus.$on('clickSoftwareDetails', (payload) => { this.$emit('addSoftwareTab', payload)})
+            this.$set(this.query, 'showExecutable', this.showExecutable);
+            this.$set(this.query, 'showOnlyLastReleases', this.showOnlyLastReleases)
         },
     }
 </script>
 
 <style scoped>
-
+    .form-search {
+        margin-right: 0.5em;
+    }
 </style>
