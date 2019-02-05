@@ -17,6 +17,7 @@
             <button class="btn btn-default" @click="addLayer()">Add</button>
             <button class="btn btn-default" @click="addAllLayers()" v-if="notSelectedLayers.length < 10">Add all
             </button>
+            <button class="btn btn-default" @click="addAllFavoriteLayers()"><i class="fas fa-star"></i> Add all starred jobs</button>
         </div>
         <ul class="list-group mt-4">
             <li class="list-group-item clearfix" v-for="layer in selectedLayersSorted" :key="layer.id"
@@ -116,6 +117,9 @@
             notSelectedLayers() {
                 return this.layers.filter(item => !item.selected)
             },
+            notSelectedFavoriteLayersSorted() {
+                return this.notSelectedLayersSorted.filter(item => item.algo && item.favorite)
+            },
             notSelectedLayersSorted() {
                 return this.sortLayers(this.notSelectedLayers)
             }
@@ -150,6 +154,12 @@
             },
             addAllLayers() {
                 let layers = this.notSelectedLayersSorted;
+                layers.forEach(layer => {
+                    this.addLayer(layer)
+                })
+            },
+            addAllFavoriteLayers() {
+                let layers = this.notSelectedFavoriteLayersSorted;
                 layers.forEach(layer => {
                     this.addLayer(layer)
                 })
