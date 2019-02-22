@@ -8,9 +8,9 @@
                 </button>
             </div>
 
-            <img class="option-image" :src="image.thumb">
+            <a style="color:inherit;" :href="getImageUrl(image)"><img class="option-image" :src="image.thumb"></a>
             <h4 class="option-desc">
-                {{ image.instanceFilename }}
+                <a style="color:inherit;" :href="getImageUrl(image)">{{ image.instanceFilename }}</a>
             </h4>
         </div>
         <div v-if="show" class="table-responsive">
@@ -96,6 +96,12 @@
             },
             removeJob(id) {
                 this.$emit('removeJob', id)
+            },
+            getImageUrl(image) {
+                if (image['class'].includes('ImageGroup'))
+                    return '#tabs-imagegroup-'+image.project+'-'+image.id;
+                else
+                    return '#tabs-image-'+image.project+'-'+image.id+'-0'
             }
         }
     }
