@@ -66,7 +66,7 @@
                         </section>
                         <section v-if="mustBeShown('project-explore-annotation-preview')">
                             <h5><i class="fas fa-crop-alt"></i> Annotation preview</h5>
-                            <img class="thumbnail" :src="selectedAnnotation.smallCropURL+'&alphaMask=true'"
+                            <img class="thumbnail" :src="selectedAnnotation.smallCropURL+'&alphaMask=true&point=true'"
                                  alt="A crop of the annotation area">
                         </section>
                         <section v-if="mustBeShown('project-explore-annotation-comments') && !isAnnotationReviewed">
