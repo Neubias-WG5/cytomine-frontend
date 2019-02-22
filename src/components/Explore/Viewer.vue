@@ -276,7 +276,7 @@
                 followedUser: "",
                 linkedToValues: [],
                 reviewMode: false,
-                layersOpacity: 0.3,
+                layersOpacity: 0.6,
                 selectedComponent: '',
                 selectedFilter: "",
                 selectedSequence: {},
@@ -746,7 +746,7 @@
                             userLayer.selected = false;
                             userLayer.visible = false;
                             userLayer.drawable = false;
-                            userLayer.opacity = 0.3;
+                            userLayer.opacity = 0.6;
                             userLayer.clearAllRev = 0;
                             this.userLayers.push(userLayer);
                         }
@@ -820,7 +820,7 @@
                         selected: this.hasReviewLayer,
                         visible: this.reviewMode,
                         drawable: this.reviewMode,
-                        opacity: 0.3,
+                        opacity: 0.6,
                         review: true,
                         clearAllRev: 0,
                     };

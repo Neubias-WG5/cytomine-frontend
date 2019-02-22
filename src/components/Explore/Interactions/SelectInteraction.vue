@@ -57,16 +57,16 @@
                 let terms = this.selectedFeature.properties.terms;
                 let fillColor;
                 if (this.isReviewing && !this.selectedFeature.properties.class.includes("Reviewed")) {
-                    fillColor = [189, 54, 47, Math.min(this.layerOpacity + 0.3, 1.)]
+                    fillColor = [189, 54, 47, Math.min(this.layerOpacity + 0.2, 1.)]
                 }
                 else {
                     if (terms.length > 1)
-                        fillColor = [204, 204, 204, Math.min(this.layerOpacity + 0.3, 1.)];
+                        fillColor = [204, 204, 204, Math.min(this.layerOpacity + 0.2, 1.)];
                     else if (terms.length == 0)
-                        fillColor = [238, 238, 238, Math.min(this.layerOpacity + 0.3, 1.)];
+                        fillColor = [238, 238, 238, Math.min(this.layerOpacity + 0.2, 1.)];
                     else {
                         fillColor = clone(this.styles[terms[0]].getFill().getColor());
-                        fillColor[3] = this.layerOpacity + 0.3;
+                        fillColor[3] = this.layerOpacity + 0.2;
                     }
                 }
 
