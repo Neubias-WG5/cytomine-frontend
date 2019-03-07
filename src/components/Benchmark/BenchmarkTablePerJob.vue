@@ -15,7 +15,9 @@
                     <h4 class="alert-heading">No result</h4>
                     <br/>
                     <i class="icon icon-warning-sign"/> There is no result for this job
-                    <template v-if="job.status < 3">yet. <br> <button class="btn btn-default">Refresh</button></template>
+                    <template v-if="job.status < 3">yet.<br><br>
+                        <div class="text-center"><button class="btn btn-default" @click="loadData"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+                    </template>
 
                 </div>
             </div>
@@ -147,16 +149,19 @@
                             })
                         }
 
-                        let resource = (this.imageGroups.length > 0) ? 'imagegroupmetricresult' : 'imageinstancemetricresult';
-                        api.get(`api/job/${this.job.id}/${resource}.json`).then(response => {
-                            this.metricResults = response.data.collection;
-                        });
-
-                        api.get(`api/job/${this.job.id}/${resource}.json?aggregate=true`).then(response => {
-                            this.aggregatedMetricResults = response.data.collection;
-                        })
+                        this.loadMetricResults()
                     });
                 });
+            },
+            loadMetricResults() {
+                let resource = (this.imageGroups.length > 0) ? 'imagegroupmetricresult' : 'imageinstancemetricresult';
+                api.get(`api/job/${this.job.id}/${resource}.json`).then(response => {
+                    this.metricResults = response.data.collection;
+                });
+
+                api.get(`api/job/${this.job.id}/${resource}.json?aggregate=true`).then(response => {
+                    this.aggregatedMetricResults = response.data.collection;
+                })
             },
             aggregateMetricById(metricId) {
                 return this.aggregatedMetricResults.find(aggregate => aggregate.metric == metricId);
