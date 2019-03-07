@@ -149,7 +149,7 @@
                 return this.terms.find(term => term.id == termId);
             },
             cropURL(url) {
-                return `${url.substring(0, url.indexOf('?'))}?maxSize=90&alphaMask=true`
+                return `${url.substring(0, url.indexOf('?'))}?maxSize=90&alphaMask=true&point=true`
             }
         }
     }
