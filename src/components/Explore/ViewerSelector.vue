@@ -3,12 +3,12 @@
         <select class="btn btn-default" v-model="selectedImage" name="images" id="images"
                 title="Add image in a new viewer">
             <option value="">Select an image to add</option>
-            <option v-for="image in images" :key="image.id" :value="image.id">
+            <option v-for="image in selectableImages" :key="image.id" :value="image.id">
                 <template v-if="project.blindMode">
                     [BLIND] {{image.id}}
                 </template>
                 <template v-else>
-                    {{image.instanceFilename}}
+                    {{image.name}}
                 </template>
             </option>
         </select>
@@ -25,18 +25,43 @@
             'project',
             'nbViewers',
             'nbMaxViewers',
-            'images'
+            'images',
+            'imageGroups'
         ],
         data() {
             return {
                 selectedImage: ''
             }
         },
+        computed: {
+            selectableImages() {
+                let images = [];
+                if (this.imageGroups.length > 0) {
+                    this.imageGroups.forEach(imageGroup => {
+                        images.push({
+                            'id': imageGroup.referenceSequence.image,
+                            'name': imageGroup.name
+                        })
+                    })
+                }
+                else {
+                    this.images.forEach(image => {
+                        images.push({
+                            'id': image.id,
+                            'name': image.instanceFilename
+                        })
+                    })
+                }
+                return images.sort((a, b) => {
+                    return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+                })
+            }
+        },
         methods: {
             addViewer() {
                 this.$emit('add-viewer', this.selectedImage)
             }
-        }
+        },
     }
 </script>
 

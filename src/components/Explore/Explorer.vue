@@ -3,6 +3,7 @@
         <div class="explorer-header" ref="explorerHeader">
             <viewer-selector :project="project"
                              :images="images"
+                             :image-groups="imageGroups"
                              :nb-viewers="viewers.length"
                              :nb-max-viewers="nbMaxViewers"
                              @add-viewer="addViewer"></viewer-selector>
@@ -185,13 +186,20 @@
                                 group.times = response.data.time;
                             }
 
-                            api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
-                                group.hdf5 = response.data;
-                                this.imageGroups.push(group);
-                            }).catch(errors => {
-                                group.hdf5 = undefined;
-                                this.imageGroups.push(group);
-                            })
+                            let c = (group.channels.length > 0) ? group.channels[0] : 0;
+                            let z = (group.channels.length > 0) ? group.zStacks[Math.floor(group.zStacks.length/2)] : 0;
+                            let t = (group.times.length > 0) ? group.times[0] : 0;
+                            api.get(`api/imagegroup/${group.id}/${c}/${z}/0/${t}/imagesequence.json`).then(response => {
+                                group.referenceSequence = response.data;
+
+                                api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
+                                    group.hdf5 = response.data;
+                                    this.imageGroups.push(group);
+                                }).catch(errors => {
+                                    group.hdf5 = undefined;
+                                    this.imageGroups.push(group);
+                                })
+                            });
                         });
                     });
                 });
