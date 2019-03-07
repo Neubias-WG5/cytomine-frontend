@@ -12,11 +12,19 @@
                     <div class="panel panel-default">
                         <div class="panel-heading clearfix">
                             <h3 class="panel-title pull-left">General information</h3>
-                            <div class="btn-group pull-right" v-if="isAdmin">
-                                <button class="btn btn-default btn-xs" @click="openEditModal=true">
+                            <div class="btn-group pull-right">
+                                <button class="btn btn-default btn-xs" @click="showSoftwareMoreInfo=!showSoftwareMoreInfo">
+                                    <template v-if="showSoftwareMoreInfo">
+                                        <i class="fa fa-eye-slash" aria-hidden="true"></i> Hide info for developers
+                                    </template>
+                                    <template v-else>
+                                        <i class="fa fa-eye" aria-hidden="true"></i> Show info for developers
+                                    </template>
+                                </button>
+                                <button class="btn btn-default btn-xs" @click="openEditModal=true" v-if="isAdmin">
                                     <i class="fa fa-edit" aria-hidden="true"></i>
                                 </button>
-                                <delete-object-button :object="software" domain="software"
+                                <delete-object-button :object="software" domain="software" v-if="isAdmin"
                                                       domain-pretty-print="software"
                                                       @delete-software="deleteSoftware"></delete-object-button>
                             </div>
@@ -69,14 +77,6 @@
                                                          :softwareRepository="findSoftwareRepositoryById(software.softwareUserRepository)"
                                                          v-if="software.softwareUserRepository">
                                 </software-source-buttons>
-                                <button class="btn" @click="showSoftwareMoreInfo=!showSoftwareMoreInfo">
-                                    <template v-if="showSoftwareMoreInfo">
-                                        <i class="fa fa-eye-slash" aria-hidden="true"></i> Hide info for developers
-                                    </template>
-                                    <template v-else>
-                                        <i class="fa fa-eye" aria-hidden="true"></i> Show info for developers
-                                    </template>
-                                </button>
                             </div>
 
                             <div class="clearfix"></div>
@@ -128,8 +128,20 @@
                 <!-- Software Parameters -->
                 <div class="col-md-8">
                     <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">Parameters</h3>
+                        <div class="panel-heading clearfix">
+                            <h3 class="panel-title pull-left">Parameters</h3>
+                            <div class="btn-group pull-right">
+                                <button class="btn btn-default btn-xs" @click="showParametersMoreInfo = !showParametersMoreInfo">
+                                    <template v-if="showParametersMoreInfo">
+                                        <i class="fa fa-eye-slash" aria-hidden="true"></i> Hide info for
+                                        developers
+                                    </template>
+                                    <template v-else>
+                                        <i class="fa fa-eye" aria-hidden="true"></i> Show info for
+                                        developers
+                                    </template>
+                                </button>
+                            </div>
                         </div>
                         <div class="panel-body">
                             <div class="panel-group">
@@ -175,17 +187,8 @@
                                                 </dd>
                                             </dl>
 
-                                            <button class="btn pull-right" @click="toggleParameterMoreInfo(index)">
-                                                <template v-if="showParametersMoreInfo[index]">
-                                                    <i class="fa fa-eye-slash" aria-hidden="true"></i> Hide info for
-                                                    developers
-                                                </template>
-                                                <template v-else>
-                                                    <i class="fa fa-eye" aria-hidden="true"></i> Show info for
-                                                    developers
-                                                </template>
-                                            </button>
-                                            <collapse v-model="showParametersMoreInfo[index]">
+
+                                            <collapse v-model="showParametersMoreInfo">
                                                 <dl class="dl-horizontal">
                                                     <dt>Identifier</dt>
                                                     <dd>{{parameter.id}}</dd>
@@ -344,7 +347,7 @@
                 projects: [],
                 statisticsOptions: {},
                 showSoftwareMoreInfo: false,
-                showParametersMoreInfo: [],
+                showParametersMoreInfo: false,
                 showParameters: [],
                 selectedProject: {},
                 selectedParameter: {},
@@ -379,9 +382,6 @@
                 } else {
                     this.showParameters = this.showParameters.map((v, i) => i === index)
                 }
-            },
-            toggleParameterMoreInfo(index) {
-                this.$set(this.showParametersMoreInfo, index, !this.showParametersMoreInfo[index])
             },
             openInfoProjectModalByIndex(index) {
                 this.selectedProject = this.projects[index];
@@ -441,7 +441,6 @@
                 })
             });
 
-            this.showParametersMoreInfo = new Array(this.software.parameters.length).fill(false);
             this.showParameters = new Array(this.software.parameters.length).fill(false);
             if (this.showParameters.length > 0)
                 this.showParameters[0] = true
