@@ -80,8 +80,10 @@
             <div class="panel-body">
                 <div v-show="selectedComponent == 'informations'">
                     <informations :image="image" :project="project"></informations>
-                    <hr>
-                    <navigation-image :current-image-id="image.id" @changeImage="changeImage"></navigation-image>
+                    <template v-if="!selectedSequence.hasOwnProperty('id')">
+                        <hr>
+                        <navigation-image :current-image-id="image.id" @changeImage="changeImage"></navigation-image>
+                    </template>
                 </div>
 
                 <div v-show="selectedComponent == 'linkmap' && mustBeShown('project-explore-link') && hasMultiViews">
