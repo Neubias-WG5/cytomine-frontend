@@ -32,7 +32,14 @@
                         </a>
                     </div>
                 </td>
-                <td>{{imageGroup.name}}</td>
+                <td>
+                    <template v-if="imageGroup.nbAttachedFiles > 0">
+                        <a role="button" style="cursor: pointer;" @click="editAttachedFiles(imageGroup)">
+                            <i class="fas fa-paperclip"></i>
+                        </a>
+                    </template>
+                    {{imageGroup.name}}
+                </td>
                 <td>{{prettyPrintDimensions(imageGroup.channels)}}</td>
                 <td>{{prettyPrintDimensions(imageGroup.zStacks)}}</td>
                 <td>{{prettyPrintDimensions(imageGroup.times)}}</td>
@@ -61,6 +68,11 @@
                                 <!--</a>-->
                             <!--</li>-->
                             <!--<li role="separator" class="divider" v-if="isHDF5Convertable(imageGroup)"></li>-->
+                            <li>
+                                <a role="button" style="cursor: pointer;" @click="editAttachedFiles(imageGroup)">
+                                    <i class="fas fa-paperclip"></i> Attached files
+                                </a>
+                            </li>
                             <li v-if="!isGuest">
                                 <a role="button" style="cursor: pointer;" @click="editSequences(imageGroup)">
                                     <i class="fas fa-images"></i> Manage sequences
@@ -88,6 +100,7 @@
         </table>
         <image-group-edit-modal :open.sync="openModal" :group.sync="currentImageGroup" @updateList="loadData" :project="project"></image-group-edit-modal>
         <image-sequences-edit-modal :open.sync="openModalSequences" :group.sync="currentImageGroup" @updateList="loadData"></image-sequences-edit-modal>
+        <attached-files-edit-modal :open.sync="openModalAttachedfiles" :object="currentImageGroup" domain-name="Image Group" :is-guest="isGuest"></attached-files-edit-modal>
     </div>
 
 </template>
@@ -96,10 +109,12 @@
     import {Dropdown} from 'uiv'
     import ImageGroupEditModal from "./ImageGroupEditModal";
     import ImageSequencesEditModal from "./ImageSequencesEditModal";
+    import AttachedFilesEditModal from "../Form/AttachedFilesEditModal";
 
     export default {
         name: "ImageGroupList",
         components: {
+            AttachedFilesEditModal,
             ImageSequencesEditModal,
             ImageGroupEditModal,
             Dropdown
@@ -112,7 +127,8 @@
                 openModal: false,
                 openModalSequences: false,
                 timers: {},
-                showLabel: false
+                showLabel: false,
+                openModalAttachedfiles: false
             }
         },
         computed: {
@@ -136,6 +152,11 @@
         watch: {
             showLabel() {
                 this.loadData();
+            },
+            openModalAttachedfiles(newValue) {
+                if (!newValue) {
+                    this.loadData();
+                }
             }
         },
         methods: {
@@ -150,6 +171,10 @@
             editSequences(group) {
                 this.currentImageGroup = group;
                 this.openModalSequences = true;
+            },
+            editAttachedFiles(group) {
+                this.currentImageGroup = group;
+                this.openModalAttachedfiles = true;
             },
             convert(group) {
                 this.$confirm({
@@ -277,13 +302,17 @@
                                     group.times = response.data.time;
                                 }
 
-                                api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
-                                    group.hdf5 = response.data;
-                                    if (group.hdf5.status <= 2) this.makeTimer(group);
-                                    this.imageGroups.push(group);
-                                }).catch(errors => {
-                                    group.hdf5 = undefined;
-                                    this.imageGroups.push(group);
+                                api.get(`/api/domain/be.cytomine.image.multidim.ImageGroup/${group.id}/attachedfile.json`).then(response => {
+                                    group.nbAttachedFiles = response.data.size;
+
+                                    api.get(`/api/imagegroup/${group.id}/imagegroupHDF5.json`).then(response => {
+                                        group.hdf5 = response.data;
+                                        if (group.hdf5.status <= 2) this.makeTimer(group);
+                                        this.imageGroups.push(group);
+                                    }).catch(errors => {
+                                        group.hdf5 = undefined;
+                                        this.imageGroups.push(group);
+                                    })
                                 })
                             });
                         });
